@@ -1,7 +1,7 @@
 ## Access Strategies for Network Caching with Staleness
 
 This project provides tools to simulate several access strategies for distributed caching. 
-The simulator considers a user who is equipped by several caches, and receives from them periodical updates about the cached content. These updates are not totally accurate. The user has to select which caches to access, to obtain the requested datum in the lowest price and maximum certainty possible.
+The simulator considers a user who is equipped by several caches, and receives from them periodical updates about the cached content. These updates are not totally accurate. The user selects which caches to access, to obtain the requested datum in the lowest price and maximum certainty possible.
 For details about the problem and the algorithms used, please refer to the papers:
 
 [1] I. Cohen, Gil Einziger, R. Friedman, and G. Scalosub, [Access Strategies for Network Caching](https://www.researchgate.net/profile/Itamar-Cohen-2/publication/346732877_Access_Strategies_for_Network_Caching/links/5fd27eeea6fdcc697bf6f924/Access-Strategies-for-Network-Caching.pdf), IEEE Transactions on Networking, Vol. 29(2), 2021, pp.609-622.
@@ -88,5 +88,5 @@ An accessory function for format-printing to a file.
 
 ##### check_fpr_fnr_formulas.py
 A script to compare the fpr, fnr, calculated by either the paper [2], or by an an older paper, which uses different model:
-[3] Y. Zhu and H. Jiang, ìFalse rate analysis of bloom filter replicas in distributed systemsî, in ICPP, 2006, pp. 255ñ262.
+[3] Y. Zhu and H. Jiang, ‚ÄúFalse rate analysis of bloom filter replicas in distributed systems‚Äù, in ICPP, 2006, pp. 255‚Äì262.
 

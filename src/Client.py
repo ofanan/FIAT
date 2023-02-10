@@ -20,7 +20,7 @@ class Request(object):
 class Client(object):
     
     def __init__(self, ID, num_of_DSs, estimation_window  = 1000, window_alpha = 0.25, verbose = 0, 
-                use_redundan_coef = False, k_loc = 1, use_adaptive_alg = False, missp = 100, verbose_file = None):
+                use_redundan_coef = False, k_loc = 1, missp = 100, verbose_file = None):
         """
         Return a Client object with the following attributes:
         """
@@ -49,7 +49,6 @@ class Client(object):
         self.redundan_coef      = k_loc / self.num_of_DSs # Redundancy coefficient, representing the level of redundancy of stored items
         self.speculate_hit_cnt  = 0
         self.speculate_accs_cost = 0
-        self.use_adaptive_alg   = use_adaptive_alg
         self.missp              = missp
         self.use_spec_factor    = False
 

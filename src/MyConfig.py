@@ -18,7 +18,6 @@ ALG_PGM_FNO_MR1_BY_HIST         = 7  # PGM alg', detailed in Access Strategies j
 ALG_PGM_FNO_MR1_BY_ANALYSIS     = 8  # PGM alg', detailed in Access Strategies journal paper; False-negative-Oblivious. The exclusion probabilities (mr1) are calculated an analysis of the Bloom filter, as detailed in ICDCS paper. 
 ALG_PGM_FNA_MR1_BY_HIST         = 11 # PGM alg', detailed in Access Strategies journal paper; False-negative-Aware. The exclusion probabilities (mr1) are calculated by the history.
 ALG_PGM_FNA_MR1_BY_ANALYSIS     = 12 # PGM alg', detailed in Access Strategies journal paper; False-negative-Aware. The exclusion probabilities (mr1) are calculated an analysis of the Bloom filter, as detailed in ICDCS paper.
-ALG_PGM_FNA_MR1_BY_HIST_ADAPT   = 13 # PGM alg', detailed in Access Strategies journal paper; staleness-aware, with adaptive alg'
 ALG_MEAURE_FP_FN                = 20 # Run a single cache with an always-believe-indicator access strategy, to measure the fpr, fnr, as func' of the update interval.
 
 
@@ -133,25 +132,14 @@ def error (str):
     exit ()
 
 
-def settings_string (trace_file_name, DS_size, bpe, num_of_req, num_of_DSs, k_loc, missp, bw, uInterval, alg_mode):
+def settings_string (trace_file_name, DS_size, bpe, num_of_req, num_of_DSs, k_loc, missp, bw, uInterval, mode, calc_mr_by_hist, use_fresh_hist):
     """
     Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_file_name, update intervals etc.). 
     """
     # homo_or_hetro = 'homo' if is_homo else 'hetro'
-    settings_str = '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.' .format (
-		trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval)
-    if (alg_mode == ALG_OPT):
-        return settings_str + 'Opt'     
-    elif (alg_mode == ALG_PGM_FNO_MR1_BY_HIST):
-        return settings_str + 'FNOH'
-    elif (alg_mode == ALG_PGM_FNO_MR1_BY_ANALYSIS):
-        return settings_str + 'FNOA'
-    elif (alg_mode == ALG_PGM_FNA_MR1_BY_HIST):
-        return settings_str + 'FNA'
-    elif (alg_mode == ALG_PGM_FNA_MR1_BY_ANALYSIS):
-        return settings_str + 'FNAA'
-    elif (alg_mode == ALG_MEAURE_FP_FN):
-        return settings_str + 'measure_fn'
+    settings_str = '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.{}{}{}' .format (
+		trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval, mode.upper(), 'H' if calc_mr_by_hist else 'A', 'F' if use_fresh_hist else 'S')
+    return settings_str 
 
 def calc_designed_fpr (cache_size, BF_size, num_of_hashes):
     """

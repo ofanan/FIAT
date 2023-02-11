@@ -1,1 +1,0 @@
-alias pusher='git push -f https://github.com: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@github.com/ofanan/FIAT.git' 

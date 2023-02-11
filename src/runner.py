@@ -57,7 +57,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [100]: #50, 100, 500]:
-        for mode in ['fna']: #ALG_PGM_FNA_MR1_BY_ANALYSIS
+        for mode in ['fna']: 
             tic()
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
@@ -83,12 +83,13 @@ def run_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
     output_file         = open ("../res/" + trace_file_name + "_uInterval.res", "a")
     
     print("now = ", datetime.now(), 'running uInterval sim')
-    for alg_mode in [MyConfig.ALG_PGM_FNA_MR1_BY_ANALYSIS]:  
+    for mode in ['fna']:  
+        calc_mr_by_hist = False
         for uInterval in [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16]:
-            if (alg_mode == MyConfig.ALG_PGM_FNA_MR1_BY_ANALYSIS and uInterval < 50): # When uInterval < parameters updates interval, FNO and FNA are identical, so no need to run also FNA
+            if (mode == 'fna' and not(calc_mr_by_hist) and uInterval < 50): # When uInterval < parameters updates interval, FNO and FNA are identical, so no need to run also FNA
                 continue
             tic()
-            sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval)        
+            sm = sim.Simulator(output_file, trace_file_name, mode, requests, DS_cost, uInterval = uInterval, calc_mr_by_hist=calc_mr_by_hist)        
             sm.run_simulator()
             toc()
 
@@ -108,10 +109,10 @@ def run_cache_size_sim (trace_file_name, use_homo_DS_cost = False):
         print ('Note: you used only {} requests for a cache size sim' .format(num_of_req))
     for DS_size in [1000, 2000, 4000, 8000, 16000, 32000]:
         for uInterval in [1024, 256]:
-            for alg_mode in [MyConfig.ALG_PGM_FNO_MR1_BY_ANALYSIS]: #[MyConfig.ALG_PGM_FNA_MR1_BY_HIST, MyConfig.ALG_OPT, MyConfig.ALG_PGM_FNO_MR1_BY_HIST]:
+            for alg_mode in ['f']: 
                 print("now = ", datetime.now(), 'running cache_size sim')
                 tic()
-                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, DS_size = DS_size)
+                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, DS_size = DS_size, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
                      
@@ -132,9 +133,9 @@ def run_bpe_sim (trace_file_name, use_homo_DS_cost = False):
     print("now = ", datetime.now(), 'running bpe sim')
     for bpe in [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
         for uInterval in [1024, 256]:
-            for alg_mode in [MyConfig.ALG_PGM_FNO_MR1_BY_ANALYSIS]: #MyConfig.ALG_PGM_FNO_MR1_BY_HIST]: #MyConfig.ALG_PGM_FNO_MR1_BY_ANALYSIS             
+            for alg_mode in ['fno']:              
                 tic()
-                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, bpe = bpe, uInterval = uInterval) 
+                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, bpe = bpe, uInterval = uInterval, calc_mr_by_hist=True, use_fresh_hist=False) 
                 sm.run_simulator()
                 toc()
  
@@ -160,11 +161,11 @@ def run_num_of_caches_sim (trace_file_name, use_homo_DS_cost = True):
             DS_cost = calc_DS_cost (num_of_DSs, use_homo_DS_cost)            
             missp    = 50 * np.average (DS_cost)
      
-            for alg_mode in [MyConfig.ALG_PGM_FNO_MR1_BY_ANALYSIS]: #[MyConfig.ALG_OPT, MyConfig.ALG_PGM_FNO_MR1_BY_HIST, MyConfig.ALG_PGM_FNA_MR1_BY_HIST]:
+            for alg_mode in ['fno']: 
                         
                 print("now = ", datetime.now(), 'running num of caches sim')
                 tic()
-                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval)
+                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
 
@@ -192,13 +193,11 @@ def run_k_loc_sim (trace_file_name, use_homo_DS_cost = True):
             DS_cost = calc_DS_cost (num_of_DSs, use_homo_DS_cost)            
             missp    = 50 * np.average (DS_cost)
      
-#             for alg_mode in [MyConfig.ALG_PGM_FNA_MR1_BY_ANALYSIS]: 
-            # for alg_mode in [MyConfig.ALG_PGM_FNO_MR1_BY_HIST]: 
-            for alg_mode in [MyConfig.ALG_OPT]: 
+            for alg_mode in ['opt']: 
                         
                 print("now = ", datetime.now(), 'running k_loc sim')
                 tic()
-                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, k_loc = k_loc)
+                sm = sim.Simulator(output_file, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, k_loc = k_loc, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
 
@@ -216,8 +215,8 @@ def run_FN_by_staleness_sim ():
     
         for bpe in [2, 4, 8, 16]:
             tic()
-            sm = sim.Simulator(output_file, trace_file_name, MyConfig.ALG_PGM_FNO_MR1_BY_HIST, requests, DS_cost, bpe = bpe,    
-                               verbose = sim.CNT_FN_BY_STALENESS, uInterval = 8192) # In this sim', each item's location will be calculated as a hash of the key. Hence we actually don't use the k_loc pre-computed entries.
+            sm = sim.Simulator(output_file, trace_file_name, 'fno', requests, DS_cost, bpe = bpe,    
+                               verbose = sim.CNT_FN_BY_STALENESS, uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
             sm.run_simulator()
             toc()
 
@@ -235,7 +234,7 @@ def run_FN_by_uInterval_sim (trace_file_name):
 
         for uInterval in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
             tic()
-            sm = sim.Simulator(output_file, trace_file_name, MyConfig.ALG_MEAURE_FP_FN, requests, DS_cost,    
+            sm = sim.Simulator(output_file, trace_file_name, 'measure fp fn', requests, DS_cost,    
                                verbose = 0, bpe = bpe, uInterval = uInterval)
             sm.run_simulator()
             toc()

@@ -162,8 +162,6 @@ class Client(object):
             else:
                 self.mr[i] = 1 if (self.fnr[i] == 0 or self.pr_of_pos_ind_estimation[i] == 1 or self.hit_ratio[i]==1) \
                 else (1 - self.fpr[i]) * (1 - self.hit_ratio[i]) / (1 - self.pr_of_pos_ind_estimation[i]) # if DS i gave neg' ind', then the estimated prob' that a datum is not in DS i, given a neg' indication for x
-                if (verbose == 4):
-                    printf (self.verbose_file, 'mr_0[{}]: by analysis = {}, by hist = {}\n' .format (i, self.mr[i], mr0[i]))
 
         self.mr = np.maximum (self.zeros_ar, np.minimum (self.mr, self.ones_ar)) # Verify that all mr values are feasible - that is, within [0,1].
         return self.mr

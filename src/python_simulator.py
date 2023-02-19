@@ -170,11 +170,12 @@ class Simulator(object):
 
         self.init_DS_list() #DS_list is the list of DSs
         self.init_client_list ()
-        if (print_est_vs_real_mr):
+        self.print_est_vs_real_mr = print_est_vs_real_mr
+        if (self.print_est_vs_real_mr):
             self.init_est_vs_real_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
-        self.print_est_vs_real_mr    = False # Even if requested, begin to write this output to a file only after long warmup period.
+        self.print_est_vs_real_mr_in_warmup = True # Even if requested, begin to write this output to a file only after long warmup period.
             
     def init_est_vs_real_mr_output_files (self):
         """
@@ -362,8 +363,8 @@ class Simulator(object):
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staeleness-Aware alg'.
             
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            if (self.est_vs_real_mr_output_file!=None): # requested to print to output estimated and real (historic stat) about the miss rate, and the initial warmup time is finished.
-                self.print_est_vs_real_mr = True
+            if (self.print_est_vs_real_mr): # requested to print to output estimated and real (historic stat) about the miss rate, and the initial warmup time is finished.
+                self.print_est_vs_real_mr_in_warmup = False
             self.consider_send_update () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()

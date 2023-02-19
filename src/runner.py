@@ -51,8 +51,6 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     output_file         = open ("../res/tbl.res", "a")
-    # est_mr_output_file  = open (('../res/{}_est_mr.res' .format (trace_file_name.split ('/')[1].split('.csv')[0])), 'w') if (print_est_mr)  else None
-    # real_mr_output_file = 1 if (print_real_mr) else None
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [50]: #50, 100, 500]:
@@ -247,7 +245,7 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
 # trace_file_name     = 'gradle/gradle.build-cache_full_1000K_3DSs.csv'
 # trace_file_name     = 'scarab/scarab.recs.trace.20160808T073231Z.15M_req_1000K_3DSs.csv'
 # trace_file_name     = 'umass/storage/F2.3M_req_1000K_3DSs.csv'
-run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=50)
+run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=1000000)
 # print (MyConfig.gen_requests ('wiki/wiki2.1191403252.gz.txt', max_num_of_req=5))
 
 # run_FN_by_uInterval_sim (trace_file_name)

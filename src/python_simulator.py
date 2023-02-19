@@ -9,7 +9,6 @@ from   printf import printf
 # levels of verbose
 CNT_FN_BY_STALENESS = 5
 
-
 """
 key is an integer
 """
@@ -401,7 +400,6 @@ class Simulator(object):
         num_of_req = self.trace_len
         print ('running', MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, num_of_req, self.num_of_DSs, 
                                                     self.k_loc, self.missp, self.bw, self.uInterval, self.mode, self.calc_mr_by_hist, self.use_fresh_hist))
-        exit ()#$$$$
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
         if (self.mode == 'measure fp fn'):
             self.run_trace_measure_fp_fn ()

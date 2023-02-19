@@ -2,7 +2,6 @@
 Run a simulation, looping over all requested values of parameters 
 (miss penalty, cache sizes, number of caches etc.).
 """
-
 from datetime import datetime
 import os, pickle, sys
 
@@ -36,7 +35,7 @@ def calc_DS_cost (num_of_DSs = 3, use_homo_DS_cost = False):
     """
     Returns a DS_cost matrix - either homo' or hetro', by the user's request  
     """
-    num_of_clients      = 1 #num_of_DSs
+    num_of_clients      = 1 # we currently consider only a single client, looking for data in several caches.
     if (use_homo_DS_cost):
         return calc_homo_costs(num_of_DSs, num_of_clients)
     else:
@@ -56,13 +55,13 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     # real_mr_output_file = 1 if (print_real_mr) else None
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [100]: #50, 100, 500]:
+    for missp in [50]: #50, 100, 500]:
         for mode in ['fna']: 
             tic()
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
                                uInterval = uInterval, missp = missp,
-                               print_est_vs_real_mr = True,
+                               print_est_vs_real_mr = False,
                                DS_size = 10000, verbose=0,
                                calc_mr_by_hist=False,
                                use_fresh_hist = True

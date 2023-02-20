@@ -136,9 +136,13 @@ def settings_string (trace_file_name, DS_size, bpe, num_of_req, num_of_DSs, k_lo
     """
     Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_file_name, update intervals etc.). 
     """
-    # homo_or_hetro = 'homo' if is_homo else 'hetro'
-    return '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.{}{}{}' .format (
-		trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval, mode.upper(), 'H' if calc_mr_by_hist else 'A', ('F' if use_fresh_hist else 'S') if calc_mr_by_hist else '') 
+    if (mode=='opt'):
+        return '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.{}' .format (
+        		trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval, 'Opt') 
+    else:
+        return '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.{}{}{}' .format (
+                trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval, mode.upper(), 'H' if calc_mr_by_hist else 'A', ('F' if use_fresh_hist else 'S') if calc_mr_by_hist else '') 
+        
 
 def calc_designed_fpr (cache_size, BF_size, num_of_hashes):
     """

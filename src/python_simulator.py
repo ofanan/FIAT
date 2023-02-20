@@ -21,7 +21,7 @@ class Simulator(object):
     
     # Called upon a miss. Check whether the miss is compulsory or not. 
     # Increments the relevant counter, and inserts the key to self.k_loc DSs.
-    handle_miss = lambda self: self.handle_compulsory_miss     (consider_fpr_fnr_update=not(self.calc_mr_by_hist)) if (self.is_compulsory_miss()) else self.handle_non_compulsory_miss (consider_fpr_fnr_update=not(self.calc_mr_by_hist))
+    handle_miss = lambda self: self.handle_compulsory_miss (consider_fpr_fnr_update=not(self.calc_mr_by_hist)) if (self.is_compulsory_miss()) else self.handle_non_compulsory_miss (consider_fpr_fnr_update=not(self.calc_mr_by_hist))
 
     # Decides which client will invoke this request. 
     # If there's a single client, the client_id always 1.

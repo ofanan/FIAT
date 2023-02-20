@@ -68,3 +68,47 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNAA | service_cost = 11.9379
 gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNOA | service_cost = 17.78458
 // tot_access_cost= 135808.0, hit_ratio = 0.67, non_comp_miss_cnt = 24212, comp_miss_cnt = 8641
 // estimation window = 100, 
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 6.16664
+// tot_access_cost= 184614.0, hit_ratio = 0.91, non_comp_miss_cnt = 0, comp_miss_cnt = 8641
+// estimation window = 100, 
+
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 5.36616
+// tot_access_cost= 376582.0, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 13933
+// estimation window = 100, 
+
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 5.224676666666666
+// tot_access_cost= 568653.0, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 19975
+// estimation window = 100, 
+
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 5.006065
+// tot_access_cost= 761476.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 24819
+// estimation window = 100, 
+
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 4.817164
+// tot_access_cost= 950732.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 29157
+// estimation window = 100, 
+
+gradle.C10K.bpe14.600Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 4.843375
+// tot_access_cost= 1139325.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 35334
+// estimation window = 100, 
+
+gradle.C10K.bpe14.700Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 4.780151428571428
+// tot_access_cost= 1331006.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 40302
+// estimation window = 100, 
+
+gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 4.861725
+// tot_access_cost= 1513330.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 47521
+// estimation window = 100, 
+
+gradle.C10K.bpe14.900Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 5.018386666666666
+// tot_access_cost= 1697198.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 56387
+// estimation window = 100, 
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 5.116992116992117
+// tot_access_cost= 1881137.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
+// estimation window = 100, 
+
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.FNOA | service_cost = 15.794936666666667
+// tot_access_cost= 436781.0, hit_ratio = 0.71, non_comp_miss_cnt = 66059, comp_miss_cnt = 19975
+// estimation window = 100, 

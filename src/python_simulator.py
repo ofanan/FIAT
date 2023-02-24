@@ -40,7 +40,7 @@ class Simulator(object):
 
     # Genearte an updated settings string, reflecting the current state of params (in particular, the # of requests handled so far)
     update_settings_str = lambda self: MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, self.req_cnt,\
-                                                      self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval, self.alg_mode)
+                                                      self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval, self.mode)
 
     def init_DS_list(self):
         """
@@ -293,9 +293,9 @@ class Simulator(object):
                     self.DS_list[0].access(self.cur_req.key)
                 else: # FN
                     self.FN_miss_cnt += 1
-                    self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt, consider_fpr_fnr_update = True)
+                    self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
             else: # miss
-                self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt, consider_fpr_fnr_update = True)
+                self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
         printf (self.output_file, '({}, {})' .format (self.uInterval, self.FN_miss_cnt/self.hit_cnt))               
 
     def run_trace_opt_hetro (self):
@@ -310,7 +310,7 @@ class Simulator(object):
 
             if true_answer_DS_list.size == 0: # Miss: request is indeed not found in any DS 
                 self.client_list[self.client_id].comp_miss_cnt += 1
-                self.insert_key_to_DSs (use_indicator=False, consider_fpr_fnr_update=False) # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+                self.insert_key_to_DSs (use_indicator=False) # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
             else:  # hit
                 # find the cheapest DS holding the request
                 access_DS_id = true_answer_DS_list[np.argmin( np.take( self.client_DS_cost[self.client_id] , true_answer_DS_list ) )]
@@ -423,7 +423,6 @@ class Simulator(object):
                 self.mr0_cur[ds] = 1
                 self.mr1_cur[ds] = self.inherent_mr1
                 self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
-                # if (self.alg_mode in [ALG_PGM_FNA_MR_BY_HIST, ALG_PGM_FNA_MR_BY_HIST_ACCURATE_INIT]):  # Use a simple hist' avg. to calculate mr0 and mr1. Hence, need to reset the cntrs now. If we using EWMA, the cntrs will be reset later. 
             self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
             self.access_pgm_fna_hetro ()
             self.update_stat (ds)
@@ -444,11 +443,6 @@ class Simulator(object):
             self.neg_ind_cnt[ds] += 1
             if (self.real_answer[ds] == False):
                 self.tn_cnt[ds] += 1
-        if (self.alg_mode==ALG_PGM_FNA_MR_BY_HIST_ACCURATE_INIT):
-            if (self.indications[ds]):  # pos ind
-                self.total_pos_ind[ds] += 1
-            if (self.real_answer[ds]):  # pos ind
-                self.total_hit_cnt[ds] += 1
     
     def print_est_mr_func (self):
         """
@@ -505,21 +499,21 @@ class Simulator(object):
         """
         self.mr_of_DS = np.array([DS.mr1_cur for DS in self.DS_list]) # For each 1 <= i<= n, Copy the miss rate estimation of DS i to mr_of_DS(i)
 
-    def handle_compulsory_miss (self, consider_fpr_fnr_update = True):
+    def handle_compulsory_miss (self):
         """
         Called upon a compulsory miss, namely, a fail to retreive a request from any DS, while the request is indeed not stored in any of the DSs.
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].comp_miss_cnt += 1
-        self.insert_key_to_DSs (use_indicator=(self.mode != 'opt'),  consider_fpr_fnr_update = consider_fpr_fnr_update)
+        self.insert_key_to_DSs (use_indicator=(self.mode != 'opt'))
 
-    def handle_non_compulsory_miss (self, consider_fpr_fnr_update = True):
+    def handle_non_compulsory_miss (self):
         """
         Called upon a non-compulsory miss, namely, a fail to retreive a request from any DS, while the request is actually stored in at least one DS.
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
-        self.insert_key_to_DSs (consider_fpr_fnr_update = consider_fpr_fnr_update)
+        self.insert_key_to_DSs ()
         if (self.calc_mr_by_hist):
             self.FN_miss_cnt += 1
 
@@ -531,7 +525,7 @@ class Simulator(object):
         if self.DS_insert_mode == 2:
             self.DS_list[self.client_id].insert(req.key)
 
-    def insert_key_to_DSs (self, use_indicator=True, consider_fpr_fnr_update=True):
+    def insert_key_to_DSs (self, use_indicator=True):
         """
         insert key to all k_loc DSs.
         The DSs to which the key is inserted are either: 
@@ -539,7 +533,7 @@ class Simulator(object):
         - Chosen as a "hash" (actually, merely a modulo calculation) of the key 
         """
         for i in range(self.k_loc):
-            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, use_indicator = use_indicator, consider_fpr_fnr_update = consider_fpr_fnr_update)
+            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, use_indicator = use_indicator)
                     
     def is_compulsory_miss (self):
         """

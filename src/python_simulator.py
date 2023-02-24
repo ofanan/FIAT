@@ -50,7 +50,7 @@ class Simulator(object):
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates=self.DS_send_fpr_fnr_updates,
-                        collect_mr_stat=self.collect_mr_stat,
+                        collect_mr_stat = not (self.calc_mr_by_hist),
                         mr1_window_alpha=self.ewma_alpha) 
                         for i in range(self.num_of_DSs)]
             
@@ -74,7 +74,8 @@ class Simulator(object):
                  print_est_vs_real_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
                  calc_mr_by_hist = True, # when false, calc mr by analysis of the BF
                  use_fresh_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a fresh hist of mr1, mr0 since the last advertisement.
-                 use_perfect_hist = True # when true, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
+                 use_perfect_hist = True, # when true, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
+                 print_real_mr=False
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -94,7 +95,7 @@ class Simulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             
         """
-        self.inherent_mr1 = 0.001 # The inherent positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+        self.ewma_alpha      = 0.85  # exp' window's moving average's alpha parameter 
         self.output_file     = output_file
         self.trace_file_name = trace_file_name
         self.missp           = missp
@@ -123,7 +124,21 @@ class Simulator(object):
         self.estimation_window  = 100 #self.DS_size / self.est_win_factor # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
-        self.verbose            = verbose # Used for debug / analysis: a higher level verbose prints more msgs to the Screen / output file.
+        self.verbose            = verbose # Used for debug / analysis: a higher level verbose prints more msgs to the Screen / output file.       
+        
+        if (self.calc_mr_by_hist):
+            self.pos_ind_cnt    = np.zeros (self.num_of_DSs)
+            self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
+            self.fp_cnt         = np.zeros  (self.num_of_DSs)
+            self.tn_cnt         = np.zeros  (self.num_of_DSs)
+            self.mr0_cur        = np.ones  (self.num_of_DSs)
+            self.inherent_mr1   = 0.001 # The inherent positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+            self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
+            self.print_real_mr  = print_real_mr
+            self.real_answer    = [True]*self.num_of_DSs 
+        
+        
+        
         self.mr_of_DS           = np.zeros(self.num_of_DSs) # mr_of_DS[i] will hold the estimated miss rate of DS i 
         self.req_df             = req_df
         self.trace_len          = self.req_df.shape[0]

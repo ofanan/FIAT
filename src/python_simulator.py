@@ -50,7 +50,8 @@ class Simulator(object):
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates=not (self.calc_mr_by_hist),
-                        collect_mr_stat = not (self.calc_mr_by_hist),
+                        collect_mr_stat = not (self.use_perfect_hist),
+						# currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
                         mr1_window_alpha=self.ewma_alpha) 
                         for i in range(self.num_of_DSs)]
             
@@ -530,8 +531,8 @@ class Simulator(object):
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         self.insert_key_to_DSs ()
-        if (self.calc_mr_by_hist):
-            self.FN_miss_cnt += 1
+        #$$$ if (self.calc_mr_by_hist):
+        #    self.FN_miss_cnt += 1
 
     def insert_key_to_closest_DS(self, req):
         """

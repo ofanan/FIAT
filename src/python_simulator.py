@@ -49,7 +49,7 @@ class Simulator(object):
         self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_estimation_window = self.estimation_window, 
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
-                        DS_send_fpr_fnr_updates=self.DS_send_fpr_fnr_updates,
+                        DS_send_fpr_fnr_updates=not (self.calc_mr_by_hist),
                         collect_mr_stat = not (self.calc_mr_by_hist),
                         mr1_window_alpha=self.ewma_alpha) 
                         for i in range(self.num_of_DSs)]
@@ -74,7 +74,7 @@ class Simulator(object):
                  print_est_vs_real_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
                  calc_mr_by_hist = True, # when false, calc mr by analysis of the BF
                  use_fresh_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a fresh hist of mr1, mr0 since the last advertisement.
-                 use_perfect_hist = True, # when true, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
+                 use_perfect_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  print_real_mr=False
                  ):
         """
@@ -191,7 +191,6 @@ class Simulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
-        self.DS_send_fpr_fnr_updates = (not (self.use_perfect_hist)) and (not (self.calc_mr_by_hist))             
         self.init_DS_list() #DS_list is the list of DSs
         self.init_client_list ()
         self.print_est_vs_real_mr = print_est_vs_real_mr
@@ -780,9 +779,10 @@ class Simulator(object):
                     self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
                 hit = True
                 
-                #Upon hit, the DS sends the updated evaluation of fpr, fnr, to the clients.
-                self.client_list [self.client_id].fnr[DS_id] = self.DS_list[DS_id].fnr;  
-                self.client_list [self.client_id].fpr[DS_id] = self.DS_list[DS_id].fpr;  
+                # If mr is not evaluated by history, then upon hit, the DS sends the updated evaluation of fpr, fnr, to the clients 
+                if (not (self.calc_mr_by_hist)): 
+                    self.client_list [self.client_id].fnr[DS_id] = self.DS_list[DS_id].fnr;  
+                    self.client_list [self.client_id].fpr[DS_id] = self.DS_list[DS_id].fpr;  
         if (hit):   
             self.client_list[self.client_id].hit_cnt += 1
         else: # Miss

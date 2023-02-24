@@ -18,8 +18,6 @@ class DataStore (object):
 
     # Returns true iff an updated indicator should be sent.
     should_advertise_ind = lambda self: (self.ins_since_last_ad == self.uInterval)
-    #    if (self.fnr > self.max_fnr or self.fpr > self.max_fpr):
-    #        return True 
     
     def __init__(self, ID, size = 1000, bpe = 14, mr1_window_alpha = 0.25, mr1_estimation_window = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = 0, uInterval = 1,

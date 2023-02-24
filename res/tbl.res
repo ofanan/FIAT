@@ -41,3 +41,14 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M500.B0.U1000.FNAHF | service_cost = 134.4
 // tot_access_cost= 1483667.0, hit_ratio = 0.73, non_comp_miss_cnt = 201203, comp_miss_cnt = 64717
 // estimation window = 100, // num of insertions between fpr_fnr estimations = 50
 // avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNAHF | service_cost = 17.78458
+// tot_access_cost= 135808.0, hit_ratio = 0.67, non_comp_miss_cnt = 24212, comp_miss_cnt = 8641
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNAHP | service_cost = 60.67334
+// tot_access_cost= 778684.0, hit_ratio = 2.9, non_comp_miss_cnt = 97132, comp_miss_cnt = 8641
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000

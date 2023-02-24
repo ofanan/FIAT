@@ -142,10 +142,10 @@ class Client(object):
     def get_mr_given_mr0_mr1 (self, indications, mr0, mr1, verbose):
         """
         Calculate and return the expected miss prob' of each DS, based on its indication.
-        Input: 
+        Inputs: 
         indications - a vector, where indications[i] is true iff indicator i gave a positive indication.
-        mr0 - a vector. mr0[i] is the estimation (based on historic data) of the miss probab' in cache i, given a neg' ind' by indicator i
-        mr1 - a vector. mr1[i] is the estimation (based on historic data) of the miss probab' in cache i, given a pos' ind' by indicator i        
+        mr0 - a vector. mr0[i] is the estimation (based on historical data) of the miss probab' in cache i, given a neg' ind' by indicator i
+        mr1 - a vector. mr1[i] is the estimation (based on historical data) of the miss probab' in cache i, given a pos' ind' by indicator i        
         Details: The func' does the following:  
         - Update the estimations of Pone ("q") and the hit ratio.
         - For each DS:

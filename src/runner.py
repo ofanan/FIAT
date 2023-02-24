@@ -11,7 +11,6 @@ import pandas as pd
 from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
-import settings
 
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
@@ -53,15 +52,15 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     output_file         = open ("../res/tbl.res", "a")
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [50]: #50, 100, 500]:
-        for mode in ['opt']: 
+    for missp in [50, 100, 500]:
+        for mode in ['fna']: 
             tic()
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
                                uInterval = uInterval, missp = missp,
                                print_est_vs_real_mr = False,
                                DS_size = 10000, verbose=0,
-                               calc_mr_by_hist=False,
+                               calc_mr_by_hist=True,
                                use_fresh_hist = True
                                )
             sm.run_simulator(interval_between_mid_reports=100000)

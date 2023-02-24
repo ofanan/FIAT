@@ -6,9 +6,6 @@ import numpy as np
 import DataStore, Client, candidate, node, MyConfig 
 from   printf import printf
 
-# levels of verbose
-CNT_FN_BY_STALENESS = 5
-
 """
 key is an integer
 """
@@ -21,7 +18,8 @@ class Simulator(object):
     
     # Called upon a miss. Check whether the miss is compulsory or not. 
     # Increments the relevant counter, and inserts the key to self.k_loc DSs.
-    handle_miss = lambda self: self.handle_compulsory_miss (consider_fpr_fnr_update=not(self.calc_mr_by_hist)) if (self.is_compulsory_miss()) else self.handle_non_compulsory_miss (consider_fpr_fnr_update=not(self.calc_mr_by_hist))
+    # Called upon a miss. Check whether the miss is compulsory or not. Increments the relevant counter, and inserts the key to self.k_loc DSs.        
+    handle_miss = lambda self: self.handle_compulsory_miss () if (self.is_compulsory_miss()) else self.handle_non_compulsory_miss ()
 
     # Decides which client will invoke this request. 
     # If there's a single client, the client_id always 1.
@@ -40,13 +38,20 @@ class Simulator(object):
     # Check whether it's time for a mid-report, and if so - output a mid-report
     mid_report = lambda self : self.gather_statistics() if (self.req_cnt % self.interval_between_mid_reports == 0 and self.req_cnt>0) else None
 
+    # Genearte an updated settings string, reflecting the current state of params (in particular, the # of requests handled so far)
+    update_settings_str = lambda self: MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, self.req_cnt,\
+                                                      self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval, self.alg_mode)
+
     def init_DS_list(self):
         """
         Init a list of empty DSs (Data Stores == caches)
         """
         self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_estimation_window = self.estimation_window, 
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
-                        num_of_insertions_between_estimations = self.num_of_insertions_between_estimations) 
+                        num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
+                        DS_send_fpr_fnr_updates=self.DS_send_fpr_fnr_updates,
+                        collect_mr_stat=self.collect_mr_stat,
+                        mr1_window_alpha=self.ewma_alpha) 
                         for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -69,6 +74,7 @@ class Simulator(object):
                  print_est_vs_real_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
                  calc_mr_by_hist = True, # when false, calc mr by analysis of the BF
                  use_fresh_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a fresh hist of mr1, mr0 since the last advertisement.
+                 use_perfect_hist = True # when true, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -88,6 +94,7 @@ class Simulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             
         """
+        self.inherent_mr1 = 0.001 # The inherent positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         self.output_file     = output_file
         self.trace_file_name = trace_file_name
         self.missp           = missp
@@ -97,6 +104,7 @@ class Simulator(object):
         self.DS_insert_mode  = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
         self.calc_mr_by_hist = calc_mr_by_hist
         self.use_fresh_hist  = use_fresh_hist
+        self.use_perfect_hist  = use_perfect_hist
         self.mode            = mode
 
         if (self.DS_insert_mode != 1):
@@ -163,11 +171,12 @@ class Simulator(object):
         if (self.verbose > 1):
             verbose_file_name = '{}{}.txt' .format (self.mode, 'h' if self.calc_mr_by_hist else 'a')
             self.verbose_file = open ('../res/{}' .format (verbose_file_name), "w", buffering=1)
-        if (self.verbose == CNT_FN_BY_STALENESS):
+        if (self.verbose == MyConfig.CNT_FN_BY_STALENESS):
             lg_uInterval = np.log2 (self.uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
+        self.DS_send_fpr_fnr_updates = (not (self.use_perfect_hist)) and (not (self.calc_mr_by_hist))             
         self.init_DS_list() #DS_list is the list of DSs
         self.init_client_list ()
         self.print_est_vs_real_mr = print_est_vs_real_mr
@@ -176,7 +185,7 @@ class Simulator(object):
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
         self.print_est_vs_real_mr_in_warmup = True # Even if requested, begin to write this output to a file only after long warmup period.
-            
+
     def init_est_vs_real_mr_output_files (self):
         """
         Init per-DS output file, to which the simulator writes data about the estimated mr (conditional miss rates, namely pr of a miss given a negative ind (mr0), or a positive ind (mr1)).
@@ -224,7 +233,7 @@ class Simulator(object):
         Accumulates and organizes the stat collected during the sim' run.
         This func' is usually called once at the end of each run of the python_simulator.
         """
-        if (self.verbose == CNT_FN_BY_STALENESS):
+        if (self.verbose == MyConfig.CNT_FN_BY_STALENESS):
             printf (self.output_file, 'FN cnt by staleness      = {}\n' .format (self.FN_by_staleness))
             printf (self.output_file, 'PI hits cnt by staleness = {}\n' .format (self.PI_hits_by_staleness))
             for bin in range (len(self.FN_by_staleness)):
@@ -251,6 +260,10 @@ class Simulator(object):
             printf (self.output_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
             printf (self.output_file, '// avg num of fpr_fnr_updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
+        if (self.DS_send_fpr_fnr_updates): 
+            printf (self.output_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
+            printf (self.output_file, '// avg num of fpr_fnr_updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
+                                .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates / self.req_cnt))
 
     def run_trace_measure_fp_fn (self):
         """
@@ -324,7 +337,7 @@ class Simulator(object):
             # self.pos_ind_list will hold the list of DSs with positive indications
             self.pos_ind_list = np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.updated_indicator) ]) if self.use_only_updated_ind else \
                                 np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.stale_indicator) ])
-            if (self.verbose == CNT_FN_BY_STALENESS):
+            if (self.verbose == MyConfig.CNT_FN_BY_STALENESS):
                 self.cnt_fn_by_staleness ()
             if (len(self.pos_ind_list) == 0): # No positive indications --> FNO alg' has a miss
                 self.handle_miss ()
@@ -371,12 +384,57 @@ class Simulator(object):
             for i in range (self.num_of_DSs):
                 self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
             if (self.calc_mr_by_hist):
-                self.mr_of_DS   = self.client_list [self.client_id].get_mr_given_mr0_mr1 (indications=self.indications, mr0=np.array([DS.mr0_cur for DS in self.DS_list]), mr1=np.array([DS.mr1_cur for DS in self.DS_list]), verbose=verbose)
+                self.handle_single_req_pgm_fna_mr_by_hist ()
+                # $$$self.handle_single_req_pgm_fna_mr_by_ewma ()
+                self.mr_of_DS   = self.client_list [self.client_id].get_mr_given_mr0_mr1 (indications=self.indications, mr0=np.array([DS.mr0_cur for DS in self.DS_list]), mr1=np.array([DS.mr1_cur for DS in self.DS_list]), verbose=self.verbose)
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
             self.access_pgm_fna_hetro ()
             self.mid_report ()
 
+    def handle_single_req_pgm_fna_mr_by_hist (self):
+        """
+        run a single request, when the algorithm mode is 'fna' and assuming perfect history knowledge.
+        This includes:
+        - Calculate mr of each datastore.
+        - Update the stat according to the real answers (whether the item is indeed found in each cache).
+        - Update mr0, mr1, accordingly.
+        """
+        
+        for ds in range (self.num_of_DSs):
+            
+            # The lines below reset the estimators and counters when the DS advertises a new indicator. 
+            if (self.DS_list[ds].ins_since_last_ad==0): # This DS has just sent an indicator --> reset all counters and estimations
+                self.mr0_cur[ds] = 1
+                self.mr1_cur[ds] = self.inherent_mr1
+                self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
+                # if (self.alg_mode in [ALG_PGM_FNA_MR_BY_HIST, ALG_PGM_FNA_MR_BY_HIST_ACCURATE_INIT]):  # Use a simple hist' avg. to calculate mr0 and mr1. Hence, need to reset the cntrs now. If we using EWMA, the cntrs will be reset later. 
+            self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+            self.access_pgm_fna_hetro ()
+            self.update_stat (ds)
+            self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
+            self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
+
+    def update_stat (self, ds):
+        """
+        Update the counters of fp, tn, total_pos_ind and total_hit_cnt for the datastore whose ID is ds 
+        """
+        # self.real_answer[ds] will hold the resolution, namely, whether the requested datum is indeed found in DS ds
+        self.real_answer[ds] = (self.cur_req.key in self.DS_list[ds]) 
+        if (self.indications[ds]):  # pos ind
+            self.pos_ind_cnt[ds] += 1
+            if (self.real_answer[ds] == False):
+                self.fp_cnt += 1 
+        else:  # neg ind'
+            self.neg_ind_cnt[ds] += 1
+            if (self.real_answer[ds] == False):
+                self.tn_cnt[ds] += 1
+        if (self.alg_mode==ALG_PGM_FNA_MR_BY_HIST_ACCURATE_INIT):
+            if (self.indications[ds]):  # pos ind
+                self.total_pos_ind[ds] += 1
+            if (self.real_answer[ds]):  # pos ind
+                self.total_hit_cnt[ds] += 1
+    
     def print_est_mr_func (self):
         """
         print the extimated mr (miss rate) probabilities.

@@ -15,10 +15,16 @@ from printf import printf
 
 
 class DataStore (object):
+
+    # Returns true iff an updated indicator should be sent.
+    should_advertise_ind = lambda self: (self.ins_since_last_ad == self.uInterval)
+    #    if (self.fnr > self.max_fnr or self.fpr > self.max_fpr):
+    #        return True 
     
     def __init__(self, ID, size = 1000, bpe = 14, mr1_window_alpha = 0.25, mr1_estimation_window = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = 0, uInterval = 1,
-                 num_of_insertions_between_estimations = np.uint8 (50)):
+                 num_of_insertions_between_estimations = np.uint8 (50),
+                 DS_send_fpr_fnr_updates=True, collect_mr_stat=True):
         """
         Return a DataStore object with the following attributes:
             ID:                 datastore ID 
@@ -60,17 +66,20 @@ class DataStore (object):
         self.mr1_cur                = 0 # Initially assume that there're no FP events, that is: the miss prob' in case of a positive ind' is 0. 
         self.mr0_cur                = 1 # Initially assume that there're no FN events, that is: the miss prob' in case of a negative ind' is 1.
         self.cache                  = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
-        self.fnr                    = 0 # Initially, there are no false indications
-        self.fpr                    = 0 # Initially, there are no false indications
+        self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
+        if (self.DS_send_fpr_fnr_updates):
+            self.fnr                    = 0 # Initially, there are no false indications
+            self.fpr                    = 0 # Initially, there are no false indications
         self.delta_th               = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw              = 0
         self.num_of_updates         = 0
-        self.verbose                = verbose #if self.ID==0 else 0
-        self.ins_cnt                = np.uint32 (0)
+        self.verbose                = verbose 
+        self.ins_since_last_ad      = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates = int (0) 
         self.use_only_updated_ind   = True if (uInterval == 1) else False
         self.uInterval              = uInterval if (self.use_only_updated_ind == False) else float('inf')
         
+        self.collect_mr_stat        = collect_mr_stat
         self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         if (self.verbose == 3):
@@ -96,7 +105,7 @@ class DataStore (object):
             self.cache[key] #Touch the element, so as to update the LRU mechanism
 
         # If no need to collect/print further stat, we can return
-        if (est_vs_real_mr_output_file==None):
+        if (not(self.collect_mr_stat)):
             return hit 
         
         # Now we know that we have to collect and print some stat
@@ -118,7 +127,7 @@ class DataStore (object):
                 
         return hit 
 
-    def insert(self, key, use_indicator = True, req_cnt = -1, consider_fpr_fnr_update = True):
+    def insert(self, key, use_indicator = True, req_cnt = -1):
         """
         - Inserts a key to the cache
         - Update the indicator
@@ -134,15 +143,16 @@ class DataStore (object):
             if (self.cache.currSize() == self.cache.size()):
                 self.updated_indicator.remove(self.cache.get_tail())
             self.updated_indicator.add(key)
-            self.ins_cnt                += 1
-            self.ins_since_last_fpr_fnr_estimation  += 1
-            if (consider_fpr_fnr_update):
+            self.ins_since_last_ad                 += 1
+            self.ins_since_last_fpr_fnr_estimation += 1
+            if (self.DS_send_fpr_fnr_updates):
                 if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
                     self.estimate_fnr_fpr (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                     self.num_of_fpr_fnr_updates += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
-            if (self.should_send_update() ):
-                self.send_update ()
+            if (self.should_advertise_ind()):
+                self.advertise_ind ()
+
                 
     def get_indication (self, key):
         """
@@ -152,9 +162,9 @@ class DataStore (object):
             return (key in self.updated_indicator)
         return (key in self.stale_indicator)
 
-    def send_update (self, check_delta_th = False):
+    def advertise_ind (self, check_delta_th = False):
         """
-        Send an updated indicator.
+        Advertise an updated indicator.
         If the input check_delta_th, then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
             
@@ -169,7 +179,7 @@ class DataStore (object):
         B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
         self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
         self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
-        self.ins_since_last_fpr_fnr_estimation  = 0
+        self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
 
     def update_mr0(self, est_vs_real_mr_output_file=None):
         """
@@ -222,6 +232,7 @@ class DataStore (object):
         B1_st       = sum (self.stale_indicator.array)    # Num of bits set in the stale indicator
         self.fnr    = 1 - pow ( (B1_up-Delta[1]) / B1_up, self.num_of_hashes)
         self.fpr    = pow ( B1_st / self.BF_size, self.num_of_hashes)
+        self.ins_since_last_fpr_fnr_estimation  = 0
 
 #         if (self.should_send_update()==True): # either the fpr or the fnr is too high - need to send update
 #             size_of_delta_update = sum (Delta)     

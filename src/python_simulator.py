@@ -104,6 +104,7 @@ class Simulator(object):
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
         self.calc_mr_by_hist    = calc_mr_by_hist
         self.use_perfect_hist   = use_perfect_hist
+        self.use_EWMA           = False # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
         self.mode               = mode
         self.num_of_clients     = client_DS_cost.shape[0]
         self.num_of_DSs         = client_DS_cost.shape[1]
@@ -397,14 +398,14 @@ class Simulator(object):
             for i in range (self.num_of_DSs):
                 self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
             if (self.calc_mr_by_hist):
-                self.handle_single_req_pgm_fna_mr_by_hist ()
+                self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
                 # $$$self.handle_single_req_pgm_fna_mr_by_ewma ()
                 self.mr_of_DS   = self.client_list [self.client_id].get_mr_given_mr0_mr1 (indications=self.indications, mr0=np.array([DS.mr0_cur for DS in self.DS_list]), mr1=np.array([DS.mr1_cur for DS in self.DS_list]), verbose=self.verbose)
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
             self.mid_report ()
 
-    def handle_single_req_pgm_fna_mr_by_hist (self):
+    def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
         run a single request, when the algorithm mode is 'fna' and assuming perfect history knowledge.
         This includes:
@@ -422,11 +423,29 @@ class Simulator(object):
                 self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
             self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
             self.access_pgm_fna_hetro ()
-            self.update_stat (ds)
+            self.update_stat_from_DS (ds)
+
+        if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
+            if (self.pos_ind_cnt[ds] == self.estimation_window):
+                self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
+                if (self.print_real_mr):
+                    printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
+                            .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
+                self.fp_cnt[ds] = 0
+                self.pos_ind_cnt [ds] = 0
+            if (self.neg_ind_cnt[ds] == self.estimation_window):
+                self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
+                if (self.print_real_mr):
+                    printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
+                            .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
+                self.tn_cnt[ds] = 0
+                self.neg_ind_cnt [ds] = 0
+        else:
             self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
             self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
 
-    def update_stat (self, ds):
+
+    def update_stat_from_DS (self, ds):
         """
         Update the counters of fp, tn, total_pos_ind and total_hit_cnt for the datastore whose ID is ds 
         """

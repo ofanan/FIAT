@@ -57,11 +57,13 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             tic()
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
-                               uInterval = uInterval, missp = missp,
+                               missp        = missp,
+                               DS_size      = 10000, 
+                               verbose      = 0,
+                               uInterval    = uInterval, 
                                print_est_vs_real_mr = False,
-                               DS_size = 10000, verbose=0,
-                               calc_mr_by_hist=True,
-                               use_fresh_hist = True
+                               calc_mr_by_hist      =True,
+                               use_perfect_hist     = True
                                )
             sm.run_simulator(interval_between_mid_reports=100000)
             toc()

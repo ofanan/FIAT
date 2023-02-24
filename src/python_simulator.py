@@ -73,7 +73,6 @@ class Simulator(object):
                  use_given_DS_per_item = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  print_est_vs_real_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
                  calc_mr_by_hist = True, # when false, calc mr by analysis of the BF
-                 use_fresh_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a fresh hist of mr1, mr0 since the last advertisement.
                  use_perfect_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  print_real_mr=False
                  ):
@@ -97,24 +96,22 @@ class Simulator(object):
         """
         self.ewma_alpha      = 0.85  # exp' window's moving average's alpha parameter 
         self.output_file     = output_file
-        self.trace_file_name = trace_file_name
-        self.missp           = missp
-        self.DS_size         = DS_size
-        self.bpe             = bpe
-        self.rand_seed       = rand_seed
-        self.DS_insert_mode  = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
-        self.calc_mr_by_hist = calc_mr_by_hist
-        self.use_fresh_hist  = use_fresh_hist
-        self.use_perfect_hist  = use_perfect_hist
-        self.mode            = mode
-
+        self.trace_file_name    = trace_file_name
+        self.missp              = missp
+        self.DS_size            = DS_size
+        self.bpe                = bpe
+        self.rand_seed          = rand_seed
+        self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
+        self.calc_mr_by_hist    = calc_mr_by_hist
+        self.use_perfect_hist   = use_perfect_hist
+        self.mode               = mode
+        self.num_of_clients     = client_DS_cost.shape[0]
+        self.num_of_DSs         = client_DS_cost.shape[1]
+        self.k_loc              = k_loc
         if (self.DS_insert_mode != 1):
             print ('sorry, currently only fix insert mode (1) is supported')
             exit ()
 
-        self.num_of_clients     = client_DS_cost.shape[0]
-        self.num_of_DSs         = client_DS_cost.shape[1]
-        self.k_loc              = k_loc
         if (self.k_loc > self.num_of_DSs):
             print ('error: k_loc must be at most num_of_DSs')
             exit ()
@@ -206,7 +203,7 @@ class Simulator(object):
         The simulator also writes to this data (via Datastore.py) about each access whether it results in a True Positive, True Negative, False Positive, or False negative.
         """
         settings_str = MyConfig.settings_string (trace_file_name=self.trace_file_name, DS_size=self.DS_size, bpe=self.bpe, num_of_req=self.trace_len, 
-                                                 num_of_DSs=self.num_of_DSs, k_loc=self.k_loc, missp=self.missp, bw=self.bw, uInterval=self.uInterval, mode=self.mode, calc_mr_by_hist=self.calc_mr_by_hist, use_fresh_hist=self.use_fresh_hist)
+                                                 num_of_DSs=self.num_of_DSs, k_loc=self.k_loc, missp=self.missp, bw=self.bw, uInterval=self.uInterval, mode=self.mode, calc_mr_by_hist=self.calc_mr_by_hist, use_perfect_hist=self.use_perfect_hist)
         self.est_vs_real_mr_output_file = [None]*self.num_of_DSs
         for ds in range (self.num_of_DSs):
             self.est_vs_real_mr_output_file[ds] = open ('../res/{}_est_vs_real_mr_ds{}.mr' .format (settings_str, ds), 'w')
@@ -261,7 +258,7 @@ class Simulator(object):
         self.total_cost         = self.total_access_cost + self.missp * (self.comp_miss_cnt + self.non_comp_miss_cnt + self.high_cost_mp_cnt)
         self.mean_service_cost  = self.total_cost / self.req_cnt 
         self.settings_str       = MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, self.req_cnt, self.num_of_DSs, self.k_loc, self.missp, self.bw,   
-                                                            self.uInterval, mode=self.mode, calc_mr_by_hist=self.calc_mr_by_hist, use_fresh_hist=self.use_fresh_hist)
+                                                            self.uInterval, mode=self.mode, calc_mr_by_hist=self.calc_mr_by_hist, use_perfect_hist=self.use_perfect_hist)
         printf (self.output_file, '\n\n{} | service_cost = {}\n'  .format (self.settings_str, self.mean_service_cost))
         bw_in_practice =  int (round ( self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         if (self.bw != bw_in_practice):
@@ -466,7 +463,7 @@ class Simulator(object):
         np.random.seed(self.rand_seed)
         num_of_req = self.trace_len
         print ('running', MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, num_of_req, self.num_of_DSs, 
-                                                    self.k_loc, self.missp, self.bw, self.uInterval, self.mode, self.calc_mr_by_hist, self.use_fresh_hist))
+                                                    self.k_loc, self.missp, self.bw, self.uInterval, self.mode, self.calc_mr_by_hist, self.use_perfect_hist))
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
         if (self.mode == 'measure fp fn'):
             self.run_trace_measure_fp_fn ()

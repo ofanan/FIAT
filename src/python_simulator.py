@@ -38,10 +38,31 @@ class Simulator(object):
     # Check whether it's time for a mid-report, and if so - output a mid-report
     mid_report = lambda self : self.gather_statistics() if (self.req_cnt % self.interval_between_mid_reports == 0 and self.req_cnt>0) else None
 
-    # Genearte an updated settings string, reflecting the current state of params (in particular, the # of requests handled so far)
-    update_settings_str = lambda self: MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, self.req_cnt,\
-                                                      self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval, self.mode)
+    def gen_settings_string (self, num_of_req=None):
+        """
+        Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_file_name, update intervals etc.). 
+        """
+        num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
+        # generate the initial string, that does not include the mode information    
+        settings_str = \
+            '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}' .format (
+            self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
+            self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval)
+        
+        # Add the string representing the mode 
+        if (self.mode=='opt'):
+            return '{}.{}' .format (settings_str, 'Opt')
 
+        # Now we know that the mode isn't 'Opt'
+        if not(self.calc_mr_by_hist):
+            return '{}.{}A' .format (settings_str, self.mode.upper()) # 'A' stands for 'by Analisys'
+
+        # Now we know that the mode isn't 'Opt', and that the mr-estimation is history-based
+        return '{}.H{}{}' .format (
+            settings_str,   
+            'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
+            'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
+                
     def init_DS_list(self):
         """
         Init a list of empty DSs (Data Stores == caches)
@@ -203,8 +224,7 @@ class Simulator(object):
         Init per-DS output file, to which the simulator writes data about the estimated mr (conditional miss rates, namely pr of a miss given a negative ind (mr0), or a positive ind (mr1)).
         The simulator also writes to this data (via Datastore.py) about each access whether it results in a True Positive, True Negative, False Positive, or False negative.
         """
-        settings_str = MyConfig.settings_string (trace_file_name=self.trace_file_name, DS_size=self.DS_size, bpe=self.bpe, num_of_req=self.trace_len, 
-                                                 num_of_DSs=self.num_of_DSs, k_loc=self.k_loc, missp=self.missp, bw=self.bw, uInterval=self.uInterval, mode=self.mode, calc_mr_by_hist=self.calc_mr_by_hist, use_perfect_hist=self.use_perfect_hist)
+        settings_str = self.gen_settings_string (num_of_req=self.trace_len)
         self.est_vs_real_mr_output_file = [None]*self.num_of_DSs
         for ds in range (self.num_of_DSs):
             self.est_vs_real_mr_output_file[ds] = open ('../res/{}_est_vs_real_mr_ds{}.mr' .format (settings_str, ds), 'w')
@@ -258,9 +278,8 @@ class Simulator(object):
         self.high_cost_mp_cnt   = np.sum( [client.high_cost_mp_cnt for client in self.client_list ] )
         self.total_cost         = self.total_access_cost + self.missp * (self.comp_miss_cnt + self.non_comp_miss_cnt + self.high_cost_mp_cnt)
         self.mean_service_cost  = self.total_cost / self.req_cnt 
-        self.settings_str       = MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, self.req_cnt, self.num_of_DSs, self.k_loc, self.missp, self.bw,   
-                                                            self.uInterval, mode=self.mode, calc_mr_by_hist=self.calc_mr_by_hist, use_perfect_hist=self.use_perfect_hist)
-        printf (self.output_file, '\n\n{} | service_cost = {}\n'  .format (self.settings_str, self.mean_service_cost))
+        settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
+        printf (self.output_file, '\n\n{} | service_cost = {}\n'  .format (settings_str, self.mean_service_cost))
         bw_in_practice =  int (round ( self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         if (self.bw != bw_in_practice):
             printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
@@ -484,8 +503,7 @@ class Simulator(object):
         """
         np.random.seed(self.rand_seed)
         num_of_req = self.trace_len
-        print ('running', MyConfig.settings_string (self.trace_file_name, self.DS_size, self.bpe, num_of_req, self.num_of_DSs, 
-                                                    self.k_loc, self.missp, self.bw, self.uInterval, self.mode, self.calc_mr_by_hist, self.use_perfect_hist))
+        print ('running', self.gen_settings_string (num_of_req=num_of_req))
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
         if (self.mode == 'measure fp fn'):
             self.run_trace_measure_fp_fn ()

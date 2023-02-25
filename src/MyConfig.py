@@ -122,18 +122,6 @@ def error (str):
     exit ()
 
 
-def settings_string (trace_file_name, DS_size, bpe, num_of_req, num_of_DSs, k_loc, missp, bw, uInterval, mode, calc_mr_by_hist, use_perfect_hist):
-    """
-    Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_file_name, update intervals etc.). 
-    """
-    if (mode=='opt'):
-        return '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.{}' .format (
-        		trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval, 'Opt') 
-    else:
-        return '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}.{}{}{}' .format (
-                trace_file_name, DS_size/1000, bpe, num_of_req/1000, num_of_DSs, k_loc, missp, bw, uInterval, mode.upper(), 'H' if calc_mr_by_hist else 'A', ('P' if use_perfect_hist else 'S') if calc_mr_by_hist else '') 
-        
-
 def calc_designed_fpr (cache_size, BF_size, num_of_hashes):
     """
     returns the designed (inherent) fpr of a BF, based on the given cache size, BF size, and number of hash functions used by the BF.

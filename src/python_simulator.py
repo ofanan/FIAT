@@ -71,8 +71,9 @@ class Simulator(object):
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates=not (self.calc_mr_by_hist),
+                        # currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
                         collect_mr_stat = not (self.use_perfect_hist),
-						# currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
+                        analyse_ind_deltas = True,
                         mr1_window_alpha=self.ewma_alpha) 
                         for i in range(self.num_of_DSs)]
             
@@ -156,8 +157,6 @@ class Simulator(object):
             self.inherent_mr1   = 0.001 # The inherent positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
             self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
             self.print_real_mr  = print_real_mr
-            self.real_answer    = [True]*self.num_of_DSs 
-        
         
         
         self.mr_of_DS           = np.zeros(self.num_of_DSs) # mr_of_DS[i] will hold the estimated miss rate of DS i 
@@ -353,8 +352,7 @@ class Simulator(object):
         remainder = self.req_cnt % self.uInterval
         for ds_id in range (self.num_of_DSs):
             if (remainder == self.update_cycle_of_DS[ds_id]):
-                check_delta_th = False #True if (self.req_cnt > (self.num_of_DSs * self.DS_size)) else False
-                self.DS_list[ds_id].send_update (check_delta_th)
+                self.DS_list[ds_id].send_update (check_delta_th=False)
                 self.tot_num_of_updates += 1
 
 
@@ -446,11 +444,11 @@ class Simulator(object):
             real_answer = (self.cur_req.key in self.DS_list[ds]) 
             if (self.indications[ds]):  # pos ind
                 self.pos_ind_cnt[ds] += 1
-                if (real_answer[ds] == False):
+                if (real_answer == False):
                     self.fp_cnt += 1 
             else:  # neg ind'
                 self.neg_ind_cnt[ds] += 1
-                if (real_answer[ds] == False):
+                if (real_answer == False):
                     self.tn_cnt[ds] += 1
 
         if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
@@ -475,57 +473,6 @@ class Simulator(object):
                 self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
 
 
-    # def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
-    #     """
-    #     run a single request, when the algorithm mode is 'fna' and assuming perfect history knowledge.
-    #     This includes:
-    #     - Calculate mr of each datastore.
-    #     - Update the stat according to the real answers (whether the item is indeed found in each cache).
-    #     - Update mr0, mr1, accordingly.
-    #     """
-    #
-    #     for ds in range (self.num_of_DSs):
-    #
-    #         # The lines below reset the estimators and counters when the DS advertises a new indicator. 
-    #         if (self.DS_list[ds].ins_since_last_ad==0): # This DS has just sent an indicator --> reset all counters and estimations
-    #             self.mr0_cur[ds] = 1
-    #             self.mr1_cur[ds] = self.inherent_mr1
-    #             self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
-    #
-    #         self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
-    #     self.access_pgm_fna_hetro ()
-    #     for ds in range (self.num_of_DSs):
-    #         real_answer = (self.cur_req.key in self.DS_list[ds]) 
-    #         if (self.indications[ds]):  # pos ind
-    #             self.pos_ind_cnt[ds] += 1
-    #             if (real_answer[ds] == False):
-    #                 self.fp_cnt += 1 
-    #         else:  # neg ind'
-    #             self.neg_ind_cnt[ds] += 1
-    #             if (real_answer[ds] == False):
-    #                 self.tn_cnt[ds] += 1
-    #
-    #     if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
-    #         for ds in range (self.num_of_DSs):            
-    #             if (self.pos_ind_cnt[ds] == self.estimation_window):
-    #                 self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
-    #                 if (self.print_real_mr):
-    #                     printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
-    #                             .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
-    #                 self.fp_cnt[ds] = 0
-    #                 self.pos_ind_cnt [ds] = 0
-    #             if (self.neg_ind_cnt[ds] == self.estimation_window):
-    #                 self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
-    #                 if (self.print_real_mr):
-    #                     printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
-    #                             .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
-    #                 self.tn_cnt[ds] = 0
-    #                 self.neg_ind_cnt [ds] = 0
-    #     else: # not using exp weighted moving avg --> use a simple flat history estimation
-    #         for ds in range (self.num_of_DSs):
-    #             self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
-    #             self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
-    
     def print_est_mr_func (self):
         """
         print the extimated mr (miss rate) probabilities.

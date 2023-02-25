@@ -22,7 +22,10 @@ class DataStore (object):
     def __init__(self, ID, size = 1000, bpe = 14, mr1_window_alpha = 0.25, mr1_estimation_window = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = 0, uInterval = 1,
                  num_of_insertions_between_estimations = np.uint8 (50),
-                 DS_send_fpr_fnr_updates=True, collect_mr_stat=True):
+                 DS_send_fpr_fnr_updates = True, 
+                 collect_mr_stat = True,
+                 analyse_ind_deltas = True  
+                 ):
         """
         Return a DataStore object with the following attributes:
             ID:                 datastore ID 
@@ -35,49 +38,53 @@ class DataStore (object):
                                currently usually unused, as the time to update is defined exclusively by the update interval.
             num_of_insertions_between_estimations : number of cache insertions between performing fresh estimations of fpr, and fnr.
                 - Each time a new indicator is published, the update contains a fresh estimation, and a counter is reset. Then, each 
-                  time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.  
+                  time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
+            DS_send_fpr_fnr_updates - when True, the DS will estimate the fpr/fnr
+            collect_mr_stat - when True, collect historical statistics about exclusion probabilities (mr_zero and mr_one).
+            analyse_ind_deltas - When True, keep the stale (lastly-advertised) indicator and periodically compare the updated and the stale indicators to estimate (by analysis) fpr, fnr, and mr.     
             verbose:           how much details are written to the output
         """
-        self.ID                     = ID
-        self.cache_size             = size
-        self.bpe                    = bpe
-        self.BF_size                = self.bpe * self.cache_size
-        self.lg_BF_size             = np.log2 (self.BF_size) 
-        self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
-        self.designed_fpr           = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
-        self.mr1_window_alpha       = mr1_window_alpha
-        self.mr0_window_alpha       = mr1_window_alpha
-        self.mr1_estimation_window  = mr1_estimation_window
-        self.mr0_estimation_window  = mr1_estimation_window
-        self.one_min_mr1_alpha      = 1 - self.mr1_window_alpha
-        self.one_min_mr0_alpha      = 1 - self.mr0_window_alpha
-        self.mr1_alpha_over_window  = float (self.mr1_window_alpha) / float (self.mr1_estimation_window)
-        self.mr0_alpha_over_window  = float (self.mr0_window_alpha) / float (self.mr0_estimation_window)
-        self.fp_events_cnt          = int(0) # Number of False Positive events that happened in the current estimatio window
-        self.tn_events_cnt          = int(0) # Number of False Positive events that happened in the current estimatio window
-        self.reg_accs_cnt           = 0
-        self.spec_accs_cnt          = 0
-        self.max_fnr                = max_fnr
-        self.max_fpr                = max_fpr
-        self.updated_indicator      = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
-        self.stale_indicator        = self.updated_indicator.gen_SimpleBloomFilter ()         
-        self.mr1_cur                = 0 # Initially assume that there're no FP events, that is: the miss prob' in case of a positive ind' is 0. 
-        self.mr0_cur                = 1 # Initially assume that there're no FN events, that is: the miss prob' in case of a negative ind' is 1.
-        self.cache                  = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
+        self.ID                      = ID
+        self.cache_size              = size
+        self.bpe                     = bpe
+        self.BF_size                 = self.bpe * self.cache_size
+        self.lg_BF_size              = np.log2 (self.BF_size) 
+        self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
+        self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
+        self.mr1_window_alpha        = mr1_window_alpha
+        self.mr0_window_alpha        = mr1_window_alpha
+        self.mr1_estimation_window   = mr1_estimation_window
+        self.mr0_estimation_window   = mr1_estimation_window
+        self.one_min_mr1_alpha       = 1 - self.mr1_window_alpha
+        self.one_min_mr0_alpha       = 1 - self.mr0_window_alpha
+        self.mr1_alpha_over_window   = float (self.mr1_window_alpha) / float (self.mr1_estimation_window)
+        self.mr0_alpha_over_window   = float (self.mr0_window_alpha) / float (self.mr0_estimation_window)
+        self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
+        self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
+        self.reg_accs_cnt            = 0
+        self.spec_accs_cnt           = 0
+        self.max_fnr                 = max_fnr
+        self.max_fpr                 = max_fpr
+        self.updated_indicator       = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
+        self.stale_indicator         = self.updated_indicator.gen_SimpleBloomFilter ()         
+        self.mr1_cur                 = 0 # Initially assume that there're no FP events, that is: the miss prob' in case of a positive ind' is 0. 
+        self.mr0_cur                 = 1 # Initially assume that there're no FN events, that is: the miss prob' in case of a negative ind' is 1.
+        self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
+        self.analyse_ind_deltas      = analyse_ind_deltas
+        self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
+        self.update_bw               = 0
+        self.num_of_updates          = 0
+        self.verbose                 = verbose 
+        self.ins_since_last_ad       = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
+        self.num_of_fpr_fnr_updates  = int (0) 
+        self.use_only_updated_ind    = True if (uInterval == 1) else False
+        self.uInterval               = uInterval if (self.use_only_updated_ind == False) else float('inf')
+        self.collect_mr_stat         = collect_mr_stat
         if (self.DS_send_fpr_fnr_updates):
             self.fnr                    = 0 # Initially, there are no false indications
             self.fpr                    = 0 # Initially, there are no false indications
-        self.delta_th               = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
-        self.update_bw              = 0
-        self.num_of_updates         = 0
-        self.verbose                = verbose 
-        self.ins_since_last_ad      = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
-        self.num_of_fpr_fnr_updates = int (0) 
-        self.use_only_updated_ind   = True if (uInterval == 1) else False
-        self.uInterval              = uInterval if (self.use_only_updated_ind == False) else float('inf')
         
-        self.collect_mr_stat        = collect_mr_stat
         self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         if (self.verbose == 3):
@@ -163,7 +170,8 @@ class DataStore (object):
     def advertise_ind (self, check_delta_th = False):
         """
         Advertise an updated indicator.
-        If the input check_delta_th, then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
+        In practice, this means merely generate a new indicator (simple Bloom filter).
+        If input check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
             
         self.num_of_updates += 1
@@ -173,10 +181,11 @@ class DataStore (object):
             if (sum (Delta) < self.delta_th):
                 print ('sum_Delta = ', sum (Delta), 'delta_th = ', self.delta_th, 'Sending delta updates is cheaper\n')
                 exit ()
-        self.stale_indicator                    = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
-        B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
-        self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
-        self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
+        if self.analyse_ind_deltas:
+            self.stale_indicator                    = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+            B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
+            self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
+            self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
 
     def update_mr0(self, est_vs_real_mr_output_file=None):

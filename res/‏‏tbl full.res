@@ -360,3 +360,68 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNAHP | service_cost = 7.5793
 // tot_access_cost = 3819180.0, hit_ratio = 0.92, non_comp_miss_cnt = 10486, comp_miss_cnt = 64717
 // estimation window = 100, // num of insertions between fpr_fnr estimations = 50
 // avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+gradle.C10K.bpe14.1Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 48.56056056056056
+// tot_access_cost = 5362.0, hit_ratio = 0.14, non_comp_miss_cnt = 52, comp_miss_cnt = 811
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 9.35334
+// tot_access_cost = 463634.0, hit_ratio = 0.91, non_comp_miss_cnt = 793, comp_miss_cnt = 8641
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 8.08658
+// tot_access_cost = 839766.0, hit_ratio = 0.92, non_comp_miss_cnt = 1618, comp_miss_cnt = 13933
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.82746
+// tot_access_cost = 1235638.0, hit_ratio = 0.93, non_comp_miss_cnt = 2277, comp_miss_cnt = 19975
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.6041825
+// tot_access_cost = 1655723.0, hit_ratio = 0.93, non_comp_miss_cnt = 2900, comp_miss_cnt = 24819
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.361516
+// tot_access_cost = 2033158.0, hit_ratio = 0.93, non_comp_miss_cnt = 3795, comp_miss_cnt = 29157
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.600Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.396315
+// tot_access_cost = 2409039.0, hit_ratio = 0.93, non_comp_miss_cnt = 5241, comp_miss_cnt = 35334
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.700Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.302461428571428
+// tot_access_cost = 2758573.0, hit_ratio = 0.93, non_comp_miss_cnt = 6761, comp_miss_cnt = 40302
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.37962375
+// tot_access_cost = 3142049.0, hit_ratio = 0.93, non_comp_miss_cnt = 7712, comp_miss_cnt = 47521
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.900Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.535795555555556
+// tot_access_cost = 3518566.0, hit_ratio = 0.93, non_comp_miss_cnt = 8886, comp_miss_cnt = 56387
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.602825602825603
+// tot_access_cost = 3870218.0, hit_ratio = 0.93, non_comp_miss_cnt = 9935, comp_miss_cnt = 64717
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000

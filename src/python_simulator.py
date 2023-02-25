@@ -443,7 +443,15 @@ class Simulator(object):
             self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
         for ds in range (self.num_of_DSs):
-            self.update_stat_from_DS (ds)
+            real_answer = (self.cur_req.key in self.DS_list[ds]) 
+            if (self.indications[ds]):  # pos ind
+                self.pos_ind_cnt[ds] += 1
+                if (real_answer[ds] == False):
+                    self.fp_cnt += 1 
+            else:  # neg ind'
+                self.neg_ind_cnt[ds] += 1
+                if (real_answer[ds] == False):
+                    self.tn_cnt[ds] += 1
 
         if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
             for ds in range (self.num_of_DSs):            
@@ -467,20 +475,56 @@ class Simulator(object):
                 self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
 
 
-    def update_stat_from_DS (self, ds):
-        """
-        Update the counters of fp, tn, total_pos_ind and total_hit_cnt for the datastore whose ID is ds 
-        """
-        # self.real_answer[ds] will hold the resolution, namely, whether the requested datum is indeed found in DS ds
-        self.real_answer[ds] = (self.cur_req.key in self.DS_list[ds]) 
-        if (self.indications[ds]):  # pos ind
-            self.pos_ind_cnt[ds] += 1
-            if (self.real_answer[ds] == False):
-                self.fp_cnt += 1 
-        else:  # neg ind'
-            self.neg_ind_cnt[ds] += 1
-            if (self.real_answer[ds] == False):
-                self.tn_cnt[ds] += 1
+    # def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
+    #     """
+    #     run a single request, when the algorithm mode is 'fna' and assuming perfect history knowledge.
+    #     This includes:
+    #     - Calculate mr of each datastore.
+    #     - Update the stat according to the real answers (whether the item is indeed found in each cache).
+    #     - Update mr0, mr1, accordingly.
+    #     """
+    #
+    #     for ds in range (self.num_of_DSs):
+    #
+    #         # The lines below reset the estimators and counters when the DS advertises a new indicator. 
+    #         if (self.DS_list[ds].ins_since_last_ad==0): # This DS has just sent an indicator --> reset all counters and estimations
+    #             self.mr0_cur[ds] = 1
+    #             self.mr1_cur[ds] = self.inherent_mr1
+    #             self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
+    #
+    #         self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+    #     self.access_pgm_fna_hetro ()
+    #     for ds in range (self.num_of_DSs):
+    #         real_answer = (self.cur_req.key in self.DS_list[ds]) 
+    #         if (self.indications[ds]):  # pos ind
+    #             self.pos_ind_cnt[ds] += 1
+    #             if (real_answer[ds] == False):
+    #                 self.fp_cnt += 1 
+    #         else:  # neg ind'
+    #             self.neg_ind_cnt[ds] += 1
+    #             if (real_answer[ds] == False):
+    #                 self.tn_cnt[ds] += 1
+    #
+    #     if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
+    #         for ds in range (self.num_of_DSs):            
+    #             if (self.pos_ind_cnt[ds] == self.estimation_window):
+    #                 self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
+    #                 if (self.print_real_mr):
+    #                     printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
+    #                             .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
+    #                 self.fp_cnt[ds] = 0
+    #                 self.pos_ind_cnt [ds] = 0
+    #             if (self.neg_ind_cnt[ds] == self.estimation_window):
+    #                 self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
+    #                 if (self.print_real_mr):
+    #                     printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
+    #                             .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
+    #                 self.tn_cnt[ds] = 0
+    #                 self.neg_ind_cnt [ds] = 0
+    #     else: # not using exp weighted moving avg --> use a simple flat history estimation
+    #         for ds in range (self.num_of_DSs):
+    #             self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
+    #             self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
     
     def print_est_mr_func (self):
         """

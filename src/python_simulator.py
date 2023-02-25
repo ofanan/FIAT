@@ -91,12 +91,13 @@ class Simulator(object):
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose = 1, 
                  bw = 0, # Determine the update interval by a given bandwidth (currently usused)
                  uInterval = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
+                 print_real_mr=False,
                  use_given_client_per_item = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  print_est_vs_real_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
                  calc_mr_by_hist = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
-                 print_real_mr=False
+                 use_EWMA = False
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -114,7 +115,7 @@ class Simulator(object):
             bw:                 BW budged. Used to calculate the update interval when the uInterval isn't explicitly define in the input.
             uInterval:          update Interval, namely, number of insertions to each cache before this cache advertises a fresh indicator.
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
-            
+            use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.ewma_alpha      = 0.85  # exp' window's moving average's alpha parameter 
         self.output_file     = output_file
@@ -126,7 +127,7 @@ class Simulator(object):
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
         self.calc_mr_by_hist    = calc_mr_by_hist
         self.use_perfect_hist   = use_perfect_hist
-        self.use_EWMA           = False # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
+        self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
         self.mode               = mode
         self.num_of_clients     = client_DS_cost.shape[0]
         self.num_of_DSs         = client_DS_cost.shape[1]
@@ -418,7 +419,6 @@ class Simulator(object):
                 self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
             if (self.calc_mr_by_hist):
                 self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
-                # $$$self.handle_single_req_pgm_fna_mr_by_ewma ()
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
             self.mid_report ()
@@ -445,25 +445,26 @@ class Simulator(object):
         for ds in range (self.num_of_DSs):
             self.update_stat_from_DS (ds)
 
-        # if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
-        #     if (self.pos_ind_cnt[ds] == self.estimation_window):
-        #         self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
-        #         if (self.print_real_mr):
-        #             printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
-        #                     .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
-        #         self.fp_cnt[ds] = 0
-        #         self.pos_ind_cnt [ds] = 0
-        #     if (self.neg_ind_cnt[ds] == self.estimation_window):
-        #         self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
-        #         if (self.print_real_mr):
-        #             printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
-        #                     .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
-        #         self.tn_cnt[ds] = 0
-        #         self.neg_ind_cnt [ds] = 0
-        # else:
-        for ds in range (self.num_of_DSs):
-            self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
-            self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
+        if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
+            for ds in range (self.num_of_DSs):            
+                if (self.pos_ind_cnt[ds] == self.estimation_window):
+                    self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
+                    if (self.print_real_mr):
+                        printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
+                                .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
+                    self.fp_cnt[ds] = 0
+                    self.pos_ind_cnt [ds] = 0
+                if (self.neg_ind_cnt[ds] == self.estimation_window):
+                    self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
+                    if (self.print_real_mr):
+                        printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
+                                .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
+                    self.tn_cnt[ds] = 0
+                    self.neg_ind_cnt [ds] = 0
+        else: # not using exp weighted moving avg --> use a simple flat history estimation
+            for ds in range (self.num_of_DSs):
+                self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
+                self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
 
 
     def update_stat_from_DS (self, ds):

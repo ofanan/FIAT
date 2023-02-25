@@ -139,17 +139,17 @@ class Client(object):
         return mr
 
 
-    def get_mr_given_mr0_mr1 (self, indications, mr0, mr1, verbose):
+    def estimate_mr_given_mr1_hist (self, indications, mr1_hist):
         """
         Calculate and return the expected miss prob' of each DS, based on its indication.
-        Inputs: 
+        Input: 
         indications - a vector, where indications[i] is true iff indicator i gave a positive indication.
-        mr0 - a vector. mr0[i] is the estimation (based on historical data) of the miss probab' in cache i, given a neg' ind' by indicator i
-        mr1 - a vector. mr1[i] is the estimation (based on historical data) of the miss probab' in cache i, given a pos' ind' by indicator i        
+																																											   
+        mr1_hist - a vector. mr1_hist[i] is the estimation (based on historic data) of the miss probab' in cache i, given a pos' ind' by indicator i        
         Details: The func' does the following:  
         - Update the estimations of Pone ("q") and the hit ratio.
         - For each DS:
-        - - If indication[i] == True, then assign mr[i] = mr1[i], according to the given history vector. 
+        - - If indication[i] == True, then assign mr[i] = mr1_hist[i], according to the given history vector. 
         - - Else, assign mr[i] = mr0[i], as estimated by our analysis.
         - - Handle corner cases (e.g., probabilities calculated are below 0 or above 1)
         - Returns the vector mr, where mr[i] is the estimated miss ratio of DS i, given its indication
@@ -158,7 +158,7 @@ class Client(object):
         
         for i in range (self.num_of_DSs):
             if (indications[i]): #positive ind'
-                self.mr[i] = mr1[i]     #
+                self.mr[i] = mr1_hist[i]     #
             else:
                 self.mr[i] = 1 if (self.fnr[i] == 0 or self.pr_of_pos_ind_estimation[i] == 1 or self.hit_ratio[i]==1) \
                 else (1 - self.fpr[i]) * (1 - self.hit_ratio[i]) / (1 - self.pr_of_pos_ind_estimation[i]) # if DS i gave neg' ind', then the estimated prob' that a datum is not in DS i, given a neg' indication for x

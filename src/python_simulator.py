@@ -142,7 +142,6 @@ class Simulator(object):
         self.req_df             = req_df
         self.trace_len          = self.req_df.shape[0]
         self.use_redundan_coef  = use_redundan_coef
-        # self.req_cnt            = -1 # The number of the current request. As it's incremented at the  
         self.pos_ind_cnt        = np.zeros (self.num_of_DSs , dtype='uint') #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
         self.leaf_of_DS         = np.array(np.floor(np.log2(self.client_DS_cost))).astype('uint8') # lg_client_DS_cost(i,j) will hold the lg2 of access cost for client i accessing DS j
         self.pos_ind_list       = [] #np.array (0, dtype = 'uint8') #list of the DSs with pos' ind' (positive indication) for the current request
@@ -401,7 +400,6 @@ class Simulator(object):
             if (self.calc_mr_by_hist):
                 self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
                 # $$$self.handle_single_req_pgm_fna_mr_by_ewma ()
-                self.mr_of_DS   = self.client_list [self.client_id].get_mr_given_mr0_mr1 (indications=self.indications, mr0=np.array([DS.mr0_cur for DS in self.DS_list]), mr1=np.array([DS.mr1_cur for DS in self.DS_list]), verbose=self.verbose)
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
             self.mid_report ()
@@ -422,26 +420,29 @@ class Simulator(object):
                 self.mr0_cur[ds] = 1
                 self.mr1_cur[ds] = self.inherent_mr1
                 self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
+            
             self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
-            self.access_pgm_fna_hetro ()
+        self.access_pgm_fna_hetro ()
+        for ds in range (self.num_of_DSs):
             self.update_stat_from_DS (ds)
 
-        if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
-            if (self.pos_ind_cnt[ds] == self.estimation_window):
-                self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
-                if (self.print_real_mr):
-                    printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
-                            .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
-                self.fp_cnt[ds] = 0
-                self.pos_ind_cnt [ds] = 0
-            if (self.neg_ind_cnt[ds] == self.estimation_window):
-                self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
-                if (self.print_real_mr):
-                    printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
-                            .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
-                self.tn_cnt[ds] = 0
-                self.neg_ind_cnt [ds] = 0
-        else:
+        # if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
+        #     if (self.pos_ind_cnt[ds] == self.estimation_window):
+        #         self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
+        #         if (self.print_real_mr):
+        #             printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
+        #                     .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
+        #         self.fp_cnt[ds] = 0
+        #         self.pos_ind_cnt [ds] = 0
+        #     if (self.neg_ind_cnt[ds] == self.estimation_window):
+        #         self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
+        #         if (self.print_real_mr):
+        #             printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
+        #                     .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
+        #         self.tn_cnt[ds] = 0
+        #         self.neg_ind_cnt [ds] = 0
+        # else:
+        for ds in range (self.num_of_DSs):
             self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
             self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
 
@@ -531,6 +532,8 @@ class Simulator(object):
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         self.insert_key_to_DSs ()
+        if (self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
+            MyConfig.error ('error: num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
         #$$$ if (self.calc_mr_by_hist):
         #    self.FN_miss_cnt += 1
 

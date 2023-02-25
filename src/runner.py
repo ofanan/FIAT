@@ -52,7 +52,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     output_file         = open ("../res/tbl.res", "a")
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [50, 100, 500]:
+    for missp in [50]: #, 100, 500
         for mode in ['fna']: 
             tic()
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 

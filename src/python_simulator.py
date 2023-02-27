@@ -128,6 +128,8 @@ class Simulator(object):
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
         self.calc_mr_by_hist    = calc_mr_by_hist
         self.use_perfect_hist   = use_perfect_hist
+        if (self.calc_mr_by_hist and not(self.use_perfect_hist)):
+            self.in_exploration = True # if using practical hist, we must begin with some exploration of the mr's     
         self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
         self.mode               = mode
         self.num_of_clients     = client_DS_cost.shape[0]
@@ -427,8 +429,26 @@ class Simulator(object):
         run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
         The history is collected by the DSs themselves.
         """
+        # Stop exploration after receiving the first update (the first uInterval)
+        if (self.req_cnt == self.uInterval): 
+            self.in_exploration = False
+            
+        # handle the case where we're within exploration, and all indications are False 
+        if (self.in_exploration and np.all(self.indications == False)): 
+            # rand ...
+            explored_ds = random.randint (0, self.num_of_DSs-1) # access this one directly, w/o the long alg...
+            hit = self.DS_list[explored_ds].access (self.cur_req.key, is_speculative_accs=True, est_vs_real_mr_output_file=self.est_vs_real_mr_output_file[DS_id] if self.print_est_vs_real_mr else None)
+            if (hit):
+                self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
+                self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
+                self.client_list[self.client_id].hit_cnt += 1
+            else: # Miss
+                self.handle_miss ()
+            return
+
+        # handle the non-exploration case: obtain mr estimations, and access DSs accordingly 
         for ds in range (self.num_of_DSs):            
-            self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+            self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur[ds] if self.indications[ds] else self.DS_list[ds].mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
@@ -555,8 +575,6 @@ class Simulator(object):
         self.insert_key_to_DSs ()
         if (self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
             MyConfig.error ('error: num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
-        #$$$ if (self.calc_mr_by_hist):
-        #    self.FN_miss_cnt += 1
 
     def insert_key_to_closest_DS(self, req):
         """

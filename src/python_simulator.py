@@ -77,7 +77,8 @@ class Simulator(object):
                         collect_mr_stat     = not (self.use_perfect_hist),
                         analyse_ind_deltas  = True,
                         mr1_window_alpha    = self.ewma_alpha,
-                        inherent_mr1        = self.inherent_mr1) 
+                        inherent_mr1        = self.inherent_mr1,
+                        use_EWMA            = self.use_EWMA) 
                         for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -438,9 +439,6 @@ class Simulator(object):
         if (self.req_cnt == self.uInterval): 
             self.in_exploration = False
         
-        if (not(self.use_EWMA)):
-            MyConfig.error ('Sorry. flat is not supported yet for practical hist.')
-            
         # handle the case where we're within exploration, and all indications are False 
         if (self.in_exploration and np.all(self.indications == False)): 
             # rand ...

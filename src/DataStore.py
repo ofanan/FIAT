@@ -25,7 +25,8 @@ class DataStore (object):
                  DS_send_fpr_fnr_updates    = True, 
                  collect_mr_stat            = True,
                  analyse_ind_deltas         = True,
-                 inherent_mr1               = 0.001  
+                 inherent_mr1               = 0.001,
+                 use_EWMA                   = False  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -56,6 +57,7 @@ class DataStore (object):
         self.mr0_window_alpha        = mr1_window_alpha
         self.mr1_estimation_window   = mr1_estimation_window
         self.mr0_estimation_window   = mr1_estimation_window
+        self.use_EWMA                = use_EWMA
         self.one_min_mr1_alpha       = 1 - self.mr1_window_alpha
         self.one_min_mr0_alpha       = 1 - self.mr0_window_alpha
         self.mr1_alpha_over_window   = float (self.mr1_window_alpha) / float (self.mr1_estimation_window)
@@ -120,17 +122,24 @@ class DataStore (object):
             self.spec_accs_cnt += 1
             if (not(hit)):
                 self.tn_events_cnt += 1
-            if (self.spec_accs_cnt == self.mr0_estimation_window):
-                self.update_mr0(est_vs_real_mr_output_file)
-                self.spec_accs_cnt = 0
+            if (self.use_EWMA):
+                if (self.spec_accs_cnt == self.mr0_estimation_window):
+                    self.update_mr0(est_vs_real_mr_output_file)
+                    self.spec_accs_cnt = 0
+            else: # use "flat" history
+                self.mr0_cur = float(self.tn_events_cnt) / float (self.spec_accs_cnt)
+
                     
         else: # regular accs
             self.reg_accs_cnt  += 1
             if (not(hit)):
                 self.fp_events_cnt += 1
-            if (self.reg_accs_cnt == self.mr1_estimation_window):
-                self.update_mr1(est_vs_real_mr_output_file)
-                self.reg_accs_cnt = 0
+            if (self.use_EWMA):
+                if (self.reg_accs_cnt == self.mr1_estimation_window):
+                    self.update_mr1(est_vs_real_mr_output_file)
+                    self.reg_accs_cnt = 0
+            else: # use "flat" history
+                self.mr1_cur = float(self.fp_events_cnt) / float (self.reg_accs_cnt) 
                 
         return hit 
 

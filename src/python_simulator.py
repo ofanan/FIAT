@@ -290,7 +290,7 @@ class Simulator(object):
         bw_in_practice =  int (round ( self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         if (self.bw != bw_in_practice):
             printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
-        printf (self.output_file, '// tot_access_cost = {:.0}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
+        printf (self.output_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         printf (self.output_file, '// estimation window = {}, ' .format (self.estimation_window))
@@ -438,8 +438,8 @@ class Simulator(object):
         if (self.req_cnt == self.uInterval): 
             self.in_exploration = False
         
-        if (self.use_EWMA):
-            MyConfig.error ('Sorry. EWMA is not supported yet for practical hist.')
+        if (not(self.use_EWMA)):
+            MyConfig.error ('Sorry. flat is not supported yet for practical hist.')
             
         # handle the case where we're within exploration, and all indications are False 
         if (self.in_exploration and np.all(self.indications == False)): 
@@ -493,7 +493,9 @@ class Simulator(object):
         if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
             for ds in range (self.num_of_DSs):            
                 if (self.pos_ind_cnt[ds] == self.estimation_window):
+                    
                     self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
+                    
                     if (self.print_real_mr):
                         printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
                                 .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))

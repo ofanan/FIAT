@@ -432,6 +432,9 @@ class Simulator(object):
         # Stop exploration after receiving the first update (the first uInterval)
         if (self.req_cnt == self.uInterval): 
             self.in_exploration = False
+        
+        if (self.use_EWMA):
+            MyConfig.error ('Sorry. EWMA is not supported yet for practical hist.')
             
         # handle the case where we're within exploration, and all indications are False 
         if (self.in_exploration and np.all(self.indications == False)): 

@@ -98,3 +98,9 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.HPewma | service_cost = 7.602
 // tot_access_cost = 3870218.0, hit_ratio = 0.93, non_comp_miss_cnt = 9935, comp_miss_cnt = 64717
 // estimation window = 100, // num of insertions between fpr_fnr estimations = 50
 // avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
+
+
+gradle.C10K.bpe14.0Kreq.3DSs.Kloc1.M50.B0.U1000.HEewma | service_cost = 50.505050505050505
+// tot_access_cost = 0, hit_ratio = 0.0, non_comp_miss_cnt = 52, comp_miss_cnt = 48
+// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000

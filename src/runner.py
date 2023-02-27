@@ -247,7 +247,6 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
 # trace_file_name     = 'gradle/gradle.build-cache_full_1000K_3DSs.csv'
 # trace_file_name     = 'scarab/scarab.recs.trace.20160808T073231Z.15M_req_1000K_3DSs.csv'
 # trace_file_name     = 'umass/storage/F2.3M_req_1000K_3DSs.csv'
-run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=1000000)
 # print (MyConfig.gen_requests ('wiki/wiki2.1191403252.gz.txt', max_num_of_req=5))
 
 # run_FN_by_uInterval_sim (trace_file_name)
@@ -269,3 +268,4 @@ run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_
 # num_of_req = 1000000
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
+run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=1000000)

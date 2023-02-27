@@ -425,12 +425,11 @@ class Simulator(object):
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
         run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
-        This includes:
-        - Calculate mr of each datastore based on the current knowledge.
-        - Access the DSs accordingly.
+        The history is collected by the DSs themselves.
         """
-        print ('Sorry, this option is not yet supported')
-        exit ()
+        for ds in range (self.num_of_DSs):            
+            self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+        self.access_pgm_fna_hetro ()
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
@@ -830,6 +829,3 @@ class Simulator(object):
             self.client_list[self.client_id].hit_cnt += 1
         else: # Miss
             self.handle_miss ()
-
-
-

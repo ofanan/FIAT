@@ -152,7 +152,7 @@ class DataStore (object):
             self.ins_since_last_fpr_fnr_estimation += 1
             if (self.DS_send_fpr_fnr_updates):
                 if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
-                    self.estimate_fnr_fpr (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
+                    self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                     self.num_of_fpr_fnr_updates += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
             if (self.should_advertise_ind()):
@@ -224,9 +224,10 @@ class DataStore (object):
         return False
             
 
-    def estimate_fnr_fpr (self, req_cnt = -1, key = -1):
+    def estimate_fnr_fpr_by_analysis (self, req_cnt = -1, key = -1):
         """
-        Estimates the fnr and fpr, based on Theorems 3 and 4 in the paper: "False Rate Analysis of Bloom Filter Replicas in Distributed Systems".
+        Estimates the fnr and fpr, based on the diffs between the updated and the stale indicators. 
+         (see the paper: "False Rate Analysis of Bloom Filter Replicas in Distributed Systems").
         The new values are written to self.fnr_fpr, where self.fnr_fpr[0] is the fnr, and self.fnr_fpr[1] is the fpr
         The optional inputs req_cnt and key are used only for debug 
 

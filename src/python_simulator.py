@@ -416,16 +416,28 @@ class Simulator(object):
             for i in range (self.num_of_DSs):
                 self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
             if (self.calc_mr_by_hist):
-                self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
+                self.handle_single_req_pgm_fna_mr_by_perfect_hist  () if self.use_perfect_hist else \
+                self.handle_single_req_pgm_fna_mr_by_practical_hist ()
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
             self.mid_report ()
+
+    def handle_single_req_pgm_fna_mr_by_practical_hist (self):
+        """
+        run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
+        This includes:
+        - Calculate mr of each datastore based on the current knowledge.
+        - Access the DSs accordingly.
+        """
+        print ('Sorry, this option is not yet supported')
+        exit ()
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
         run a single request, when the algorithm mode is 'fna' and assuming perfect history knowledge.
         This includes:
         - Calculate mr of each datastore.
+        - Access the DSs accordingly.
         - Update the stat according to the real answers (whether the item is indeed found in each cache).
         - Update mr0, mr1, accordingly.
         """
@@ -475,7 +487,7 @@ class Simulator(object):
 
     def print_est_mr_func (self):
         """
-        print the extimated mr (miss rate) probabilities.
+        print the estimated mr (miss rate) probabilities.
         """
         
         # Estimate mr0, by letting the clients calculate mr, where they think that all the indications were negative  
@@ -485,7 +497,7 @@ class Simulator(object):
     
     def  print_real_mr_func (self):
         """
-        print the extimated mr (miss rate) probabilities.
+        print the estimated mr (miss rate) probabilities.
         """
         return
 

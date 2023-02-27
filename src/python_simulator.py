@@ -53,9 +53,11 @@ class Simulator(object):
         if (self.mode=='opt'):
             return '{}.{}' .format (settings_str, 'Opt')
 
+        settings_str = '{}.{}' .format (settings_str, self.mode.upper()) # 'A' stands for 'by Analisys'
+
         # Now we know that the mode isn't 'Opt'
         if not(self.calc_mr_by_hist):
-            return '{}.{}A' .format (settings_str, self.mode.upper()) # 'A' stands for 'by Analisys'
+            return '{}A' .format (settings_str) # 'A' stands for 'by Analisys'
 
         # Now we know that the mode isn't 'Opt', and that the mr-estimation is history-based
         return '{}.H{}{}' .format (
@@ -72,9 +74,10 @@ class Simulator(object):
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates=not (self.calc_mr_by_hist),
                         # currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
-                        collect_mr_stat = not (self.use_perfect_hist),
-                        analyse_ind_deltas = True,
-                        mr1_window_alpha=self.ewma_alpha) 
+                        collect_mr_stat     = not (self.use_perfect_hist),
+                        analyse_ind_deltas  = True,
+                        mr1_window_alpha    = self.ewma_alpha,
+                        inherent_mr1        = self.inherent_mr1) 
                         for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -201,6 +204,7 @@ class Simulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
+        self.inherent_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         self.init_DS_list() #DS_list is the list of DSs
         if (self.calc_mr_by_hist):
             self.pos_ind_cnt    = np.zeros (self.num_of_DSs)
@@ -208,7 +212,6 @@ class Simulator(object):
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.inherent_mr1   = self.DS_list[0].designed_fpr # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
             self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
             self.print_real_mr  = print_real_mr
         

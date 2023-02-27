@@ -22,9 +22,10 @@ class DataStore (object):
     def __init__(self, ID, size = 1000, bpe = 14, mr1_window_alpha = 0.25, mr1_estimation_window = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
                  num_of_insertions_between_estimations = np.uint8 (50),
-                 DS_send_fpr_fnr_updates = True, 
-                 collect_mr_stat = True,
-                 analyse_ind_deltas = True  
+                 DS_send_fpr_fnr_updates    = True, 
+                 collect_mr_stat            = True,
+                 analyse_ind_deltas         = True,
+                 inherent_mr1               = 0.001  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -66,7 +67,8 @@ class DataStore (object):
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
         self.updated_indicator       = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
-        self.stale_indicator         = self.updated_indicator.gen_SimpleBloomFilter ()         
+        self.stale_indicator         = self.updated_indicator.gen_SimpleBloomFilter ()
+        self.inherent_mr1            = inherent_mr1
         self.mr1_cur                 = 0 # Initially assume that there're no FP events, that is: the miss prob' in case of a positive ind' is 0. 
         self.mr0_cur                 = 1 # Initially assume that there're no FN events, that is: the miss prob' in case of a negative ind' is 1.
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/

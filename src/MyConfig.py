@@ -9,11 +9,15 @@ This file contains several accessory functions, used throughout the project. In 
 """
 import os
 import numpy as np
-import python_simulator as sim
 import pandas as pd
 
 # levels of verbose
-CNT_FN_BY_STALENESS = 5
+VERBOSE_RES                 = 1 # write to output files
+VERBOSE_LOG                 = 1 # write to log files
+VERBOSE_DETAILED_LOG        = 2 
+VERBOSE_DEBUG               = 4
+VERBOSE_CNT_FN_BY_STALENESS = 5 
+
 
 INF_INT = 999999999
 

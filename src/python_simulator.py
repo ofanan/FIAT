@@ -89,7 +89,7 @@ class Simulator(object):
     
     def __init__(self, output_file, trace_file_name, 
                  mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
-                 bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose = 1, 
+                 bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
                  bw = 0, # Determine the update interval by a given bandwidth (currently usused)
                  uInterval = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
                  print_real_mr=False,
@@ -149,18 +149,7 @@ class Simulator(object):
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
         self.verbose            = verbose # Used for debug / analysis: a higher level verbose prints more msgs to the Screen / output file.       
-        
-        if (self.calc_mr_by_hist):
-            self.pos_ind_cnt    = np.zeros (self.num_of_DSs)
-            self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
-            self.fp_cnt         = np.zeros  (self.num_of_DSs)
-            self.tn_cnt         = np.zeros  (self.num_of_DSs)
-            self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.inherent_mr1   = 0.001 # The inherent positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
-            self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
-            self.print_real_mr  = print_real_mr
-        
-        
+                
         self.mr_of_DS           = np.zeros(self.num_of_DSs) # mr_of_DS[i] will hold the estimated miss rate of DS i 
         self.req_df             = req_df
         self.trace_len          = self.req_df.shape[0]
@@ -204,15 +193,25 @@ class Simulator(object):
 
         self.avg_DS_accessed_per_req = float(0)
         self.verbose_file = None
-        if (self.verbose > 1):
+        if (self.verbose != []):
             verbose_file_name = '{}{}.txt' .format (self.mode, 'h' if self.calc_mr_by_hist else 'a')
             self.verbose_file = open ('../res/{}' .format (verbose_file_name), "w", buffering=1)
-        if (self.verbose == MyConfig.CNT_FN_BY_STALENESS):
+        if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
             lg_uInterval = np.log2 (self.uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
         self.init_DS_list() #DS_list is the list of DSs
+        if (self.calc_mr_by_hist):
+            self.pos_ind_cnt    = np.zeros (self.num_of_DSs)
+            self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
+            self.fp_cnt         = np.zeros  (self.num_of_DSs)
+            self.tn_cnt         = np.zeros  (self.num_of_DSs)
+            self.mr0_cur        = np.ones  (self.num_of_DSs)
+            self.inherent_mr1   = self.DS_list[0].designed_fpr # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+            self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
+            self.print_real_mr  = print_real_mr
+        
         self.init_client_list ()
         self.print_est_vs_real_mr = print_est_vs_real_mr
         if (self.print_est_vs_real_mr):
@@ -267,7 +266,10 @@ class Simulator(object):
         Accumulates and organizes the stat collected during the sim' run.
         This func' is usually called once at the end of each run of the python_simulator.
         """
-        if (self.verbose == MyConfig.CNT_FN_BY_STALENESS):
+        if not (MyConfig.VERBOSE_RES in self.verbose):
+            return
+
+        if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
             printf (self.output_file, 'FN cnt by staleness      = {}\n' .format (self.FN_by_staleness))
             printf (self.output_file, 'PI hits cnt by staleness = {}\n' .format (self.PI_hits_by_staleness))
             for bin in range (len(self.FN_by_staleness)):
@@ -285,7 +287,7 @@ class Simulator(object):
         bw_in_practice =  int (round ( self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         if (self.bw != bw_in_practice):
             printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
-        printf (self.output_file, '// tot_access_cost = {}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
+        printf (self.output_file, '// tot_access_cost = {:.0}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         printf (self.output_file, '// estimation window = {}, ' .format (self.estimation_window))
@@ -337,7 +339,7 @@ class Simulator(object):
                 # We assume here that the cost of every DS < missp
                 # update variables
                 self.client_list[self.client_id].total_access_cost += self.client_DS_cost[self.client_id][access_DS_id]
-                if (self.verbose == 3):
+                if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose):
                     self.client_list[self.client_id].add_DS_accessed(self.req_cnt, [access_DS_id])
                 # perform access. we know it will be successful
                 self.DS_list[access_DS_id].access(self.cur_req.key)
@@ -371,7 +373,7 @@ class Simulator(object):
             # self.pos_ind_list will hold the list of DSs with positive indications
             self.pos_ind_list = np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.updated_indicator) ]) if self.use_only_updated_ind else \
                                 np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.stale_indicator) ])
-            if (self.verbose == MyConfig.CNT_FN_BY_STALENESS):
+            if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
                 self.cnt_fn_by_staleness ()
             if (len(self.pos_ind_list) == 0): # No positive indications --> FNO alg' has a miss
                 self.handle_miss ()
@@ -449,9 +451,9 @@ class Simulator(object):
                 self.handle_miss ()
             return
 
-        # handle the non-exploration case: obtain mr estimations, and access DSs accordingly 
+        # handle the non-exploration case: obtain mr estimations, and access DSs accordingly
         for ds in range (self.num_of_DSs):            
-            self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur[ds] if self.indications[ds] else self.DS_list[ds].mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+            self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
@@ -548,7 +550,7 @@ class Simulator(object):
             self.gather_statistics()
 #             avg_num_of_updates_per_DS = sum (DS.num_of_updates for DS in self.DS_list) / self.num_of_DSs
 #             avg_update_interval = -1 if (avg_num_of_updates_per_DS == 0) else self.req_cnt / avg_num_of_updates_per_DS
-            if (self.verbose == 1):
+            if (MyConfig.VERBOSE_RES in self.verbose):
                 printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         else: 
             printf (self.output_file, 'Wrong mode: {:.0f}\n' .format (self.mode))
@@ -714,7 +716,7 @@ class Simulator(object):
         # Now we know that the alg' decided to access at least one DS
         # Add the costs and IDs of the selected DSs to the statistics
         self.client_list[self.client_id].total_access_cost += final_sol.ac
-        if (self.verbose == 3):
+        if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose):
             self.client_list[self.client_id].add_DS_accessed(self.req_cnt, final_sol.DSs_IDs)
 
         if (self.calc_mr_by_hist):

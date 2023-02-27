@@ -59,11 +59,10 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                mode, requests, DS_cost, 
                                missp        = missp,
                                DS_size      = 10000, 
-                               verbose      = 0,
                                uInterval    = uInterval, 
                                print_est_vs_real_mr = False,
                                calc_mr_by_hist      = True,
-                               use_perfect_hist     = False,
+                               use_perfect_hist     = True,
                                use_EWMA             = False
                                )
             sm.run_simulator(interval_between_mid_reports=100000)
@@ -215,7 +214,7 @@ def run_FN_by_staleness_sim ():
         for bpe in [2, 4, 8, 16]:
             tic()
             sm = sim.Simulator(output_file, trace_file_name, 'fno', requests, DS_cost, bpe = bpe,    
-                               verbose = sim.CNT_FN_BY_STALENESS, uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
+                               verbose = [MyConfig.VERBOSE_CNT_FN_BY_STALENESS, MyConfig.VERBOSE_RES], uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
             sm.run_simulator()
             toc()
 
@@ -234,7 +233,7 @@ def run_FN_by_uInterval_sim (trace_file_name):
         for uInterval in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
             tic()
             sm = sim.Simulator(output_file, trace_file_name, 'measure fp fn', requests, DS_cost,    
-                               verbose = 0, bpe = bpe, uInterval = uInterval)
+                               bpe = bpe, uInterval = uInterval)
             sm.run_simulator()
             toc()
 
@@ -268,4 +267,4 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
 # num_of_req = 1000000
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
-run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=100) #0000
+run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=1000000) #

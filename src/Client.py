@@ -2,10 +2,10 @@
 The client-side algorithm (CS_{FNA}), described in the paper:
 "On the Power of False Negative Awareness in Indicator-based Caching Systems", Cohen, Einziger, Scalosub, ICDCS'21.
 """
-
 import numpy as np
 import math
 
+import MyConfig
 from printf import printf
 
 class Request(object):
@@ -19,7 +19,7 @@ class Request(object):
         
 class Client(object):
     
-    def __init__(self, ID, num_of_DSs, estimation_window  = 1000, window_alpha = 0.25, verbose = 0, 
+    def __init__(self, ID, num_of_DSs, estimation_window  = 1000, window_alpha = 0.25, verbose = [], 
                 use_redundan_coef = False, k_loc = 1, missp = 100, verbose_file = None):
         """
         Return a Client object with the following attributes:
@@ -62,13 +62,13 @@ class Client(object):
         self.verbose            = verbose
         self.verbose_file       = verbose_file
         
-        if (self.verbose == 1):
+        if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose):
             self.DS_accessed 		= {} # dictionary containing DSs accessed for every req_id of client where access takes place. Currently used only in higher-verbose modes.
             self.num_DS_accessed 	= [] # Total Num of DSs accessed by this client perrequest. Currently unused
             
     def add_DS_accessed(self, req_id, DS_index_list):
         """
-        Logs the identity and the number of DSs accessed upon each request. Called only when verbose > 0 
+        Logs the identity and the number of DSs accessed upon each request. Called only when if verbose level justifies it. 
         """
         self.DS_accessed[req_id] = DS_index_list
         self.num_DS_accessed.append(len(DS_index_list))
@@ -87,7 +87,7 @@ class Client(object):
         if (self.ind_cnt < self.estimation_window ): # Init period - use merely the data collected so far
             self.pr_of_pos_ind_estimation   = self.pos_ind_cnt/self.estimation_window
         elif (self.ind_cnt % self.estimation_window == 0): # run period - update the estimation once in a self.estimation_window time
-            if (self.verbose == 3 and self.ID == 0):
+            if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose and self.ID == 0):
                 print ('q = ', self.pr_of_pos_ind_estimation, ', new q = ', self.pos_ind_cnt/self.estimation_window)
             self.pr_of_pos_ind_estimation   = self.alpha_over_window * self.pos_ind_cnt + self.one_min_alpha * self.pr_of_pos_ind_estimation
             self.pos_ind_cnt    = np.zeros (self.num_of_DSs , dtype='uint16') #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
@@ -96,8 +96,8 @@ class Client(object):
 
     def estimate_mr1_mr0_by_analysis (self, indications, # vector, where indications[i] is true  iff indicator i gave a positive indication. 
                                       fno_mode  = False, # When True, discard false-negatives, by assuming that mr0 is always 1 (namely, a negative ind' is always true) 
-                                      verbose=0, 
-                                      quiet = False      # # When True, only estimate the mr and other variables (e.g., prob' of pos' ind'), but don't write them. This allows calling this func' for debugging / collecting stat only.
+                                      verbose   = [], 
+                                      quiet     = False      # # When True, only estimate the mr and other variables (e.g., prob' of pos' ind'), but don't write them. This allows calling this func' for debugging / collecting stat only.
                                       ):
         """
         Calculate and return the expected miss prob' ("exclusion probability") of each DS

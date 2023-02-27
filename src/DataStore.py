@@ -20,7 +20,7 @@ class DataStore (object):
     should_advertise_ind = lambda self: (self.ins_since_last_ad == self.uInterval)
     
     def __init__(self, ID, size = 1000, bpe = 14, mr1_window_alpha = 0.25, mr1_estimation_window = 100, 
-                 max_fnr = 0.03, max_fpr = 0.03, verbose = 0, uInterval = 1,
+                 max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
                  num_of_insertions_between_estimations = np.uint8 (50),
                  DS_send_fpr_fnr_updates = True, 
                  collect_mr_stat = True,
@@ -87,7 +87,7 @@ class DataStore (object):
         
         self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
         self.ins_since_last_fpr_fnr_estimation      = int (0)
-        if (self.verbose == 3):
+        if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ("../res/fna.txt", "w")
 
     def __contains__(self, key):

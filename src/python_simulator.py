@@ -76,7 +76,7 @@ class Simulator(object):
                         # currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
                         collect_mr_stat     = not (self.use_perfect_hist),
                         analyse_ind_deltas  = True,
-                        mr1_window_alpha    = self.ewma_alpha,
+                        EWMA_alpha          = self.EWMA_alpha,
                         inherent_mr1        = self.inherent_mr1,
                         use_EWMA            = self.use_EWMA) 
                         for i in range(self.num_of_DSs)]
@@ -122,7 +122,7 @@ class Simulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
-        self.ewma_alpha      = 0.85  # exp' window's moving average's alpha parameter 
+        self.EWMA_alpha      = 0.85  # exp' window's moving average's alpha parameter 
         self.output_file     = output_file
         self.trace_file_name    = trace_file_name
         self.missp              = missp
@@ -492,7 +492,7 @@ class Simulator(object):
             for ds in range (self.num_of_DSs):            
                 if (self.pos_ind_cnt[ds] == self.estimation_window):
                     
-                    self.mr1_cur[ds] = self.ewma_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.ewma_alpha) * self.mr1_cur[ds]
+                    self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
                     if (self.print_real_mr):
                         printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
@@ -500,7 +500,7 @@ class Simulator(object):
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if (self.neg_ind_cnt[ds] == self.estimation_window):
-                    self.mr0_cur[ds] = self.ewma_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.ewma_alpha) * self.mr0_cur[ds]
+                    self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
                     if (self.print_real_mr):
                         printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
                                 .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))

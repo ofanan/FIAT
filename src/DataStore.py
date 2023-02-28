@@ -140,9 +140,11 @@ class DataStore (object):
         if (self.reg_accs_cnt == self.mr1_estimation_window):
             self.update_mr1 ()
             self.reg_accs_cnt = 0
+            printf (self.estimated_mr_output_file, 'mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
         if (self.spec_accs_cnt == self.mr0_estimation_window):
             self.update_mr0 ()
             self.spec_accs_cnt = 0
+            printf (self.estimated_mr_output_file, 'mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
         return hit 
 
     def insert(self, key, use_indicator = True, req_cnt = -1):
@@ -201,15 +203,13 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
         if (self.estimated_mr_output_file != None):
-            printf (self.estimated_mr_output_file, 'SENDING UPDATE: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
+            printf (self.estimated_mr_output_file, 'sending updated: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
 
     def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.spec_accs_cnt) + (1 - self.EWMA_alpha) * self.mr0_cur 
-        if (self.estimated_mr_output_file != None):
-            printf (self.estimated_mr_output_file, 'SENDING UPDATE: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -217,8 +217,6 @@ class DataStore (object):
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.reg_accs_cnt) + (1 - self.EWMA_alpha) * self.mr1_cur 
-        if (self.estimated_mr_output_file != None):
-            printf (self.estimated_mr_output_file, 'real_mr1={}, ema_real_mr1={}\n' .format (float(self.fp_events_cnt)/self.mr1_estimation_window, self.mr1_cur))
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

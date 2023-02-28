@@ -832,7 +832,7 @@ class Simulator(object):
         # perform access
         self.sol = final_sol.DSs_IDs
         hit = False
-        if (self.log_mr): 
+        if (self.use_perfect_hist and self.log_mr):
             mr0_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.zeros_ar, quiet=True)
             mr1_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.ones_ar,  quiet=True)
             for DS_id in final_sol.DSs_IDs:

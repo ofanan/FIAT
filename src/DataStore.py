@@ -203,7 +203,7 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
         if (self.estimated_mr_output_file != None):
-            printf (self.estimated_mr_output_file, 'sending updated: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
+            printf (self.estimated_mr_output_file, 'Upon advertising: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
 
     def update_mr0(self):
         """

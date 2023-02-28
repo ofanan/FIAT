@@ -132,6 +132,7 @@ class DataStore (object):
             self.reg_accs_cnt += 1
             if (not(hit)):
                 self.fp_events_cnt += 1
+                print ('Bingo: fp event') #$$$
             if (not(self.use_EWMA)): # use "flat" history
                 self.mr1_cur = float(self.fp_events_cnt) / float (self.reg_accs_cnt) 
                 return hit 

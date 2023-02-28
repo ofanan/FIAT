@@ -78,7 +78,7 @@ def getTracesPath():
     returns the path in which the traces files are found at this machine.
     Currently, traces files should be placed merely in the "/traces/" subdir, under the project's directory
     """
-    return '../traces/'
+    return '../../traces/'
 #   #return 'C:/Users/' + os.getcwd().split ("\\")[2] + '/Documents/traces/' if (os.getcwd().split ("\\")[0] == "C:") else '/home/icohen/traces/'
 
 def calcOvhDsCost ():

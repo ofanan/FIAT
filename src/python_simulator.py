@@ -91,7 +91,7 @@ class Simulator(object):
         
         self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, estimation_window = self.estimation_window, verbose = self.verbose, 
         use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
-        verbose_file = self.verbose_file) 
+        verbose_file = self.output_file) 
         for i in range(self.num_of_clients)]
     
     def __init__(self, output_file, trace_file_name, 
@@ -125,8 +125,8 @@ class Simulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
-        self.EWMA_alpha      = 0.85  # exp' window's moving average's alpha parameter 
-        self.output_file     = output_file
+        self.EWMA_alpha         = 0.85  # exp' window's moving average's alpha parameter 
+        self.output_file        = output_file
         self.trace_file_name    = trace_file_name
         self.missp              = missp
         self.DS_size            = DS_size
@@ -199,10 +199,6 @@ class Simulator(object):
         self.use_given_DS_per_item = use_given_DS_per_item
 
         self.avg_DS_accessed_per_req = float(0)
-        self.verbose_file = None
-        if (self.verbose != []):
-            verbose_file_name = '{}{}.txt' .format (self.mode, 'h' if self.calc_mr_by_hist else 'a')
-            self.verbose_file = open ('../res/{}' .format (verbose_file_name), "w", buffering=1)
         if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
             lg_uInterval = np.log2 (self.uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
@@ -301,8 +297,10 @@ class Simulator(object):
             printf (self.output_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
 
+        if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
+            printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         if (self.mode != 'opt'):
-            printf (self.output_file, '// num of updates={}' .format (sum([DS.num_of_advertisements for DS in self.DS_list])))
+            printf (self.output_file, '\n// avg update interval (by insertions)={}' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
             
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
@@ -552,10 +550,6 @@ class Simulator(object):
             self.indications            = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
-#             avg_num_of_updates_per_DS = sum (DS.num_of_updates for DS in self.DS_list) / self.num_of_DSs
-#             avg_update_interval = -1 if (avg_num_of_updates_per_DS == 0) else self.req_cnt / avg_num_of_updates_per_DS
-            if (MyConfig.VERBOSE_RES in self.verbose):
-                printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         else: 
             printf (self.output_file, 'Wrong mode: {:.0f}\n' .format (self.mode))
 

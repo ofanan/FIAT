@@ -25,7 +25,8 @@ class DataStore (object):
                  collect_mr_stat            = True,
                  analyse_ind_deltas         = True,
                  inherent_mr1               = 0.001,
-                 use_EWMA                   = False  
+                 use_EWMA                   = False,
+                 estimated_mr_output_file   = None  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -45,6 +46,7 @@ class DataStore (object):
             analyse_ind_deltas - When True, keep the stale (lastly-advertised) indicator and periodically compare the updated and the stale indicators to estimate (by analysis) fpr, fnr, and mr.     
             verbose:           how much details are written to the output
         """
+        self.estimated_mr_output_file= estimated_mr_output_file
         self.ID                      = ID
         self.cache_size              = size
         self.bpe                     = bpe
@@ -101,7 +103,7 @@ class DataStore (object):
         """
         return (key in self.cache)
             
-    def access(self, key, is_speculative_accs = False, est_vs_real_mr_output_file=None):
+    def access(self, key, is_speculative_accs = False):
         """
         - Accesses a key in the cache.
         - Return True iff the access was a hit.
@@ -136,10 +138,10 @@ class DataStore (object):
 
         # now we know that we should use EWMA
         if (self.reg_accs_cnt == self.mr1_estimation_window):
-            self.update_mr1(est_vs_real_mr_output_file)
+            self.update_mr1 ()
             self.reg_accs_cnt = 0
         if (self.spec_accs_cnt == self.mr0_estimation_window):
-            self.update_mr0(est_vs_real_mr_output_file)
+            self.update_mr0 ()
             self.spec_accs_cnt = 0
         return hit 
 
@@ -188,32 +190,35 @@ class DataStore (object):
         if (check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
             Delta = [sum (np.bitwise_and (~updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (updated_sbf.array, ~self.stale_indicator.array))]
-            if (sum (Delta) < self.delta_th):
-                print ('sum_Delta = ', sum (Delta), 'delta_th = ', self.delta_th, 'Sending delta updates is cheaper\n')
-                exit ()
-        if self.analyse_ind_deltas:
-            self.stale_indicator                    = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+            if (MyConfig.VERBOSE_DEBUG in self.verbose and sum (Delta) < self.delta_th):
+                MyConfig.error ('sum_Delta = ', sum (Delta), 'delta_th = ', self.delta_th, 'Sending delta updates is cheaper\n')
+
+        # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator 
+        self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+        if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
+        if (self.estimated_mr_output_file != None):
+            printf (self.estimated_mr_output_file, 'SENDING UPDATE: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
 
-    def update_mr0(self, est_vs_real_mr_output_file=None):
+    def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.spec_accs_cnt) + (1 - self.EWMA_alpha) * self.mr0_cur 
-        if (est_vs_real_mr_output_file != None):
-            printf (est_vs_real_mr_output_file, 'real_mr0={}, ema_real_mr0={}\n' .format (float(self.tn_events_cnt)/self.mr0_estimation_window, self.mr0_cur))
+        if (self.estimated_mr_output_file != None):
+            printf (self.estimated_mr_output_file, 'SENDING UPDATE: mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
         self.tn_events_cnt = int(0)
         
-    def update_mr1(self, est_vs_real_mr_output_file=None):
+    def update_mr1(self):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.reg_accs_cnt) + (1 - self.EWMA_alpha) * self.mr1_cur 
-        if (est_vs_real_mr_output_file != None):
-            printf (est_vs_real_mr_output_file, 'real_mr1={}, ema_real_mr1={}\n' .format (float(self.fp_events_cnt)/self.mr1_estimation_window, self.mr1_cur))
+        if (self.estimated_mr_output_file != None):
+            printf (self.estimated_mr_output_file, 'real_mr1={}, ema_real_mr1={}\n' .format (float(self.fp_events_cnt)/self.mr1_estimation_window, self.mr1_cur))
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

@@ -233,7 +233,7 @@ class Simulator(object):
         settings_str = self.gen_settings_string (num_of_req=self.trace_len)
         self.estimated_mr_output_file = [None]*self.num_of_DSs
         for ds in range (self.num_of_DSs):
-            self.estimated_mr_output_file[ds] = open ('../res/{}_est_vs_real_mr_ds{}.mr' .format (settings_str, ds), 'w')
+            self.estimated_mr_output_file[ds] = open ('../res/{}log_mr_ds{}.mr' .format (settings_str, ds), 'w')
 
     def DS_costs_are_homo (self):
         """

@@ -40,7 +40,7 @@ def calc_DS_cost (num_of_DSs = 3, use_homo_DS_cost = False):
     else:
         return calc_hetro_costs(num_of_DSs, num_of_clients)
 
-def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, print_real_mr=False, max_num_of_req=1000000):
+def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000):
     """
     Run a simulation with different miss penalties for the initial table
     """
@@ -63,9 +63,10 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                log_mr       = True,
                                calc_mr_by_hist      = True,
                                use_perfect_hist     = False,
-                               use_EWMA             = True
+                               use_EWMA             = True,
+                               hist_based_uInterval = True
                                )
-            sm.run_simulator(interval_between_mid_reports=max_num_of_req)
+            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
 def run_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
@@ -267,4 +268,4 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
 # num_of_req = 1000000
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
-run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=10000) #00
+run_var_missp_sim(trace_file_name = 'gradle/gradle.build-cache.xz.txt', max_num_of_req=1000000) #

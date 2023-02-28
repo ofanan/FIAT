@@ -16,7 +16,7 @@ from printf import printf
 class DataStore (object):
 
     # Returns true iff an updated indicator should be sent.
-    should_advertise_ind = lambda self: (self.ins_since_last_ad == self.uInterval)
+    should_advertise_ind = lambda self: (self.mr1_cur > self.mr1_ad_th or self.mr0_cur < self.mr0_ad_th) if self.hist_based_uInterval else (self.ins_since_last_ad == self.uInterval)
     
     def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_estimation_window = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
@@ -27,7 +27,8 @@ class DataStore (object):
                  inherent_mr1               = 0.001,
                  use_EWMA                   = False,
                  estimated_mr_output_file   = None,
-                 use_indicator              = True  
+                 use_indicator              = True,
+                 hist_based_uInterval       = False  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -65,6 +66,9 @@ class DataStore (object):
         # self.one_min_mr0_alpha       = 1 - self.mr0_window_alpha
         # self.mr1_alpha_over_window   = float (self.mr1_window_alpha) / float (self.mr1_estimation_window)
         # self.mr0_alpha_over_window   = float (self.mr0_window_alpha) / float (self.mr0_estimation_window)
+        self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
+        if (self.hist_based_uInterval):
+            self.mr0_ad_th, self.mr1_ad_th = 0.5, 0.01 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
         self.reg_accs_cnt            = 0

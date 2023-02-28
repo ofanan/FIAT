@@ -80,7 +80,8 @@ class Simulator(object):
                         EWMA_alpha          = self.EWMA_alpha,
                         inherent_mr1        = self.inherent_mr1,
                         use_EWMA            = self.use_EWMA,
-                        use_indicator       = not (self.mode=='opt') # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+                        use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+                        hist_based_uInterval = self.hist_based_uInterval
                         ) 
                         for i in range(self.num_of_DSs)]
             
@@ -97,15 +98,15 @@ class Simulator(object):
     def __init__(self, output_file, trace_file_name, 
                  mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
-                 bw = 0, # Determine the update interval by a given bandwidth (currently usused)
-                 uInterval = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
-                 print_real_mr=False,
-                 use_given_client_per_item = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
-                 use_given_DS_per_item = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
-                 log_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
-                 calc_mr_by_hist  = True, # when false, calc mr by analysis of the BF
-                 use_perfect_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
-                 use_EWMA = False
+                 use_given_client_per_item  = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
+                 use_given_DS_per_item      = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
+                 bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
+                 uInterval          = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
+                 log_mr             = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
+                 calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
+                 use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
+                 use_EWMA           = False, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
+                 hist_based_uInterval = False # when true, send advertisements according to the hist-based estimations of mr.
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -212,7 +213,6 @@ class Simulator(object):
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
             self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
-            self.print_real_mr  = print_real_mr
         
         self.init_client_list ()
         self.log_mr = log_mr
@@ -221,6 +221,7 @@ class Simulator(object):
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
         self.log_mr_in_warmup = True # Even if requested, begin to write this output to a file only after long warmup period.
+        self.hist_based_uInterval = hist_based_uInterval
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_estimated_mr_output_files (self):
@@ -300,7 +301,7 @@ class Simulator(object):
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         if (self.mode != 'opt'):
-            printf (self.output_file, '\n// avg update interval (by insertions)={}' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+            printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
             
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
@@ -493,14 +494,14 @@ class Simulator(object):
                     
                     self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
-                    if (self.print_real_mr):
+                    if (self.log_mr):
                         printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
                                 .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if (self.neg_ind_cnt[ds] == self.estimation_window):
                     self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
-                    if (self.print_real_mr):
+                    if (self.log_mr):
                         printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
                                 .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
                     self.tn_cnt[ds] = 0
@@ -521,12 +522,6 @@ class Simulator(object):
         printf (self.est_mr0_output_file, 'q={}, ' .format (self.client_list [self.client_id].pr_of_pos_ind_estimation)) 
         printf (self.est_mr0_output_file, 'hit ratio={}\n' .format (self.client_list [self.client_id].hit_ratio)) 
     
-    def  print_real_mr_func (self):
-        """
-        print the estimated mr (miss rate) probabilities.
-        """
-        return
-
     def run_simulator (self, interval_between_mid_reports):
         """
         Run a simulation, gather statistics and prints outputs

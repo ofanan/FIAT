@@ -52,7 +52,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     output_file         = open ("../res/tbl.res", "a")
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [50]: #, 100, 500
+    for missp in [100]: #, 100, 500
         for mode in ['fna']: 
             tic()
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 
@@ -65,7 +65,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                use_perfect_hist     = False,
                                use_EWMA             = True
                                )
-            sm.run_simulator(interval_between_mid_reports=1000000)
+            sm.run_simulator(interval_between_mid_reports=100000)
             toc()
 
 def run_uInterval_sim (trace_file_name, use_homo_DS_cost = False):

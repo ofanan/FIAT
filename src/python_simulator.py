@@ -79,7 +79,9 @@ class Simulator(object):
                         analyse_ind_deltas  = True,
                         EWMA_alpha          = self.EWMA_alpha,
                         inherent_mr1        = self.inherent_mr1,
-                        use_EWMA            = self.use_EWMA) 
+                        use_EWMA            = self.use_EWMA,
+                        use_indicator       = not (self.mode=='opt') # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+                        ) 
                         for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -101,7 +103,7 @@ class Simulator(object):
                  use_given_client_per_item = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  log_mr = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
-                 calc_mr_by_hist = True, # when false, calc mr by analysis of the BF
+                 calc_mr_by_hist  = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA = False
                  ):
@@ -294,14 +296,14 @@ class Simulator(object):
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         printf (self.output_file, '// estimation window = {}, ' .format (self.estimation_window))
-        if (self.mode == 'fna'):
+        if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
             printf (self.output_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
-            printf (self.output_file, '// avg num of fpr_fnr_updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
+            printf (self.output_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
-        if (not (self.calc_mr_by_hist)): 
-            printf (self.output_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
-            printf (self.output_file, '// avg num of fpr_fnr_updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
-                                .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates / self.req_cnt))
+
+        if (self.mode != 'opt'):
+            printf (self.output_file, '// num of updates={}' .format (sum([DS.num_of_advertisements for DS in self.DS_list])))
+            
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 
@@ -335,7 +337,7 @@ class Simulator(object):
 
             if true_answer_DS_list.size == 0: # Miss: request is indeed not found in any DS 
                 self.client_list[self.client_id].comp_miss_cnt += 1
-                self.insert_key_to_DSs (use_indicator=False) # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+                self.insert_key_to_DSs () 
             else:  # hit
                 # find the cheapest DS holding the request
                 access_DS_id = true_answer_DS_list[np.argmin( np.take( self.client_DS_cost[self.client_id] , true_answer_DS_list ) )]
@@ -571,7 +573,7 @@ class Simulator(object):
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].comp_miss_cnt += 1
-        self.insert_key_to_DSs (use_indicator=(self.mode != 'opt'))
+        self.insert_key_to_DSs ()
 
     def handle_non_compulsory_miss (self):
         """
@@ -591,7 +593,7 @@ class Simulator(object):
         if self.DS_insert_mode == 2:
             self.DS_list[self.client_id].insert(req.key)
 
-    def insert_key_to_DSs (self, use_indicator=True):
+    def insert_key_to_DSs (self):
         """
         insert key to all k_loc DSs.
         The DSs to which the key is inserted are either: 
@@ -599,7 +601,7 @@ class Simulator(object):
         - Chosen as a "hash" (actually, merely a modulo calculation) of the key 
         """
         for i in range(self.k_loc):
-            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, use_indicator = use_indicator)
+            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt)
                     
     def is_compulsory_miss (self):
         """

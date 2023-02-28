@@ -26,7 +26,8 @@ class DataStore (object):
                  analyse_ind_deltas         = True,
                  inherent_mr1               = 0.001,
                  use_EWMA                   = False,
-                 estimated_mr_output_file   = None  
+                 estimated_mr_output_file   = None,
+                 use_indicator              = True  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -46,6 +47,7 @@ class DataStore (object):
             analyse_ind_deltas - When True, keep the stale (lastly-advertised) indicator and periodically compare the updated and the stale indicators to estimate (by analysis) fpr, fnr, and mr.     
             verbose:           how much details are written to the output
         """
+        self.use_indicator           = use_indicator
         self.estimated_mr_output_file= estimated_mr_output_file
         self.ID                      = ID
         self.cache_size              = size
@@ -79,7 +81,7 @@ class DataStore (object):
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
-        self.num_of_updates          = 0
+        self.num_of_advertisements   = 0
         self.verbose                 = verbose 
         self.ins_since_last_ad       = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
@@ -139,16 +141,20 @@ class DataStore (object):
 
         # now we know that we should use EWMA
         if (self.reg_accs_cnt == self.mr1_estimation_window):
+            mr1_prev = self.mr1_cur
             self.update_mr1 ()
             self.reg_accs_cnt = 0
-            printf (self.estimated_mr_output_file, 'mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
+            if (self.estimated_mr_output_file != None and mr1_prev != self.mr1_cur):
+                printf (self.estimated_mr_output_file, 'mr1={}\n' .format (self.mr1_cur))
         if (self.spec_accs_cnt == self.mr0_estimation_window):
+            mr0_prev = self.mr0_cur
             self.update_mr0 ()
             self.spec_accs_cnt = 0
-            printf (self.estimated_mr_output_file, 'mr0={}, mr1={}\n' .format (self.mr0_cur, self.mr1_cur))
+            if (self.estimated_mr_output_file != None and mr0_prev != self.mr0_cur):
+                printf (self.estimated_mr_output_file, 'mr0={}\n' .format (self.mr0_cur))
         return hit 
 
-    def insert(self, key, use_indicator = True, req_cnt = -1):
+    def insert(self, key, req_cnt = -1):
         """
         - Inserts a key to the cache
         - Update the indicator
@@ -160,7 +166,7 @@ class DataStore (object):
             # if so, remove it from the updated indicator
 			# Removal from the cache is implemented automatically by the cache object
         self.cache[key] = key
-        if (use_indicator):
+        if (self.use_indicator):
             if (self.cache.currSize() == self.cache.size()):
                 self.updated_indicator.remove(self.cache.get_tail())
             self.updated_indicator.add(key)
@@ -189,7 +195,7 @@ class DataStore (object):
         If input check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
             
-        self.num_of_updates += 1
+        self.num_of_advertisements += 1
         if (check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
             Delta = [sum (np.bitwise_and (~updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (updated_sbf.array, ~self.stale_indicator.array))]
@@ -259,7 +265,7 @@ class DataStore (object):
 #             size_of_delta_update = sum (Delta)     
 #             self.update_bw += (size_of_delta_update * self.lg_BF_size) if (size_of_delta_update < self.delta_th) else self.BF_size     
 #             self.stale_indicator.array = updated_sbf.array # Send update
-#             self.num_of_updates += 1
+#             self.num_of_advertisements += 1
 #             self.fnr = 0
 #             self.fpr = pow ( B1_up / self.BF_size, self.num_of_hashes) # Immediately after sending an update, the expected fnr is 0, and the expected fpr is the inherent fpr
 

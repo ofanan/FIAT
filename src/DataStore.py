@@ -13,7 +13,6 @@ import copy
 import MyConfig 
 from printf import printf
 
-
 class DataStore (object):
 
     # Returns true iff an updated indicator should be sent.
@@ -55,7 +54,6 @@ class DataStore (object):
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         #self.mr0_window_alpha        = mr1_window_alpha
-        self.mr1_estimation_window   = mr1_estimation_window
         self.mr1_estimation_window   = mr1_estimation_window
         self.mr0_estimation_window   = mr1_estimation_window
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
@@ -137,10 +135,11 @@ class DataStore (object):
                 return hit 
 
         # now we know that we should use EWMA
-        if ((self.reg_accs_cnt+self.spec_accs_cnt) == self.mr1_estimation_window):
+        if (self.reg_accs_cnt == self.mr1_estimation_window):
             self.update_mr1(est_vs_real_mr_output_file)
-            self.update_mr0(est_vs_real_mr_output_file)
             self.reg_accs_cnt = 0
+        if (self.spec_accs_cnt == self.mr0_estimation_window):
+            self.update_mr0(est_vs_real_mr_output_file)
             self.spec_accs_cnt = 0
         return hit 
 
@@ -212,7 +211,7 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
-        self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.spec_accs_cnt) + (1 - self.EWMA_alpha) * self.mr1_cur 
+        self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.reg_accs_cnt) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (est_vs_real_mr_output_file != None):
             printf (est_vs_real_mr_output_file, 'real_mr1={}, ema_real_mr1={}\n' .format (float(self.fp_events_cnt)/self.mr1_estimation_window, self.mr1_cur))
         self.fp_events_cnt = int(0)

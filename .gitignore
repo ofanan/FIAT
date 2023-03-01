@@ -6,4 +6,4 @@
 /src/__pycache*
 *real*vs*
 /traces/*
-/res/*_mr*
+/res/*.mr*

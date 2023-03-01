@@ -171,20 +171,20 @@ class Simulator(object):
         self.leaf_of_DS         = np.array(np.floor(np.log2(self.client_DS_cost))).astype('uint8') # lg_client_DS_cost(i,j) will hold the lg2 of access cost for client i accessing DS j
         self.pos_ind_list       = [] #np.array (0, dtype = 'uint8') #list of the DSs with pos' ind' (positive indication) for the current request
         self.pr_of_pos_ind_estimation       = np.zeros (self.num_of_DSs , dtype='uint') #pr_of_pos_ind_estimation[i] will hold the estimation for the prob' that DS[i] gives positive ind' for a requested item.  
-        self.window_alhpa       = 0.25 # window's alpha parameter for estimated parameters       
-        
-        self.mode           = mode
 
-        # Statistical parameters (collected / estimated at run time)
-        self.total_cost         = float(0)
-        self.hit_cnt            = 0
-        self.total_access_cost  = 0
-        self.high_cost_mp_cnt   = 0 # counts the misses for cases where accessing DSs was too costly, so the alg' decided to access directly the mem
-        self.comp_miss_cnt      = 0
-        self.non_comp_miss_cnt  = 0
-        self.FN_miss_cnt        = 0 # num of misses happened due to FN event
-        self.tot_num_of_updates = 0
-        self.bw       = bw
+        self.window_alhpa         = 0.25 # window's alpha parameter for estimated parameters       
+        self.mode                 = mode
+        self.total_cost           = float(0)
+        self.hit_cnt              = 0
+        self.total_access_cost    = 0
+        self.high_cost_mp_cnt     = 0 # counts the misses for cases where accessing DSs was too costly, so the alg' decided to access directly the mem
+        self.comp_miss_cnt        = 0
+        self.non_comp_miss_cnt    = 0
+        self.FN_miss_cnt          = 0 # num of misses happened due to FN event
+        self.tot_num_of_updates   = 0
+        self.bw                   = bw
+        self.log_mr               = log_mr
+        self.hist_based_uInterval = hist_based_uInterval
         
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
@@ -220,13 +220,11 @@ class Simulator(object):
             self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
-        self.log_mr = log_mr
         if (self.log_mr):
             self.init_estimated_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
         self.log_mr_in_warmup = True # Even if requested, begin to write this output to a file only after long warmup period.
-        self.hist_based_uInterval = hist_based_uInterval
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_estimated_mr_output_files (self):

@@ -65,9 +65,9 @@ class Simulator(object):
             settings_str = '{}A' .format (settings_str) # 'A' stands for 'by Analysis'
         
         if (self.hist_based_uInterval):
-            return '{}.adH' # history-based advertisements
+            return '{}.adH' .format (settings_str) # history-based advertisements
         else:
-            return '{}.adF' # Fixed-update-interval advertisements
+            return '{}.adF' .format (settings_str) # Fixed-update-interval advertisements
         
                 
     def init_DS_list(self):
@@ -304,8 +304,8 @@ class Simulator(object):
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         if (self.mode != 'opt'):
+            printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
             printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
-            
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 

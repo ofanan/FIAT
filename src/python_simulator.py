@@ -53,10 +53,10 @@ class Simulator(object):
         if (self.mode=='opt'):
             return '{}.{}' .format (settings_str, 'Opt')
 
-        settings_str = '{}.{}' .format (settings_str, self.mode.upper()) # 'A' stands for 'by Analisys'
+        settings_str = '{}.{}' .format (settings_str, self.mode.upper()) 
 
         # Now we know that the mode isn't 'Opt'
-        if not(self.calc_mr_by_hist):
+        if self.calc_mr_by_hist:
             settings_str = '{}.H{}{}' .format (
                 settings_str,   
                 'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
@@ -303,9 +303,9 @@ class Simulator(object):
 
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
-        if (self.mode != 'opt'):
-            printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-            printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+        # if (self.mode != 'opt'):
+        printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
+        printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 

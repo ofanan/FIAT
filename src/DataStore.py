@@ -68,7 +68,7 @@ class DataStore (object):
         # self.mr0_alpha_over_window   = float (self.mr0_window_alpha) / float (self.mr0_estimation_window)
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
-            self.mr0_ad_th, self.mr1_ad_th = 0.5, 0.01 
+            self.mr0_ad_th, self.mr1_ad_th = 0.8, 0.01 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
         self.reg_accs_cnt            = 0

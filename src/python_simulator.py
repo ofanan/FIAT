@@ -232,7 +232,7 @@ class Simulator(object):
         settings_str = self.gen_settings_string (num_of_req=self.trace_len)
         self.estimated_mr_output_file = [None]*self.num_of_DSs
         for ds in range (self.num_of_DSs):
-            self.estimated_mr_output_file[ds] = open ('../res/{}log_mr_ds{}.mr' .format (settings_str, ds), 'w')
+            self.estimated_mr_output_file[ds] = open ('../res/{}_ds{}.mr' .format (settings_str, ds), 'w')
 
     def DS_costs_are_homo (self):
         """
@@ -436,7 +436,10 @@ class Simulator(object):
         The history is collected by the DSs themselves.
         """
         # Stop exploration after receiving the first update (the first uInterval)
-        if (self.req_cnt == self.uInterval): 
+        if (self.req_cnt == self.uInterval):
+            if self.hist_based_uInterval: # in a hist-based uInterval, we need a "warmup" first advertisement
+                for DS in self.DS_list:
+                    DS.advertise_ind () 
             self.in_exploration = False
         
         # handle the case where we're within exploration, and all indications are False 
@@ -467,6 +470,9 @@ class Simulator(object):
         - Update mr0, mr1, accordingly.
         """
         
+        if (self.hist_based_uInterval): # in a hist-based uInterval, we need a "warmup" first advertisement
+            for DS in self.ds_list:
+                DS.advertise_ind () 
         for ds in range (self.num_of_DSs):
             
             # The lines below reset the estimators and counters when the DS advertises a new indicator. 

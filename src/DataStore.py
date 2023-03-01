@@ -149,13 +149,13 @@ class DataStore (object):
             self.update_mr1 ()
             self.reg_accs_cnt = 0
             if (self.estimated_mr_output_file != None and mr1_prev != self.mr1_cur):
-                printf (self.estimated_mr_output_file, 'mr1={}\n' .format (self.mr1_cur))
+                printf (self.estimated_mr_output_file, 'mr1={:.4f}\n' .format (self.mr1_cur))
         if (self.spec_accs_cnt == self.mr0_estimation_window):
             mr0_prev = self.mr0_cur
             self.update_mr0 ()
             self.spec_accs_cnt = 0
             if (self.estimated_mr_output_file != None and mr0_prev != self.mr0_cur):
-                printf (self.estimated_mr_output_file, 'mr0={}\n' .format (self.mr0_cur))
+                printf (self.estimated_mr_output_file, 'mr0={:.4f}\n' .format (self.mr0_cur))
         return hit 
 
     def insert(self, key, req_cnt = -1):

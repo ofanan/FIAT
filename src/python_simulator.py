@@ -49,7 +49,7 @@ class Simulator(object):
             self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
             self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval)
         
-        # Add the string representing the mode 
+        # Add the string representing the mode   
         if (self.mode=='opt'):
             return '{}.{}' .format (settings_str, 'Opt')
 
@@ -57,13 +57,18 @@ class Simulator(object):
 
         # Now we know that the mode isn't 'Opt'
         if not(self.calc_mr_by_hist):
-            return '{}A' .format (settings_str) # 'A' stands for 'by Analisys'
-
-        # Now we know that the mode isn't 'Opt', and that the mr-estimation is history-based
-        return '{}.H{}{}' .format (
-            settings_str,   
-            'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
-            'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
+            settings_str = '{}.H{}{}' .format (
+                settings_str,   
+                'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
+                'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
+        else: # mode isn't 'Opt', and the mr-estimation is BF-analysis-based
+            settings_str = '{}A' .format (settings_str) # 'A' stands for 'by Analysis'
+        
+        if (self.hist_based_uInterval):
+            return '{}.adH' # history-based advertisements
+        else:
+            return '{}.adF' # Fixed-update-interval advertisements
+        
                 
     def init_DS_list(self):
         """

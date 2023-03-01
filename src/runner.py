@@ -49,7 +49,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    output_file         = open ('../res/tbl.res', 'a')
+    output_file         = open ('../res/tbl_full.res', 'a')
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [50]: #, 100, 500
@@ -64,7 +64,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                calc_mr_by_hist      = True,
                                use_perfect_hist     = False,
                                use_EWMA             = True,
-                               hist_based_uInterval = True
+                               hist_based_uInterval = False
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()

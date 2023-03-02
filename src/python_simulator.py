@@ -78,7 +78,7 @@ class Simulator(object):
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates  = not (self.calc_mr_by_hist),
-                        estimated_mr_output_file = self.estimated_mr_output_file[i],
+                        mr_output_file = self.mr_output_file[i],
                         # currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
                         collect_mr_stat     = not (self.use_perfect_hist),
                         analyse_ind_deltas  = True,
@@ -221,21 +221,21 @@ class Simulator(object):
         
         self.init_client_list ()
         if (self.log_mr):
-            self.init_estimated_mr_output_files()
+            self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
         self.log_mr_in_warmup = True # Even if requested, begin to write this output to a file only after long warmup period.
         self.init_DS_list() #DS_list is the list of DSs
 
-    def init_estimated_mr_output_files (self):
+    def init_mr_output_files (self):
         """
         Init per-DS output file, to which the simulator writes data about the estimated mr (conditional miss rates, namely pr of a miss given a negative ind (mr0), or a positive ind (mr1)).
         The simulator also writes to this data (via Datastore.py) about each access whether it results in a True Positive, True Negative, False Positive, or False negative.
         """
         settings_str = self.gen_settings_string (num_of_req=self.trace_len)
-        self.estimated_mr_output_file = [None]*self.num_of_DSs
+        self.mr_output_file = [None]*self.num_of_DSs
         for ds in range (self.num_of_DSs):
-            self.estimated_mr_output_file[ds] = open ('../res/{}_ds{}.mr' .format (settings_str, ds), 'w')
+            self.mr_output_file[ds] = open ('../res/{}_ds{}.mr' .format (settings_str, ds), 'w')
 
     def DS_costs_are_homo (self):
         """
@@ -504,14 +504,14 @@ class Simulator(object):
                     self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
                     if (self.log_mr):
-                        printf (self.real_mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
+                        printf (self.mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
                                 .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if (self.neg_ind_cnt[ds] == self.estimation_window):
                     self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
                     if (self.log_mr):
-                        printf (self.real_mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
+                        printf (self.mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
                                 .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
                     self.tn_cnt[ds] = 0
                     self.neg_ind_cnt [ds] = 0
@@ -830,11 +830,12 @@ class Simulator(object):
         # perform access
         self.sol = final_sol.DSs_IDs
         hit = False
-        if (self.use_perfect_hist and self.log_mr):
-            mr0_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.zeros_ar, quiet=True)
-            mr1_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.ones_ar,  quiet=True)
-            for DS_id in final_sol.DSs_IDs:
-                printf (self.estimated_mr_output_file[DS_id], 'est_mr0={}, est_mr1={}\n' .format (mr0_estimations[DS_id], mr1_estimations[DS_id]))
+        # The commented-out lines below are for logging comparing the mr to estimated mr by analysis. Currently unused.
+        # if (self.use_perfect_hist and self.log_mr): 
+        #     mr0_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.zeros_ar, quiet=True)
+        #     mr1_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.ones_ar,  quiet=True)
+        #     for DS_id in final_sol.DSs_IDs:
+        #         printf (self.mr_output_file[DS_id], 'est_mr0={}, est_mr1={}\n' .format (mr0_estimations[DS_id], mr1_estimations[DS_id]))
         for DS_id in final_sol.DSs_IDs:
             is_speculative_accs = not (self.indications[DS_id])
             if (is_speculative_accs): #A speculative accs 

@@ -26,7 +26,7 @@ class DataStore (object):
                  analyse_ind_deltas         = True,
                  inherent_mr1               = 0.001,
                  use_EWMA                   = False,
-                 estimated_mr_output_file   = None,
+                 mr_output_file             = None,
                  use_indicator              = True,
                  hist_based_uInterval       = False  
                  ):
@@ -49,7 +49,7 @@ class DataStore (object):
             verbose:           how much details are written to the output
         """
         self.use_indicator           = use_indicator
-        self.estimated_mr_output_file= estimated_mr_output_file
+        self.mr_output_file          = mr_output_file
         self.ID                      = ID
         self.cache_size              = size
         self.bpe                     = bpe
@@ -146,14 +146,14 @@ class DataStore (object):
             mr1_prev = self.mr1_cur
             self.update_mr1 ()
             self.reg_accs_cnt = 0
-            if (self.estimated_mr_output_file != None and mr1_prev != self.mr1_cur):
-                printf (self.estimated_mr_output_file, 'mr1={:.4f}\n' .format (self.mr1_cur))
+            if (self.mr_output_file != None and mr1_prev != self.mr1_cur):
+                printf (self.mr_output_file, 'mr1={:.4f}\n' .format (self.mr1_cur))
         if (self.spec_accs_cnt == self.mr0_estimation_window):
             mr0_prev = self.mr0_cur
             self.update_mr0 ()
             self.spec_accs_cnt = 0
-            if (self.estimated_mr_output_file != None and mr0_prev != self.mr0_cur):
-                printf (self.estimated_mr_output_file, 'mr0={:.4f}\n' .format (self.mr0_cur))
+            if (self.mr_output_file != None and mr0_prev != self.mr0_cur):
+                printf (self.mr_output_file, 'mr0={:.4f}\n' .format (self.mr0_cur))
         return hit 
 
     def insert(self, key, req_cnt = -1):
@@ -211,8 +211,8 @@ class DataStore (object):
             self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
-        if (self.estimated_mr_output_file != None):
-            printf (self.estimated_mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
+        if (self.mr_output_file != None):
+            printf (self.mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
 
     def update_mr0(self):
         """

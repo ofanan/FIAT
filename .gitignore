@@ -7,3 +7,7 @@
 *real*vs*
 /traces/*
 /res/*.mr*
+/tmp_bad_res
+/tmp_bad_res/*
+/tmp*
+/tmp_from_28.2.23/*

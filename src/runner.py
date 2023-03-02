@@ -62,7 +62,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                uInterval    = uInterval, 
                                log_mr       = True,
                                calc_mr_by_hist      = True,
-                               use_perfect_hist     = False,
+                               use_perfect_hist     = True,
                                use_EWMA             = True,
                                hist_based_uInterval = False
                                )

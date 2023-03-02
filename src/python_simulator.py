@@ -504,14 +504,14 @@ class Simulator(object):
                     self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
                     if (self.log_mr):
-                        printf (self.mr_output_file[ds], 'real_mr1={}, ema_real_mr1={}\n' 
+                        printf (self.mr_output_file[ds], 'last_mr1={}, emwa_mr1={}\n' 
                                 .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if (self.neg_ind_cnt[ds] == self.estimation_window):
                     self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
                     if (self.log_mr):
-                        printf (self.mr_output_file[ds], 'real_mr0={}, ema_real_mr0={}\n' 
+                        printf (self.mr_output_file[ds], 'last_mr0={:.4f}, emwa_mr0={:.4f}\n' 
                                 .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
                     self.tn_cnt[ds] = 0
                     self.neg_ind_cnt [ds] = 0

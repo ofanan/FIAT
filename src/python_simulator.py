@@ -6,10 +6,6 @@ import numpy as np
 import DataStore, Client, candidate, node, MyConfig 
 from   printf import printf
 
-"""
-key is an integer
-"""
-
 class Simulator(object):
     """
     A simulator that accepts system parameters (trace, number and size of caches, algorithm to run etc.), 
@@ -17,7 +13,7 @@ class Simulator(object):
     """
     
     # Called upon a miss. Check whether the miss is compulsory or not. 
-    # Increments the relevant counter, and inserts the key to self.k_loc DSs.
+    # Increments the relevant counter, and inserts the key (in practice, "key" is merely an integer) to self.k_loc DSs.
     # Called upon a miss. Check whether the miss is compulsory or not. Increments the relevant counter, and inserts the key to self.k_loc DSs.        
     handle_miss = lambda self: self.handle_compulsory_miss () if (self.is_compulsory_miss()) else self.handle_non_compulsory_miss ()
 

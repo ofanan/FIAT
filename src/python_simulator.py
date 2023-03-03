@@ -436,28 +436,6 @@ class Simulator(object):
         run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
         The history is collected by the DSs themselves.
         """
-        # # Stop exploration after receiving the first update (the first uInterval)
-        # if (self.req_cnt == self.uInterval):
-        #     if self.hist_based_uInterval: # in a hist-based uInterval, we need a "warmup" first advertisement
-        #         for DS in self.DS_list:
-        #             DS.advertise_ind () 
-        #     self.in_exploration = False
-        #
-        # # handle the case where we're within exploration, and all indications are False 
-        # if (self.in_exploration):# and np.all(self.indications == False)): 
-        #     # rand ...
-        #     if (not(np.all(self.indications == False))):
-        #         MyConfig.error ('within exploration, but not all indications are false')
-        #     explored_ds = random.randint (0, self.num_of_DSs-1) # access this one directly, w/o the long alg...
-        #     hit = self.DS_list[explored_ds].access (self.cur_req.key, is_speculative_accs=True)
-        #     if (hit):
-        #         self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
-        #         self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
-        #         self.client_list[self.client_id].hit_cnt += 1
-        #     else: # Miss
-        #         self.handle_miss ()
-        #     return
-
         # handle the non-exploration case: obtain mr estimations, and access DSs accordingly
         for ds in range (self.num_of_DSs):            
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
@@ -830,12 +808,6 @@ class Simulator(object):
         # perform access
         self.sol = final_sol.DSs_IDs
         hit = False
-        # The commented-out lines below are for logging comparing the mr to estimated mr by analysis. Currently unused.
-        # if (self.use_perfect_hist and MyConfig.VERBOSE_LOG_MR in self.verbose): 
-        #     mr0_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.zeros_ar, quiet=True)
-        #     mr1_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.ones_ar,  quiet=True)
-        #     for DS_id in final_sol.DSs_IDs:
-        #         printf (self.mr_output_file[DS_id], 'est_mr0={}, est_mr1={}\n' .format (mr0_estimations[DS_id], mr1_estimations[DS_id]))
         for DS_id in final_sol.DSs_IDs:
             is_speculative_accs = not (self.indications[DS_id])
             if (is_speculative_accs): #A speculative accs 

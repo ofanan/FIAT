@@ -133,12 +133,7 @@ class DataStore (object):
                 self.mr0_cur = float(self.tn_events_cnt) / float (self.spec_accs_cnt)
             else: # now we know that we should use EWMA
                 if (self.spec_accs_cnt % self.mr0_estimation_window == 0):
-                    mr0_prev = self.mr0_cur
-                    self.update_mr0 ()
-                    # self.spec_accs_cnt = 0
-            if (self.mr_output_file != None): # and mr0_prev != self.mr0_cur):
-                printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
-                    
+                    self.update_mr0 ()                    
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
@@ -147,11 +142,7 @@ class DataStore (object):
                 self.mr1_cur = float(self.fp_events_cnt) / float (self.reg_accs_cnt) 
             else: # now we know that we should use EWMA
                 if (self.reg_accs_cnt % self.mr1_estimation_window == 0):
-                    mr1_prev = self.mr1_cur
                     self.update_mr1 ()
-                    # self.reg_accs_cnt = 0
-            if (self.mr_output_file != None): # and mr1_prev != self.mr1_cur):
-                printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
                 
         return hit 
 
@@ -213,11 +204,15 @@ class DataStore (object):
         if (self.mr_output_file != None):
             printf (self.mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
 
+        self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0 
+
     def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_estimation_window) + (1 - self.EWMA_alpha) * self.mr0_cur 
+        if (self.mr_output_file != None): # and mr0_prev != self.mr0_cur):
+            printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -225,6 +220,8 @@ class DataStore (object):
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur 
+        if (self.mr_output_file != None): # and mr1_prev != self.mr1_cur):
+            printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

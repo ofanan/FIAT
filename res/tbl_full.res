@@ -455,3 +455,9 @@ gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost 
 // estimation window = 100, // spec accs cost = 281487, num of spec hits = 65388
 // num of ads per DS=[4, 4, 20]
 // avg update interval = 21428.571428571428 req
+
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 9.655533333333333
+// tot_access_cost = 762560, hit_ratio = 0.86, non_comp_miss_cnt = 22707, comp_miss_cnt = 19975
+// estimation window = 100, // spec accs cost = 405282, num of spec hits = 95045
+// num of ads per DS=[6, 7, 29]
+// avg update interval = 21428.571428571428 req

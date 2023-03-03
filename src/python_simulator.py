@@ -183,7 +183,6 @@ class Simulator(object):
         self.FN_miss_cnt          = 0 # num of misses happened due to FN event
         self.tot_num_of_updates   = 0
         self.bw                   = bw
-        self.log_mr               = log_mr
         self.hist_based_uInterval = hist_based_uInterval
         
         # If the uInterval is given in the input (as a non-negative value) - use it. 
@@ -220,7 +219,7 @@ class Simulator(object):
             self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
-        if (self.log_mr):
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose):
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
@@ -419,7 +418,7 @@ class Simulator(object):
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staeleness-Aware alg'.
             
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            if (self.log_mr): # requested to print to output estimated and real (historic stat) about the miss rate, and the initial warmup time is finished.
+            if (MyConfig.VERBOSE_LOG_MR in self.verbose): # requested to print to output estimated and real (historic stat) about the miss rate, and the initial warmup time is finished.
                 self.log_mr_in_warmup = False
             self.consider_send_update () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
@@ -503,14 +502,14 @@ class Simulator(object):
                     
                     self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
-                    if (self.log_mr):
+                    if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr1={}, emwa_mr1={}\n' 
                                 .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if (self.neg_ind_cnt[ds] == self.estimation_window):
                     self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
-                    if (self.log_mr):
+                    if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr0={:.4f}, emwa_mr0={:.4f}\n' 
                                 .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
                     self.tn_cnt[ds] = 0
@@ -831,7 +830,7 @@ class Simulator(object):
         self.sol = final_sol.DSs_IDs
         hit = False
         # The commented-out lines below are for logging comparing the mr to estimated mr by analysis. Currently unused.
-        # if (self.use_perfect_hist and self.log_mr): 
+        # if (self.use_perfect_hist and MyConfig.VERBOSE_LOG_MR in self.verbose): 
         #     mr0_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.zeros_ar, quiet=True)
         #     mr1_estimations = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications=self.ones_ar,  quiet=True)
         #     for DS_id in final_sol.DSs_IDs:

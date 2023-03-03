@@ -131,7 +131,7 @@ class Simulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
-        self.EWMA_alpha         = 0.85  # exp' window's moving average's alpha parameter 
+        self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter 
         self.output_file        = output_file
         self.trace_file_name    = trace_file_name
         self.missp              = missp

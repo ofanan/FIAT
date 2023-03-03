@@ -151,7 +151,7 @@ class DataStore (object):
                     self.update_mr1 ()
                     # self.reg_accs_cnt = 0
             if (self.mr_output_file != None): # and mr1_prev != self.mr1_cur):
-                printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr0={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+                printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
                 
         return hit 
 

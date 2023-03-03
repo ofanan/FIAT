@@ -59,22 +59,17 @@ class DataStore (object):
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
-        #self.mr0_window_alpha        = mr1_window_alpha
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
         self.mr1_cur                 = 0
         self.mr1_estimation_window   = mr1_estimation_window
         self.mr0_estimation_window   = mr1_estimation_window
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
-        # self.one_min_mr1_alpha       = 1 - self.mr1_window_alpha
-        # self.one_min_mr0_alpha       = 1 - self.mr0_window_alpha
-        # self.mr1_alpha_over_window   = float (self.mr1_window_alpha) / float (self.mr1_estimation_window)
-        # self.mr0_alpha_over_window   = float (self.mr0_window_alpha) / float (self.mr0_estimation_window)
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
-            self.mr0_ad_th, self.mr1_ad_th = 0.8, 0.01 
-        self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
-        self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimatio window
+            self.mr0_ad_th, self.mr1_ad_th = 0.5, 0.01 
+        self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
+        self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
@@ -82,8 +77,6 @@ class DataStore (object):
         self.updated_indicator       = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
         self.stale_indicator         = self.updated_indicator.gen_SimpleBloomFilter ()
         self.designed_mr1            = designed_mr1
-        self.mr1_cur                 = 0 # Initially assume that there're no FP events, that is: the miss prob' in case of a positive ind' is 0. 
-        self.mr0_cur                 = 1 # Initially assume that there're no FN events, that is: the miss prob' in case of a negative ind' is 1.
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
@@ -272,12 +265,3 @@ class DataStore (object):
         self.fnr    = 1 - pow ( (B1_up-Delta[1]) / B1_up, self.num_of_hashes)
         self.fpr    = pow ( B1_st / self.BF_size, self.num_of_hashes)
         self.ins_since_last_fpr_fnr_estimation  = 0
-
-#         if (self.should_send_update()==True): # either the fpr or the fnr is too high - need to send update
-#             size_of_delta_update = sum (Delta)     
-#             self.update_bw += (size_of_delta_update * self.lg_BF_size) if (size_of_delta_update < self.delta_th) else self.BF_size     
-#             self.stale_indicator.array = updated_sbf.array # Send update
-#             self.num_of_advertisements += 1
-#             self.fnr = 0
-#             self.fpr = pow ( B1_up / self.BF_size, self.num_of_hashes) # Immediately after sending an update, the expected fnr is 0, and the expected fpr is the inherent fpr
-

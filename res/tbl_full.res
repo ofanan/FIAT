@@ -544,3 +544,32 @@ gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost 
 // estimation window = 100, // spec accs cost = 1880699, num of spec hits = 286837
 // num of ads per DS=[18, 23, 34]
 // avg update interval = 32000.0 req
+
+gradle.C10K.bpe14.900Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.411463333333334
+// tot_access_cost = 3064767, hit_ratio = 0.9, non_comp_miss_cnt = 33724, comp_miss_cnt = 56387
+// estimation window = 100, // spec accs cost = 2046379, num of spec hits = 311181
+// num of ads per DS=[21, 27, 40]
+// avg update interval = 30681.818181818184 req
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.597569597569597
+// tot_access_cost = 3375011, hit_ratio = 0.9, non_comp_miss_cnt = 39734, comp_miss_cnt = 64717
+// estimation window = 100, // spec accs cost = 2238023, num of spec hits = 338899
+// num of ads per DS=[25, 31, 47]
+// avg update interval = 29126.184466019415 req
+
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 10.08908
+// tot_access_cost = 386108, hit_ratio = 0.88, non_comp_miss_cnt = 3815, comp_miss_cnt = 8641
+// estimation window = 100, // spec accs cost = 297996, num of spec hits = 46254
+// num of ads per DS=[2, 4, 4]
+// avg update interval = 30000.0 req
+
+// Now, trying without "exploration" stage at python_simulator. init_init_mr0 = 0.9.
+
+
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 11.96464
+// tot_access_cost = 337164, hit_ratio = 0.83, non_comp_miss_cnt = 8545, comp_miss_cnt = 8641
+// estimation window = 100, // spec accs cost = 232959, num of spec hits = 30598
+// num of ads per DS=[6, 6, 5]
+// avg update interval = 17647.058823529413 req

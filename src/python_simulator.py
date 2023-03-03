@@ -67,7 +67,7 @@ class Simulator(object):
         if (self.hist_based_uInterval):
             return '{}.adH' .format (settings_str) # history-based advertisements
         else:
-            return '{}.adF' .format (settings_str) # Fixed-update-interval advertisements
+            return '{}.adF' .format (settings_str) # fixed-update-interval advertisements
         
                 
     def init_DS_list(self):
@@ -210,8 +210,7 @@ class Simulator(object):
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
         self.designed_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
-        if (self.calc_mr_by_hist):
-            self.pos_ind_cnt    = np.zeros (self.num_of_DSs)
+        if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
@@ -437,25 +436,27 @@ class Simulator(object):
         run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
         The history is collected by the DSs themselves.
         """
-        # Stop exploration after receiving the first update (the first uInterval)
-        if (self.req_cnt == self.uInterval):
-            if self.hist_based_uInterval: # in a hist-based uInterval, we need a "warmup" first advertisement
-                for DS in self.DS_list:
-                    DS.advertise_ind () 
-            self.in_exploration = False
-        
-        # handle the case where we're within exploration, and all indications are False 
-        if (self.in_exploration and np.all(self.indications == False)): 
-            # rand ...
-            explored_ds = random.randint (0, self.num_of_DSs-1) # access this one directly, w/o the long alg...
-            hit = self.DS_list[explored_ds].access (self.cur_req.key, is_speculative_accs=True)
-            if (hit):
-                self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
-                self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
-                self.client_list[self.client_id].hit_cnt += 1
-            else: # Miss
-                self.handle_miss ()
-            return
+        # # Stop exploration after receiving the first update (the first uInterval)
+        # if (self.req_cnt == self.uInterval):
+        #     if self.hist_based_uInterval: # in a hist-based uInterval, we need a "warmup" first advertisement
+        #         for DS in self.DS_list:
+        #             DS.advertise_ind () 
+        #     self.in_exploration = False
+        #
+        # # handle the case where we're within exploration, and all indications are False 
+        # if (self.in_exploration):# and np.all(self.indications == False)): 
+        #     # rand ...
+        #     if (not(np.all(self.indications == False))):
+        #         MyConfig.error ('within exploration, but not all indications are false')
+        #     explored_ds = random.randint (0, self.num_of_DSs-1) # access this one directly, w/o the long alg...
+        #     hit = self.DS_list[explored_ds].access (self.cur_req.key, is_speculative_accs=True)
+        #     if (hit):
+        #         self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
+        #         self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
+        #         self.client_list[self.client_id].hit_cnt += 1
+        #     else: # Miss
+        #         self.handle_miss ()
+        #     return
 
         # handle the non-exploration case: obtain mr estimations, and access DSs accordingly
         for ds in range (self.num_of_DSs):            

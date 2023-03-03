@@ -107,7 +107,6 @@ class Simulator(object):
                  use_given_DS_per_item      = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
                  uInterval          = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
-                 log_mr             = False, # When true, write the estimated and real miss rates (the conditional miss ratio) to a file.
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = False, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
@@ -141,8 +140,6 @@ class Simulator(object):
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
         self.calc_mr_by_hist    = calc_mr_by_hist
         self.use_perfect_hist   = use_perfect_hist
-        if (self.calc_mr_by_hist and not(self.use_perfect_hist)):
-            self.in_exploration = True # if using practical hist, we must begin with some exploration of the mr's     
         self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
         self.mode               = mode
         self.num_of_clients     = client_DS_cost.shape[0]
@@ -222,7 +219,6 @@ class Simulator(object):
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
-        self.log_mr_in_warmup = True # Even if requested, begin to write this output to a file only after long warmup period.
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):
@@ -417,8 +413,6 @@ class Simulator(object):
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staeleness-Aware alg'.
             
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            if (MyConfig.VERBOSE_LOG_MR in self.verbose): # requested to print to output estimated and real (historic stat) about the miss rate, and the initial warmup time is finished.
-                self.log_mr_in_warmup = False
             self.consider_send_update () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
@@ -436,7 +430,6 @@ class Simulator(object):
         run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
         The history is collected by the DSs themselves.
         """
-        # handle the non-exploration case: obtain mr estimations, and access DSs accordingly
         for ds in range (self.num_of_DSs):            
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()

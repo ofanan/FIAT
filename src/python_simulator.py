@@ -83,7 +83,7 @@ class Simulator(object):
                         collect_mr_stat     = not (self.use_perfect_hist),
                         analyse_ind_deltas  = True,
                         EWMA_alpha          = self.EWMA_alpha,
-                        inherent_mr1        = self.inherent_mr1,
+                        designed_mr1        = self.designed_mr1,
                         use_EWMA            = self.use_EWMA,
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
                         hist_based_uInterval = self.hist_based_uInterval
@@ -209,17 +209,17 @@ class Simulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
-        self.inherent_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+        self.designed_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         if (self.calc_mr_by_hist):
             self.pos_ind_cnt    = np.zeros (self.num_of_DSs)
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.mr1_cur        = self.inherent_mr1 * np.ones (self.num_of_DSs)
+            self.mr1_cur        = self.designed_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose):
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose):
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
@@ -480,7 +480,7 @@ class Simulator(object):
             # The lines below reset the estimators and counters when the DS advertises a new indicator. 
             if (self.DS_list[ds].ins_since_last_ad==0): # This DS has just sent an indicator --> reset all counters and estimations
                 self.mr0_cur[ds] = 1
-                self.mr1_cur[ds] = self.inherent_mr1
+                self.mr1_cur[ds] = self.designed_mr1
                 self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
             
             self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
@@ -517,7 +517,7 @@ class Simulator(object):
         else: # not using exp weighted moving avg --> use a simple flat history estimation
             for ds in range (self.num_of_DSs):
                 self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
-                self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.inherent_mr1
+                self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.designed_mr1
 
 
     def print_est_mr_func (self):

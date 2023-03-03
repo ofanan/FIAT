@@ -461,3 +461,86 @@ gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost 
 // estimation window = 100, // spec accs cost = 405282, num of spec hits = 95045
 // num of ads per DS=[6, 7, 29]
 // avg update interval = 21428.571428571428 req
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 16.59809
+// tot_access_cost = 167009, hit_ratio = 0.7, non_comp_miss_cnt = 21215, comp_miss_cnt = 8641
+// estimation window = 100, // spec accs cost = 45260, num of spec hits = 11800
+// num of ads per DS=[9, 9, 11]
+// avg update interval = 10344.827586206897 req
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 10.09097
+// tot_access_cost = 386597, hit_ratio = 0.88, non_comp_miss_cnt = 3809, comp_miss_cnt = 8641
+// estimation window = 100, // spec accs cost = 298665, num of spec hits = 46349
+// num of ads per DS=[2, 4, 4]
+// avg update interval = 30000.0 req
+
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.7739
+// tot_access_cost = 744980, hit_ratio = 0.9, non_comp_miss_cnt = 6263, comp_miss_cnt = 13933
+// estimation window = 100, // spec accs cost = 540805, num of spec hits = 82063
+// num of ads per DS=[4, 6, 9]
+// avg update interval = 31578.947368421053 req
+
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.540573333333333
+// tot_access_cost = 1081872, hit_ratio = 0.9, non_comp_miss_cnt = 9631, comp_miss_cnt = 19975
+// estimation window = 100, // spec accs cost = 758121, num of spec hits = 117503
+// num of ads per DS=[6, 8, 14]
+// avg update interval = 32142.85714285714 req
+
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.2361125
+// tot_access_cost = 1478245, hit_ratio = 0.91, non_comp_miss_cnt = 11505, comp_miss_cnt = 24819
+// estimation window = 100, // spec accs cost = 1048720, num of spec hits = 158536
+// num of ads per DS=[8, 10, 16]
+// avg update interval = 35294.117647058825 req
+
+
+
+
+
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 10.08908
+// tot_access_cost = 386108, hit_ratio = 0.88, non_comp_miss_cnt = 3815, comp_miss_cnt = 8641
+// estimation window = 100, // spec accs cost = 297996, num of spec hits = 46254
+// num of ads per DS=[2, 4, 4]
+// avg update interval = 30000.0 req
+
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.8451
+// tot_access_cost = 735020, hit_ratio = 0.9, non_comp_miss_cnt = 6747, comp_miss_cnt = 13933
+// estimation window = 100, // spec accs cost = 529178, num of spec hits = 80978
+// num of ads per DS=[4, 6, 9]
+// avg update interval = 31578.947368421053 req
+
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.6386
+// tot_access_cost = 1072130, hit_ratio = 0.9, non_comp_miss_cnt = 10414, comp_miss_cnt = 19975
+// estimation window = 100, // spec accs cost = 748858, num of spec hits = 116821
+// num of ads per DS=[6, 8, 15]
+// avg update interval = 31034.482758620692 req
+
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.48285
+// tot_access_cost = 1422840, hit_ratio = 0.9, non_comp_miss_cnt = 14587, comp_miss_cnt = 24819
+// estimation window = 100, // spec accs cost = 990412, num of spec hits = 153064
+// num of ads per DS=[9, 10, 18]
+// avg update interval = 32432.43243243243 req
+
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.36424
+// tot_access_cost = 1787770, hit_ratio = 0.9, non_comp_miss_cnt = 18730, comp_miss_cnt = 29157
+// estimation window = 100, // spec accs cost = 1256276, num of spec hits = 196961
+// num of ads per DS=[11, 14, 22]
+// avg update interval = 31914.893617021276 req
+
+gradle.C10K.bpe14.600Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.23725
+// tot_access_cost = 2151800, hit_ratio = 0.91, non_comp_miss_cnt = 20477, comp_miss_cnt = 35334
+// estimation window = 100, // spec accs cost = 1508942, num of spec hits = 232132
+// num of ads per DS=[13, 17, 25]
+// avg update interval = 32727.272727272728 req
+
+gradle.C10K.bpe14.700Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.112551428571429
+// tot_access_cost = 2474986, hit_ratio = 0.91, non_comp_miss_cnt = 23774, comp_miss_cnt = 40302
+// estimation window = 100, // spec accs cost = 1703791, num of spec hits = 259426
+// num of ads per DS=[15, 19, 28]
+// avg update interval = 33870.967741935485 req
+
+gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adF | service_cost = 8.2071425
+// tot_access_cost = 2771014, hit_ratio = 0.91, non_comp_miss_cnt = 28373, comp_miss_cnt = 47521
+// estimation window = 100, // spec accs cost = 1880699, num of spec hits = 286837
+// num of ads per DS=[18, 23, 34]
+// avg update interval = 32000.0 req

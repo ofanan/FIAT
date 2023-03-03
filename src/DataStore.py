@@ -24,8 +24,9 @@ class DataStore (object):
                  DS_send_fpr_fnr_updates    = True, 
                  collect_mr_stat            = True,
                  analyse_ind_deltas         = True,
-                 inherent_mr1               = 0.001,
+                 designed_mr1               = 0.001,
                  use_EWMA                   = False,
+                 initial_mr0                = 0.9,
                  mr_output_file             = None,
                  use_indicator              = True,
                  hist_based_uInterval       = False  
@@ -59,6 +60,9 @@ class DataStore (object):
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         #self.mr0_window_alpha        = mr1_window_alpha
+        self.initial_mr0             = initial_mr0
+        self.mr0_cur                 = self.initial_mr0
+        self.mr1_cur                 = 0
         self.mr1_estimation_window   = mr1_estimation_window
         self.mr0_estimation_window   = mr1_estimation_window
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
@@ -77,7 +81,7 @@ class DataStore (object):
         self.max_fpr                 = max_fpr
         self.updated_indicator       = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
         self.stale_indicator         = self.updated_indicator.gen_SimpleBloomFilter ()
-        self.inherent_mr1            = inherent_mr1
+        self.designed_mr1            = designed_mr1
         self.mr1_cur                 = 0 # Initially assume that there're no FP events, that is: the miss prob' in case of a positive ind' is 0. 
         self.mr0_cur                 = 1 # Initially assume that there're no FN events, that is: the miss prob' in case of a negative ind' is 1.
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
@@ -129,17 +133,23 @@ class DataStore (object):
             self.spec_accs_cnt += 1
             if (not(hit)):
                 self.tn_events_cnt += 1
-            if (not(self.use_EWMA) or (self.spec_accs_cnt < self.mr0_estimation_window)): # use "flat" history
+            if (not(self.use_EWMA)): # use "flat" history
                 self.mr0_cur = float(self.tn_events_cnt) / float (self.spec_accs_cnt)
+                # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
+                if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                    printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
             else: # now we know that we should use EWMA
                 if (self.spec_accs_cnt % self.mr0_estimation_window == 0):
-                    self.update_mr0 ()                    
+                    self.update_mr0 ()
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
                 self.fp_events_cnt += 1
-            if (not(self.use_EWMA) or (self.reg_accs_cnt < self.mr1_estimation_window)): # use "flat" history
+            if (not(self.use_EWMA)): # use "flat" history
                 self.mr1_cur = float(self.fp_events_cnt) / float (self.reg_accs_cnt) 
+                # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
+                if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                    printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
             else: # now we know that we should use EWMA
                 if (self.reg_accs_cnt % self.mr1_estimation_window == 0):
                     self.update_mr1 ()
@@ -201,17 +211,21 @@ class DataStore (object):
             self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
-        if (self.mr_output_file != None):
-            printf (self.mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+            printf (self.mr_output_file, 'Advertising\n')
+            # printf (self.mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
 
-        self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0 
+        self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
+        self.mr0_cur = self.initial_mr0
+        self.mr1_cur = self.designed_mr1 
 
     def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
+        #if (self.spec_accs_cnt==self.tn_events_cnt): # this is the first 
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_estimation_window) + (1 - self.EWMA_alpha) * self.mr0_cur 
-        if (self.mr_output_file != None): # and mr0_prev != self.mr0_cur):
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         self.tn_events_cnt = int(0)
         
@@ -220,7 +234,7 @@ class DataStore (object):
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur 
-        if (self.mr_output_file != None): # and mr1_prev != self.mr1_cur):
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         self.fp_events_cnt = int(0)
         

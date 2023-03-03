@@ -16,8 +16,9 @@ VERBOSE_RES                 = 1 # write to output files
 VERBOSE_LOG                 = 2 # write to log files
 VERBOSE_DETAILED_LOG        = 3 
 VERBOSE_LOG_MR              = 4 # Write a log file detailing the mr upon every advertisement
-VERBOSE_DEBUG               = 5
-VERBOSE_CNT_FN_BY_STALENESS = 7 
+VERBOSE_DETAILED_LOG_MR     = 5 # Write a log file detailing the mr upon every advertisement
+VERBOSE_DEBUG               = 6
+VERBOSE_CNT_FN_BY_STALENESS = 10 
 
 
 INF_INT = 999999999

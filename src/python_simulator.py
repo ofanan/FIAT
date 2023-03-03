@@ -70,7 +70,7 @@ class Simulator(object):
         """
         Init a list of empty DSs (Data Stores == caches)
         """
-        self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_estimation_window = self.estimation_window, 
+        self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_ewma_window_size = self.ewma_window_size, 
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates  = not (self.calc_mr_by_hist),
@@ -91,7 +91,7 @@ class Simulator(object):
         Init a list of clients
         """
         
-        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, estimation_window = self.estimation_window, verbose = self.verbose, 
+        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, ewma_window_size = self.ewma_window_size, verbose = self.verbose, 
         use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
         verbose_file = self.output_file) 
         for i in range(self.num_of_clients)]
@@ -151,7 +151,7 @@ class Simulator(object):
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
         self.est_win_factor     = 10
-        self.estimation_window  = 300 # window for parameters' estimation 
+        self.ewma_window_size  = 300 # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
         self.verbose            = verbose # Used for debug / analysis: a higher level verbose prints more msgs to the Screen / output file.       
@@ -285,7 +285,7 @@ class Simulator(object):
         printf (self.output_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
-        printf (self.output_file, '// estimation window = {}, ' .format (self.estimation_window))
+        printf (self.output_file, '// estimation window = {}, ' .format (self.ewma_window_size))
         if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
             printf (self.output_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
             printf (self.output_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
@@ -466,20 +466,20 @@ class Simulator(object):
 
         if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
             for ds in range (self.num_of_DSs):            
-                if (self.pos_ind_cnt[ds] == self.estimation_window):
+                if (self.pos_ind_cnt[ds] == self.ewma_window_size):
                     
-                    self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
+                    self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
                     if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr1={}, emwa_mr1={}\n' 
-                                .format (self.fp_cnt[ds] / self.estimation_window, self.mr1_cur[ds]))
+                                .format (self.fp_cnt[ds] / self.ewma_window_size, self.mr1_cur[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
-                if (self.neg_ind_cnt[ds] == self.estimation_window):
-                    self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.estimation_window + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
+                if (self.neg_ind_cnt[ds] == self.ewma_window_size):
+                    self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.ewma_window_size + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
                     if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr0={:.4f}, emwa_mr0={:.4f}\n' 
-                                .format (self.tn_cnt[ds] / self.estimation_window, self.mr0_cur[ds]))
+                                .format (self.tn_cnt[ds] / self.ewma_window_size, self.mr0_cur[ds]))
                     self.tn_cnt[ds] = 0
                     self.neg_ind_cnt [ds] = 0
         else: # not using exp weighted moving avg --> use a simple flat history estimation

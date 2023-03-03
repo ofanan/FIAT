@@ -18,7 +18,7 @@ class DataStore (object):
     # Returns true iff an updated indicator should be sent.
     should_advertise_ind = lambda self: (self.mr1_cur > self.mr1_ad_th or self.mr0_cur < self.mr0_ad_th) if self.hist_based_uInterval else (self.ins_since_last_ad == self.uInterval)
     
-    def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_estimation_window = 100, 
+    def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_ewma_window_size = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
                  num_of_insertions_between_estimations = np.uint8 (50),
                  DS_send_fpr_fnr_updates    = True, 
@@ -37,7 +37,7 @@ class DataStore (object):
             size:               number of elements that can be stored in the datastore
             bpe:                Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
             EWMA_alpha:    sliding window parameter for miss-rate estimation 
-            mr1_estimation_window:  Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
+            mr1_ewma_window_size:  Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
             max_fnr, max_fpr : maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
                                (FPR: False Positive Ratio, FNR: False Negative Ratio).
                                currently usually unused, as the time to update is defined exclusively by the update interval.
@@ -62,8 +62,8 @@ class DataStore (object):
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
         self.mr1_cur                 = 0
-        self.mr1_estimation_window   = mr1_estimation_window
-        self.mr0_estimation_window   = mr1_estimation_window
+        self.mr1_ewma_window_size   = mr1_ewma_window_size
+        self.mr0_ewma_window_size   = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
@@ -132,7 +132,7 @@ class DataStore (object):
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                     printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
             else: # now we know that we should use EWMA
-                if (self.spec_accs_cnt % self.mr0_estimation_window == 0):
+                if (self.spec_accs_cnt % self.mr0_ewma_window_size == 0):
                     self.update_mr0 ()
         else: # regular accs
             self.reg_accs_cnt += 1
@@ -144,7 +144,7 @@ class DataStore (object):
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                     printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
             else: # now we know that we should use EWMA
-                if (self.reg_accs_cnt % self.mr1_estimation_window == 0):
+                if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
                     self.update_mr1 ()
                 
         return hit 
@@ -217,7 +217,7 @@ class DataStore (object):
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
         #if (self.spec_accs_cnt==self.tn_events_cnt): # this is the first 
-        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_estimation_window) + (1 - self.EWMA_alpha) * self.mr0_cur 
+        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         self.tn_events_cnt = int(0)
@@ -226,7 +226,7 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
-        self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_estimation_window) + (1 - self.EWMA_alpha) * self.mr1_cur 
+        self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         self.fp_events_cnt = int(0)

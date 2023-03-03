@@ -19,7 +19,7 @@ class Request(object):
         
 class Client(object):
     
-    def __init__(self, ID, num_of_DSs, estimation_window  = 1000, window_alpha = 0.25, verbose = [], 
+    def __init__(self, ID, num_of_DSs, ewma_window_size  = 1000, window_alpha = 0.25, verbose = [], 
                 use_redundan_coef = False, k_loc = 1, missp = 100, verbose_file = None):
         """
         Return a Client object with the following attributes:
@@ -38,10 +38,10 @@ class Client(object):
         self.pos_ind_cnt        = np.zeros (self.num_of_DSs) #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
         self.pr_of_pos_ind_estimation       = 0.5 * np.ones (self.num_of_DSs) # pr_of_pos_ind_estimation[i] will hold the estimation for the prob' that DS[i] gives positive ind' for a requested item.  
         self.first_estimate     = True # indicates whether this is the first estimation window
-        self.estimation_window  = np.uint16 (estimation_window) # Number of requests performed by this client during each window
+        self.ewma_window_size  = np.uint16 (ewma_window_size) # Number of requests performed by this client during each window
         self.window_alpha       = window_alpha # window's alpha parameter 
         self.one_min_alpha      = 1 - self.window_alpha
-        self.alpha_over_window  = float (self.window_alpha) / float (self.estimation_window)
+        self.alpha_over_window  = float (self.window_alpha) / float (self.ewma_window_size)
         self.fpr                = np.zeros (self.num_of_DSs) # fpr[i] will hold the estimated False Positive Rate of DS i
         self.fnr                = np.zeros (self.num_of_DSs) # fnr[i] will hold the estimated False Negative Rate of DS i
         self.zeros_ar           = np.zeros (self.num_of_DSs) 
@@ -84,11 +84,11 @@ class Client(object):
         """
         self.ind_cnt += 1 # Received a new set of indications
         self.pos_ind_cnt += indications 
-        if (self.ind_cnt < self.estimation_window ): # Init period - use merely the data collected so far
-            self.pr_of_pos_ind_estimation   = self.pos_ind_cnt/self.estimation_window
-        elif (self.ind_cnt % self.estimation_window == 0): # run period - update the estimation once in a self.estimation_window time
+        if (self.ind_cnt < self.ewma_window_size ): # Init period - use merely the data collected so far
+            self.pr_of_pos_ind_estimation   = self.pos_ind_cnt/self.ewma_window_size
+        elif (self.ind_cnt % self.ewma_window_size == 0): # run period - update the estimation once in a self.ewma_window_size time
             if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose and self.ID == 0):
-                print ('q = ', self.pr_of_pos_ind_estimation, ', new q = ', self.pos_ind_cnt/self.estimation_window)
+                print ('q = ', self.pr_of_pos_ind_estimation, ', new q = ', self.pos_ind_cnt/self.ewma_window_size)
             self.pr_of_pos_ind_estimation   = self.alpha_over_window * self.pos_ind_cnt + self.one_min_alpha * self.pr_of_pos_ind_estimation
             self.pos_ind_cnt    = np.zeros (self.num_of_DSs , dtype='uint16') #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
 

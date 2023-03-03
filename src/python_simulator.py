@@ -215,6 +215,7 @@ class Simulator(object):
             self.mr1_cur        = self.designed_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
+        self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose):
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
@@ -227,7 +228,6 @@ class Simulator(object):
         The simulator also writes to this data (via Datastore.py) about each access whether it results in a True Positive, True Negative, False Positive, or False negative.
         """
         settings_str = self.gen_settings_string (num_of_req=self.trace_len)
-        self.mr_output_file = [None]*self.num_of_DSs
         for ds in range (self.num_of_DSs):
             self.mr_output_file[ds] = open ('../res/{}_ds{}.mr' .format (settings_str, ds), 'w')
 

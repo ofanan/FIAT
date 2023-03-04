@@ -151,7 +151,7 @@ class Simulator(object):
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
         self.est_win_factor     = 10
-        self.ewma_window_size  = 300 # window for parameters' estimation 
+        self.ewma_window_size   = 500 # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
         self.verbose            = verbose # Used for debug / analysis: a higher level verbose prints more msgs to the Screen / output file.       

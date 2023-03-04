@@ -15,9 +15,6 @@ from printf import printf
 
 class DataStore (object):
 
-    # Returns true iff an updated indicator should be sent.
-    should_advertise_ind = lambda self: (self.mr1_cur > self.mr1_ad_th or self.mr0_cur < self.mr0_ad_th) if self.hist_based_uInterval else (self.ins_since_last_ad == self.uInterval)
-    
     def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_ewma_window_size = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
                  num_of_insertions_between_estimations = np.uint8 (50),
@@ -67,7 +64,7 @@ class DataStore (object):
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
-            self.mr0_ad_th, self.mr1_ad_th = 0.5, 0.01 
+            self.mr0_ad_th, self.mr1_ad_th = 0.65, 0.01 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
@@ -172,7 +169,7 @@ class DataStore (object):
                     self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                     self.num_of_fpr_fnr_updates += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
-            if (self.should_advertise_ind()):
+            if (not(self.hist_based_uInterval) and (self.ins_since_last_ad == self.uInterval)):
                 self.advertise_ind ()
                 
     def get_indication (self, key):
@@ -220,6 +217,9 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
+
+        if self.hist_based_uInterval and self.mr0_cur < self.mr0_ad_th: 
+            self.advertise_ind()
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -229,6 +229,8 @@ class DataStore (object):
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+        if self.hist_based_uInterval and self.mr1_cur > self.mr1_ad_th: 
+            self.advertise_ind()
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

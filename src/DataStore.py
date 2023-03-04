@@ -64,7 +64,7 @@ class DataStore (object):
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
-            self.mr0_ad_th, self.mr1_ad_th = 0.65, 0.01 
+            self.mr0_ad_th, self.mr1_ad_th = 0.7, 0.01 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0

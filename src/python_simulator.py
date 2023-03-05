@@ -90,7 +90,7 @@ class Simulator(object):
         Init a list of clients
         """
         
-        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, ewma_window_size = self.ewma_window_size, verbose = self.verbose, 
+        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, window_size = 100, verbose = self.verbose, 
         use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
         verbose_file = self.output_file) 
         for i in range(self.num_of_clients)]

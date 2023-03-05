@@ -74,10 +74,9 @@ class Simulator(object):
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates  = not (self.calc_mr_by_hist),
-                        mr_output_file = self.mr_output_file[i],
-                        # currently the mr stat is collected for all the DSs by the simulator. The DSs don't need to collect further mr stat
-                        collect_mr_stat     = not (self.use_perfect_hist),
-                        analyse_ind_deltas  = True,
+                        mr_output_file      = self.mr_output_file[i], 
+                        collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
+                        analyse_ind_deltas  = not (self.calc_mr_by_hist),
                         EWMA_alpha          = self.EWMA_alpha,
                         designed_mr1        = self.designed_mr1,
                         use_EWMA            = self.use_EWMA,
@@ -134,10 +133,14 @@ class Simulator(object):
         self.bpe                = bpe
         self.rand_seed          = rand_seed
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
-        self.calc_mr_by_hist    = calc_mr_by_hist
+        self.mode               = mode
+        if (self.mode=='Opt'):
+            print ('note: running Opt. Setting self.calc_mr_by_hist = False')
+            self.calc_mr_by_hist = False
+        else: 
+            self.calc_mr_by_hist = calc_mr_by_hist
         self.use_perfect_hist   = use_perfect_hist
         self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
-        self.mode               = mode
         self.num_of_clients     = client_DS_cost.shape[0]
         self.num_of_DSs         = client_DS_cost.shape[1]
         self.k_loc              = k_loc
@@ -151,10 +154,10 @@ class Simulator(object):
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
         self.est_win_factor     = 10
-        self.ewma_window_size   = int (self.DS_size/5) # window for parameters' estimation 
+        self.ewma_window_size   = int (self.DS_size/10) # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
-        self.verbose            = verbose # Used for debug / analysis: a higher level verbose prints more msgs to the Screen / output file.       
+        self.verbose            = verbose # Defines the log/res data printed out to files       
                 
         self.mr_of_DS           = np.zeros(self.num_of_DSs) # mr_of_DS[i] will hold the estimated miss rate of DS i 
         self.req_df             = req_df
@@ -176,14 +179,18 @@ class Simulator(object):
         self.FN_miss_cnt          = 0 # num of misses happened due to FN event
         self.tot_num_of_updates   = 0
         self.bw                   = bw
-        self.hist_based_uInterval = hist_based_uInterval
+        if (not (self.calc_mr_by_hist)):
+            print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
+            self.hist_based_uInterval = False
+        else:
+            self.hist_based_uInterval = hist_based_uInterval
         
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
         if (uInterval == -1): # Should calculate uInterval by the given bw parameter
             self.use_global_uInerval = True
             self.uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
-            self.update_cycle_of_DS = np.array ( [ds_id * self.uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
+            self.advertise_cycle_of_DS = np.array ( [ds_id * self.uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         else:
             self.use_global_uInerval = False
             self.uInterval = uInterval
@@ -277,11 +284,13 @@ class Simulator(object):
         self.high_cost_mp_cnt   = np.sum( [client.high_cost_mp_cnt for client in self.client_list ] )
         self.total_cost         = self.total_access_cost + self.missp * (self.comp_miss_cnt + self.non_comp_miss_cnt + self.high_cost_mp_cnt)
         self.mean_service_cost  = self.total_cost / self.req_cnt 
+        bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
-        printf (self.output_file, '\n\n{} | service_cost = {}\n'  .format (settings_str, self.mean_service_cost))
-        bw_in_practice =  int (round ( self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
-        if (self.bw != bw_in_practice):
-            printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
+        printf (self.output_file, '\n\n{} | service_cost = {} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
+        #Each update is a full indicator, sent to n-1 DSs)
+        # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
+        # if (self.bw != bw_in_practice):
+        #     printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
         printf (self.output_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
@@ -293,9 +302,9 @@ class Simulator(object):
 
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
-        # if (self.mode != 'opt'):
-        printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-        printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+        if (self.mode != 'opt' and self.hist_based_uInterval):
+            printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
+            printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 
@@ -343,7 +352,7 @@ class Simulator(object):
                 self.client_list[self.client_id].hit_cnt += 1
             self.mid_report ()
 
-    def consider_send_update (self):
+    def consider_advertise (self):
         """
         Used to decide whether to send an update when updates are sent "globally", namely, by some global requests count, 
         and not by the number of insertions of each concrete DS. 
@@ -352,8 +361,8 @@ class Simulator(object):
             return
         remainder = self.req_cnt % self.uInterval
         for ds_id in range (self.num_of_DSs):
-            if (remainder == self.update_cycle_of_DS[ds_id]):
-                self.DS_list[ds_id].send_update (check_delta_th=False)
+            if (remainder == self.advertise_cycle_of_DS[ds_id]):
+                self.DS_list[ds_id].advertise_ind (check_delta_th=False)
                 self.tot_num_of_updates += 1
 
 
@@ -363,7 +372,7 @@ class Simulator(object):
         This algorithm is FNO: False-Negative Oblivious, namely, it never accesses a cache with a negative indication.
         """
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            self.consider_send_update ()
+            self.consider_advertise ()
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id()
             
@@ -406,10 +415,9 @@ class Simulator(object):
         Run a full trace where the access strategy is the PGM, as proposed in the journal paper "Access Strategies for Network Caching".
         This algorithm is FNA: False-Negative Aware, namely, it may access a cache despite a negative indication.
         """
-        self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staeleness-Aware alg'.
-            
+        self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            self.consider_send_update () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
+            self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
             for i in range (self.num_of_DSs):
@@ -419,7 +427,9 @@ class Simulator(object):
                 self.handle_single_req_pgm_fna_mr_by_practical_hist ()
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
+                self.access_pgm_fna_hetro ()
             self.mid_report ()
+        # self.gather_statistics()
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """

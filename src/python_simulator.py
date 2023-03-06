@@ -196,7 +196,7 @@ class Simulator(object):
             self.uInterval = uInterval
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (uInterval == 1) else False
-        self.num_of_insertions_between_estimations = np.uint8 (50)
+        self.num_of_insertions_between_estimations = np.uint8 (150)
         if (self.num_of_clients == 1):
             self.use_given_client_per_item = False # if there's only 1 client, all requests belong to this client, disregarding what was pre-computed in the trace file.
         else:
@@ -302,7 +302,7 @@ class Simulator(object):
 
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
-        if (self.mode != 'opt' and self.hist_based_uInterval):
+        if (self.mode != 'opt'):
             printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
             printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):

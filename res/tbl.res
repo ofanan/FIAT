@@ -1,7 +1,8 @@
-gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNAA | service_cost = 11.755945755945756
-// tot_access_cost= 2325834.0, hit_ratio = 0.81, non_comp_miss_cnt = 123885, comp_miss_cnt = 64717
-// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
-// avg num of fpr_fnr_updates = 1257, fpr_fnr_updates bw = 0.0013
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNAA.adF | service_cost = 11.755945755945756 | bw = 52.64
+// tot_access_cost = 2325834, hit_ratio = 0.81, non_comp_miss_cnt = 123885, comp_miss_cnt = 64717
+// estimation window = 1000, // num of insertions between fpr_fnr estimations = 50
+// avg num of fpr_fnr updates = 1257, fpr_fnr_updates bw = 0.0013
+// spec accs cost = 934199, num of spec hits = 133972
 
 gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.Opt | service_cost = 5.116992116992117
 // tot_access_cost= 1881137.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
@@ -52,5 +53,4 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEewma.adH | service_cost
 // estimation window = 2000, // spec accs cost = 2939007, num of spec hits = 428358
 // num of ads per DS=[9, 19, 17]
 // avg update interval = 66666.6 req
-
 

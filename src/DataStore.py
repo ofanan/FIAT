@@ -163,8 +163,8 @@ class DataStore (object):
                 self.updated_indicator.remove(self.cache.get_tail())
             self.updated_indicator.add(key)
             self.ins_since_last_ad                 += 1
-            self.ins_since_last_fpr_fnr_estimation += 1
             if (self.DS_send_fpr_fnr_updates):
+                self.ins_since_last_fpr_fnr_estimation += 1
                 if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
                     self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                     self.num_of_fpr_fnr_updates += 1
@@ -204,10 +204,11 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'Advertising\n')
             # printf (self.mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
-
-        self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
-        self.mr0_cur = self.initial_mr0
-        self.mr1_cur = self.designed_mr1 
+        
+        if (self.collect_mr_stat):
+            self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
+            self.mr0_cur = self.initial_mr0
+            self.mr1_cur = self.designed_mr1 
 
     def update_mr0(self):
         """
@@ -240,17 +241,6 @@ class DataStore (object):
         for i in itertools.islice(self.cache.dli(),head):
             print (i.key)
     
-    def should_send_update (self):
-        """
-        Returns true iff an updated indicator should be sent.
-        """
-#         if (self.fnr > self.max_fnr or self.fpr > self.max_fpr):
-#             return True 
-        if (self.ins_cnt % self.uInterval == 0):
-            return True
-        return False
-            
-
     def estimate_fnr_fpr_by_analysis (self, req_cnt = -1, key = -1):
         """
         Estimates the fnr and fpr, based on the diffs between the updated and the stale indicators. 

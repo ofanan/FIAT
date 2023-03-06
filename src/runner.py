@@ -58,7 +58,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             sm = sim.Simulator(output_file, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
                                missp        = missp,
-                               DS_size      = 10000, #, 
+                               DS_size      = 10000,  
                                uInterval    = uInterval, 
                                calc_mr_by_hist      = False,
                                use_perfect_hist     = False,

@@ -23,7 +23,7 @@ class DataStore (object):
                  analyse_ind_deltas         = True,
                  designed_mr1               = 0.001,
                  use_EWMA                   = False,
-                 initial_mr0                = 0.9,
+                 initial_mr0                = 0.85,
                  mr_output_file             = None,
                  use_indicator              = True,
                  hist_based_uInterval       = False  

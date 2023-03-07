@@ -286,7 +286,7 @@ class Simulator(object):
         self.mean_service_cost  = self.total_cost / self.req_cnt 
         bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
-        printf (self.output_file, '\n\n{} | service_cost = {} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
+        printf (self.output_file, '\n{} | service_cost = {} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
         #Each update is a full indicator, sent to n-1 DSs)
         # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         # if (self.bw != bw_in_practice):
@@ -304,7 +304,7 @@ class Simulator(object):
             printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         if (self.mode != 'opt'):
             printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-            printf (self.output_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+            printf (self.output_file, '\n// avg update interval = {} req\n' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 

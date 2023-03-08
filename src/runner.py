@@ -52,7 +52,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     res_file_name       = 'tbl'# open ('../res/tbl_full.res', 'a')
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [30]: #, 100, 300
+    for missp in [30, 100, 300]: #, 100, 300
         for mode in ['fna']: 
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
@@ -60,10 +60,10 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                missp        = missp,
                                DS_size      = 10000,  
                                uInterval    = uInterval, 
-                               calc_mr_by_hist      = True,
+                               calc_mr_by_hist      = False,
                                use_perfect_hist     = False,
                                use_EWMA             = True,
-                               hist_based_uInterval = True,
+                               hist_based_uInterval = False,
                                verbose              = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES]
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
@@ -243,10 +243,10 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
 
-# trace_file_name       = 'wiki/wiki.1190448987_4300K_3DSs.csv'
-# trace_file_name     = 'gradle/gradle.build-cache_full_1000K_3DSs.csv'
-# trace_file_name     = 'scarab/scarab.recs.trace.20160808T073231Z.15M_req_1000K_3DSs.csv'
-# trace_file_name     = 'umass/storage/F2.3M_req_1000K_3DSs.csv'
+wiki_trace_file_name   = 'wiki/wiki1.1190448987.txt'
+gradle_trace_file_name = 'gradle/gradle.build-cache.xz.txt'
+scarab_trace_file_name = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'
+F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
 # print (MyConfig.gen_requests ('wiki/wiki2.1191403252.gz.txt', max_num_of_req=5))
 
 # run_FN_by_uInterval_sim (trace_file_name)
@@ -268,5 +268,5 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
 # num_of_req = 1000000
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
-run_var_missp_sim(trace_file_name = 'wiki/wiki1.1190448987.txt', max_num_of_req=1000) #000
+run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000) 
 

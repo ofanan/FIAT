@@ -80,3 +80,9 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNA.HEewma.adH | service_cos
 // num of ads per DS=[16, 32, 31]
 // avg update interval = 37974.645569620254 req
 
+
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 18.52873852873853 | bw = 0.00
+// tot_access_cost = 3006000, hit_ratio = 0.48, non_comp_miss_cnt = 217738, comp_miss_cnt = 299686
+// estimation window = 1000, // spec accs cost = 3006000, num of spec hits = 482576
+// num of ads per DS=[0, 0, 0]
+// avg update interval = inf req

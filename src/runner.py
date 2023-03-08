@@ -269,4 +269,3 @@ F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
 run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000) 
-

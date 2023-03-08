@@ -9,7 +9,6 @@ as described in the paper:
 import numpy as np
 import mod_pylru, itertools, copy
 import CountingBloomFilter as CBF
-import copy
 import MyConfig 
 from printf import printf
 

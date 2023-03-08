@@ -32,7 +32,7 @@ class Simulator(object):
     select_DS_to_insert = lambda self, i : self.DS_list[self.cur_req['%d'%i]] if (self.use_given_DS_per_item) else self.DS_list[(self.cur_req.key+i) % self.num_of_DSs]    
 
     # Check whether it's time for a mid-report, and if so - output a mid-report
-    mid_report = lambda self : self.gather_statistics() if (self.req_cnt % self.interval_between_mid_reports == 0 and self.req_cnt>0) else None
+    mid_report = lambda self : self.gather_statistics(self.full_res_file) if (self.req_cnt % self.interval_between_mid_reports == 0 and self.req_cnt>0) else None
 
     def gen_settings_string (self, num_of_req=None):
         """
@@ -92,10 +92,10 @@ class Simulator(object):
         
         self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, window_size = 100, verbose = self.verbose, 
         use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
-        verbose_file = self.output_file) 
+        verbose_file = self.res_file) 
         for i in range(self.num_of_clients)]
     
-    def __init__(self, output_file, trace_file_name, 
+    def __init__(self, res_file_name, trace_file_name, 
                  mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
                  use_given_client_per_item  = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
@@ -126,7 +126,8 @@ class Simulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter 
-        self.output_file        = output_file
+        self.res_file_name      = res_file_name
+        self.res_file           = open ('../res/{}.res' .format(self.res_file_name), "a")
         self.trace_file_name    = trace_file_name
         self.missp              = missp
         self.DS_size            = DS_size
@@ -179,6 +180,8 @@ class Simulator(object):
         self.FN_miss_cnt          = 0 # num of misses happened due to FN event
         self.tot_num_of_updates   = 0
         self.bw                   = bw
+        if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+            self.full_res_file           = open ('../res/{}_full.res' .format(self.res_file_name), "a")
         if (not (self.calc_mr_by_hist)):
             print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
             self.hist_based_uInterval = False
@@ -263,19 +266,21 @@ class Simulator(object):
             self.DSs_in_leaf.append(DSs_in_leaf)
                 
 
-    def gather_statistics(self):
+    def gather_statistics(self, res_file=None):
         """
         Accumulates and organizes the stat collected during the sim' run.
         This func' is usually called once at the end of each run of the python_simulator.
         """
         if not (MyConfig.VERBOSE_RES in self.verbose):
             return
+        
+        res_file = res_file if (res_file!=None) else self.res_file
 
         if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
-            printf (self.output_file, 'FN cnt by staleness      = {}\n' .format (self.FN_by_staleness))
-            printf (self.output_file, 'PI hits cnt by staleness = {}\n' .format (self.PI_hits_by_staleness))
+            printf (res_file, 'FN cnt by staleness      = {}\n' .format (self.FN_by_staleness))
+            printf (res_file, 'PI hits cnt by staleness = {}\n' .format (self.PI_hits_by_staleness))
             for bin in range (len(self.FN_by_staleness)):
-                printf (self.output_file, '({:.0f}, {:.07f})' .format (2**(bin+1), self.FN_by_staleness[bin]/self.PI_hits_by_staleness[bin]))
+                printf (res_file, '({:.0f}, {:.07f})' .format (2**(bin+1), self.FN_by_staleness[bin]/self.PI_hits_by_staleness[bin]))
         self.total_access_cost  = np.sum ( [client.total_access_cost for client in self.client_list ] ) 
         self.hit_cnt            = np.sum ( [client.hit_cnt for client in self.client_list ] )
         self.hit_ratio          = float(self.hit_cnt) / self.req_cnt
@@ -286,25 +291,25 @@ class Simulator(object):
         self.mean_service_cost  = self.total_cost / self.req_cnt 
         bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
-        printf (self.output_file, '\n{} | service_cost = {} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
+        printf (res_file, '\n{} | service_cost = {} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
         #Each update is a full indicator, sent to n-1 DSs)
         # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         # if (self.bw != bw_in_practice):
         #     printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
-        printf (self.output_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
+        printf (res_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
-        printf (self.output_file, '// estimation window = {}, ' .format (self.ewma_window_size))
+        printf (res_file, '// estimation window = {}, ' .format (self.ewma_window_size))
         if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
-            printf (self.output_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
-            printf (self.output_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
+            printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
+            printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
 
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
-            printf (self.output_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
+            printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         if (self.mode != 'opt'):
-            printf (self.output_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-            printf (self.output_file, '\n// avg update interval = {} req\n' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+            printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
+            printf (res_file, '\n// avg update interval = {} req\n' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 
@@ -324,7 +329,7 @@ class Simulator(object):
                     self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
             else: # miss
                 self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
-        printf (self.output_file, '({}, {})' .format (self.uInterval, self.FN_miss_cnt/self.hit_cnt))               
+        printf (self.res_file, '({}, {})' .format (self.uInterval, self.FN_miss_cnt/self.hit_cnt))               
 
     def run_trace_opt_hetro (self):
         """
@@ -350,7 +355,8 @@ class Simulator(object):
                 # perform access. we know it will be successful
                 self.DS_list[access_DS_id].access(self.cur_req.key)
                 self.client_list[self.client_id].hit_cnt += 1
-            self.mid_report ()
+            if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+                self.mid_report ()
 
     def consider_advertise (self):
         """
@@ -393,7 +399,8 @@ class Simulator(object):
                     indications[i] = True  
                 self.mr_of_DS = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications, fno_mode = True)
             self.access_pgm_fno_hetro ()
-            self.mid_report ()
+            if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+                self.mid_report ()
 
     def cnt_fn_by_staleness (self):
         """
@@ -428,8 +435,8 @@ class Simulator(object):
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
                 self.access_pgm_fna_hetro ()
-            self.mid_report ()
-        # self.gather_statistics()
+            if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+                self.mid_report ()
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
@@ -532,7 +539,7 @@ class Simulator(object):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
         else: 
-            printf (self.output_file, 'Wrong mode: {:.0f}\n' .format (self.mode))
+            printf (self.res_file, 'Wrong mode: {:.0f}\n' .format (self.mode))
 
         
     def estimate_mr1_by_history (self):

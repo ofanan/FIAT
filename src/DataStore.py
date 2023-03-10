@@ -25,7 +25,8 @@ class DataStore (object):
                  initial_mr0                = 0.85,
                  mr_output_file             = None,
                  use_indicator              = True,
-                 hist_based_uInterval       = False  
+                 hist_based_uInterval       = False,
+                 hit_ratio_based_uInterval  = False  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -42,7 +43,8 @@ class DataStore (object):
                   time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
             DS_send_fpr_fnr_updates - when True, the DS will estimate the fpr/fnr
             collect_mr_stat - when True, collect historical statistics about exclusion probabilities (mr_zero and mr_one).
-            analyse_ind_deltas - When True, keep the stale (lastly-advertised) indicator and periodically compare the updated and the stale indicators to estimate (by analysis) fpr, fnr, and mr.     
+            analyse_ind_deltas - When True, keep the stale (lastly-advertised) indicator and periodically compare the updated and the stale indicators to estimate (by analysis) fpr, fnr, and mr. 
+            hit_ratio_based_uInterval - When True, decide when to advertise an indicator based on the estimated hit ratio     
             verbose:           how much details are written to the output
         """
         self.use_indicator           = use_indicator
@@ -64,6 +66,7 @@ class DataStore (object):
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
             self.mr0_ad_th, self.mr1_ad_th = 0.7, 0.01 
+            self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
@@ -93,6 +96,7 @@ class DataStore (object):
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ("../res/fna.txt", "w")
+        self.q_file = open ('../res/q{}.txt' .format(self.ID), "w") #$$$
 
     def __contains__(self, key):
         """
@@ -218,8 +222,16 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
-        if self.hist_based_uInterval and self.mr0_cur < self.mr0_ad_th: 
-            self.advertise_ind()
+        if self.hist_based_uInterval:
+            if (self.hit_ratio_based_uInterval):
+                perf_ind_hit_ratio  = self.pr_of_pos_ind_estimation
+                practical_hit_ratio = self.pr_of_pos_ind_estimation*(1-self.mr1) + (1 - self.pr_of_pos_ind_estimation)*(1-self.mr0)
+                printf (self.q_file, 'q={}, estimated_q={}' .format(perf_ind_hit_ratio, practical_hit_ratio)) #$$$
+                if self.mr0_cur < self.mr0_ad_th: #$$$$ 
+                    self.advertise_ind()
+            else:
+                if self.mr0_cur < self.mr0_ad_th: 
+                    self.advertise_ind()
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):

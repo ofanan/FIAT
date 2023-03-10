@@ -73,6 +73,24 @@ class Client(object):
         self.DS_accessed[req_id] = DS_index_list
         self.num_DS_accessed.append(len(DS_index_list))
         
+    def update_q (self, indications):
+        """
+        Update the estimation of q, namely the prob' of a pos' ind
+        """
+        self.ind_cnt += 1 # Received a new set of indications
+        self.pos_ind_cnt += indications 
+        if (self.ind_cnt < self.window_size ): # Init period - use merely the data collected so far
+            self.pr_of_pos_ind_estimation   = self.pos_ind_cnt/self.window_size
+            # return True
+        elif (self.ind_cnt % self.window_size == 0): # run period - update the estimation once in a self.window_size time
+            if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose and self.ID == 0):
+                print ('q = ', self.pr_of_pos_ind_estimation, ', new q = ', self.pos_ind_cnt/self.window_size)
+            self.pr_of_pos_ind_estimation = self.alpha_over_window * self.pos_ind_cnt + self.one_min_alpha * self.pr_of_pos_ind_estimation
+            self.pos_ind_cnt    = np.zeros (self.num_of_DSs , dtype='uint16') #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
+            # return True
+        # return False
+        
+    
     def estimate_pr_of_pos_ind_and_hit_ratio (self, indications):
         """
         Estimate Pone (aka "q") - the probability of positive indication; and the hit ratio of each DS.

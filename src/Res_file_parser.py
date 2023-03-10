@@ -64,7 +64,7 @@ class Res_file_parser (object):
         """
         Print table of service costs, normalized w.r.t. to Opt, in tikz format
         """
-        self.tbl_output_file    = open ("../res/tbl.dat", "w")
+        self.tbl_output_file    = open ("../res/missp.dat", "w")
         traces = ['wiki', 'gradle', 'scarab', 'umass']
 
         printf (self.tbl_output_file, '\tMiss Penalty & Policy ')
@@ -125,7 +125,7 @@ class Res_file_parser (object):
                     printf (self.bar_k_loc_output_file, ' {:.4f}\t\t' .format(alg_cost / opt_cost))
             printf (self.bar_k_loc_output_file, ' \n')
 
-    def print_bar_all_traces (self):
+    def print_missp_bars_for_tikz (self):
         """
         Print table of service costs, normalized w.r.t. to Opt, in the format below (assuming the tested miss penalty values are 50, 100, and 500):
         # input     FNO50     FNA50     FNO100    FNA100    FNO500    FNA500
@@ -134,17 +134,19 @@ class Res_file_parser (object):
         # scarab    2.5036    2.3053    3.2211    1.1940    3.3310    1.1183
         # F2        2.3688    2.2609    2.9604    1.1507    3.0546    1.0766
         """
-        self.bar_all_traces_output_file    = open ("../res/three_caches.dat", "w")
+        self.missp_bars_output_file    = open ("../res/missp.txt", "w")
         traces = ['wiki', 'gradle', 'scarab', 'umass']
 
-        printf (self.bar_all_traces_output_file, 'input \t\t FNO50 \t\t FNA50 \t\t FNO100 \t FNA100 \t FNO500 \t FNA500\n')
+        missp_vals = [30, 100, 300]
+        printf (self.missp_bars_output_file, 'input \t\t FNAA{} \t\t FNAH{} \t\t FNAA{} \t FNAH{} \t FNAA{} \t FNAH{}\n' 
+                .format (missp_vals[0], missp_vals[0], missp_vals[1], missp_vals[1], missp_vals[2], missp_vals[2]))
         
         self.gen_filtered_list(self.list_of_dicts, num_of_req = 1000) 
         for trace in traces:
             trace_to_print = 'F2\t' if trace == 'umass' else trace 
-            printf (self.bar_all_traces_output_file, '{}\t\t' .format (trace_to_print))
-            for missp in [50, 100, 500]:
-                for alg_mode in ['FNOA', 'FNAA']:
+            printf (self.missp_bars_output_file, '{}\t\t' .format (trace_to_print))
+            for missp in missp_vals:
+                for alg_mode in ['FNAA', 'FNA']:
                     opt_cost = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt') \
                             [0]['cost']  
@@ -152,8 +154,8 @@ class Res_file_parser (object):
                             trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval = 1000, 
                             alg_mode = alg_mode) \
                             [0]['cost']
-                    printf (self.bar_all_traces_output_file, ' {:.4f} \t' .format(alg_cost / opt_cost))
-            printf (self.bar_all_traces_output_file, ' \n')
+                    printf (self.missp_bars_output_file, ' {:.4f} \t' .format(alg_cost / opt_cost))
+            printf (self.missp_bars_output_file, ' \n')
 
     def gen_filtered_list (self, list_to_filter, trace = None, cache_size = 0, bpe = 0, num_of_DSs = 0, Kloc = 0, missp = 0, uInterval = 0, 
                            num_of_req = 0, alg_mode = None):
@@ -385,10 +387,10 @@ class Res_file_parser (object):
 if __name__ == "__main__":
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_file ('tbl.res')
-    my_Res_file_parser.print_tbl()
+    my_Res_file_parser.print_missp_bars_for_tikz ()
     
 #     my_Res_file_parser.parse_file ('tbl.res')
-#     my_Res_file_parser.print_bar_all_traces()
+#     my_Res_file_parser.print_missp_bars_for_tikz()
       
 #     my_Res_file_parser.parse_file ('wiki_k_loc.res')
 #     my_Res_file_parser.print_bar_k_loc()          

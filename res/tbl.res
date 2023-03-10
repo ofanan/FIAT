@@ -223,3 +223,40 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNA.HEewma.adH | service_cost
 // estimation window = 1000, // spec accs cost = 6000000, num of spec hits = 706327
 // num of ads per DS=[0, 0, 0]
 // avg update interval = inf req
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.8226508226508225 | bw = 0.00
+// tot_access_cost = 1881137, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
+// estimation window = 1000, 
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.36907636907637 | bw = 0.00
+// tot_access_cost = 1378486, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 299686
+// estimation window = 1000, 
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.225118225118225 | bw = 0.00
+// tot_access_cost = 1414918, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 293673
+// estimation window = 1000, 
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 8.352845352845353 | bw = 0.00
+// tot_access_cost = 1881137, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
+// estimation window = 1000, 
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.347117347117347 | bw = 0.00
+// tot_access_cost = 1378486, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 299686
+// estimation window = 1000, 
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 30.782248782248782 | bw = 0.00
+// tot_access_cost = 1414918, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 293673
+// estimation window = 1000, 
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 21.296258296258298 | bw = 0.00
+// tot_access_cost = 1881137, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
+// estimation window = 1000, 
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 91.28437728437729 | bw = 0.00
+// tot_access_cost = 1378486, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 299686
+// estimation window = 1000, 
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 89.51690751690752 | bw = 0.00
+// tot_access_cost = 1414918, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 293673
+// estimation window = 1000, 
+wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.431524431524432 | bw = 0.00
+// tot_access_cost = 1696189, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 124511
+// estimation window = 1000, 
+wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.147303147303147 | bw = 0.00
+// tot_access_cost = 1696189, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 124511
+// estimation window = 1000, 
+wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.04952804952805 | bw = 0.00
+// tot_access_cost = 1696189, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 124511
+// estimation window = 1000, 

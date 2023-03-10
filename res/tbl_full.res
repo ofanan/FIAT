@@ -2576,3 +2576,328 @@ umass.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.FNA.HEewma.adH | service_cost 
 // estimation window = 1000, // spec accs cost = 5400006, num of spec hits = 636766
 // num of ads per DS=[0, 0, 0]
 // avg update interval = inf req
+
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 4.43844 | bw = 0.00
+// tot_access_cost = 184614, hit_ratio = 0.91, non_comp_miss_cnt = 0, comp_miss_cnt = 8641
+// estimation window = 1000, 
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.97286 | bw = 0.00
+// tot_access_cost = 376582, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 13933
+// estimation window = 1000, 
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.89301 | bw = 0.00
+// tot_access_cost = 568653, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 19975
+// estimation window = 1000, 
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.765115 | bw = 0.00
+// tot_access_cost = 761476, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 24819
+// estimation window = 1000, 
+scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 12.03199 | bw = 0.00
+// tot_access_cost = 125269, hit_ratio = 0.64, non_comp_miss_cnt = 0, comp_miss_cnt = 35931
+// estimation window = 1000, 
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.650884 | bw = 0.00
+// tot_access_cost = 950732, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 29157
+// estimation window = 1000, 
+scarab.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 11.08082 | bw = 0.00
+// tot_access_cost = 264844, hit_ratio = 0.67, non_comp_miss_cnt = 0, comp_miss_cnt = 65044
+// estimation window = 1000, 
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 13.71471 | bw = 0.00
+// tot_access_cost = 116841, hit_ratio = 0.58, non_comp_miss_cnt = 0, comp_miss_cnt = 41821
+// estimation window = 1000, 
+gradle.C10K.bpe14.600Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.665575 | bw = 0.00
+// tot_access_cost = 1139325, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 35334
+// estimation window = 1000, 
+scarab.C10K.bpe14.300Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.796406666666666 | bw = 0.00
+// tot_access_cost = 403772, hit_ratio = 0.68, non_comp_miss_cnt = 0, comp_miss_cnt = 94505
+// estimation window = 1000, 
+umass.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 11.94568 | bw = 0.00
+// tot_access_cost = 258686, hit_ratio = 0.64, non_comp_miss_cnt = 0, comp_miss_cnt = 71015
+// estimation window = 1000, 
+gradle.C10K.bpe14.700Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.6286657142857144 | bw = 0.00
+// tot_access_cost = 1331006, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 40302
+// estimation window = 1000, 
+scarab.C10K.bpe14.400Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.6305625 | bw = 0.00
+// tot_access_cost = 543565, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 123622
+// estimation window = 1000, 
+umass.C10K.bpe14.300Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 11.219843333333333 | bw = 0.00
+// tot_access_cost = 403603, hit_ratio = 0.67, non_comp_miss_cnt = 0, comp_miss_cnt = 98745
+// estimation window = 1000, 
+gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.6737 | bw = 0.00
+// tot_access_cost = 1513330, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 47521
+// estimation window = 1000, 
+scarab.C10K.bpe14.500Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.52239 | bw = 0.00
+// tot_access_cost = 683195, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 152600
+// estimation window = 1000, 
+umass.C10K.bpe14.400Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.79276 | bw = 0.00
+// tot_access_cost = 550304, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 125560
+// estimation window = 1000, 
+gradle.C10K.bpe14.900Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 3.7653422222222224 | bw = 0.00
+// tot_access_cost = 1697198, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 56387
+// estimation window = 1000, 
+scarab.C10K.bpe14.600Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.527213333333334 | bw = 0.00
+// tot_access_cost = 820298, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 183201
+// estimation window = 1000, 
+umass.C10K.bpe14.500Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.40125 | bw = 0.00
+// tot_access_cost = 701495, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 149971
+// estimation window = 1000, 
+scarab.C10K.bpe14.700Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.468814285714286 | bw = 0.00
+// tot_access_cost = 959830, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 212278
+// estimation window = 1000, 
+umass.C10K.bpe14.600Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.178061666666666 | bw = 0.00
+// tot_access_cost = 851167, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 175189
+// estimation window = 1000, 
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 10.48714 | bw = 0.00
+// tot_access_cost = 184614, hit_ratio = 0.91, non_comp_miss_cnt = 0, comp_miss_cnt = 8641
+// estimation window = 1000, 
+scarab.C10K.bpe14.800Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.4275375 | bw = 0.00
+// tot_access_cost = 1099760, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 241409
+// estimation window = 1000, 
+umass.C10K.bpe14.700Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.030441428571429 | bw = 0.00
+// tot_access_cost = 1000459, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 200695
+// estimation window = 1000, 
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 8.84941 | bw = 0.00
+// tot_access_cost = 376582, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 13933
+// estimation window = 1000, 
+scarab.C10K.bpe14.900Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.392972222222221 | bw = 0.00
+// tot_access_cost = 1239665, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 270467
+// estimation window = 1000, 
+umass.C10K.bpe14.800Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.21164375 | bw = 0.00
+// tot_access_cost = 1133025, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 234543
+// estimation window = 1000, 
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 8.553843333333333 | bw = 0.00
+// tot_access_cost = 568653, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 19975
+// estimation window = 1000, 
+umass.C10K.bpe14.900Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 10.192034444444445 | bw = 0.00
+// tot_access_cost = 1275781, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 263235
+// estimation window = 1000, 
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 8.10844 | bw = 0.00
+// tot_access_cost = 761476, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 24819
+// estimation window = 1000, 
+scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 37.18369 | bw = 0.00
+// tot_access_cost = 125269, hit_ratio = 0.64, non_comp_miss_cnt = 0, comp_miss_cnt = 35931
+// estimation window = 1000, 
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 7.732864 | bw = 0.00
+// tot_access_cost = 950732, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 29157
+// estimation window = 1000, 
+scarab.C10K.bpe14.200Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 33.84622 | bw = 0.00
+// tot_access_cost = 264844, hit_ratio = 0.67, non_comp_miss_cnt = 0, comp_miss_cnt = 65044
+// estimation window = 1000, 
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 42.98941 | bw = 0.00
+// tot_access_cost = 116841, hit_ratio = 0.58, non_comp_miss_cnt = 0, comp_miss_cnt = 41821
+// estimation window = 1000, 
+gradle.C10K.bpe14.600Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 7.787875 | bw = 0.00
+// tot_access_cost = 1139325, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 35334
+// estimation window = 1000, 
+scarab.C10K.bpe14.300Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 32.84757333333334 | bw = 0.00
+// tot_access_cost = 403772, hit_ratio = 0.68, non_comp_miss_cnt = 0, comp_miss_cnt = 94505
+// estimation window = 1000, 
+umass.C10K.bpe14.200Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 36.80093 | bw = 0.00
+// tot_access_cost = 258686, hit_ratio = 0.64, non_comp_miss_cnt = 0, comp_miss_cnt = 71015
+// estimation window = 1000, 
+gradle.C10K.bpe14.700Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 7.658865714285715 | bw = 0.00
+// tot_access_cost = 1331006, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 40302
+// estimation window = 1000, 
+scarab.C10K.bpe14.400Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 32.2644125 | bw = 0.00
+// tot_access_cost = 543565, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 123622
+// estimation window = 1000, 
+umass.C10K.bpe14.300Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 34.26034333333333 | bw = 0.00
+// tot_access_cost = 403603, hit_ratio = 0.67, non_comp_miss_cnt = 0, comp_miss_cnt = 98745
+// estimation window = 1000, 
+gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 7.8317875 | bw = 0.00
+// tot_access_cost = 1513330, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 47521
+// estimation window = 1000, 
+scarab.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.88639 | bw = 0.00
+// tot_access_cost = 683195, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 152600
+// estimation window = 1000, 
+umass.C10K.bpe14.400Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 32.76576 | bw = 0.00
+// tot_access_cost = 550304, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 125560
+// estimation window = 1000, 
+gradle.C10K.bpe14.900Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 8.150997777777778 | bw = 0.00
+// tot_access_cost = 1697198, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 56387
+// estimation window = 1000, 
+scarab.C10K.bpe14.600Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.900663333333334 | bw = 0.00
+// tot_access_cost = 820298, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 183201
+// estimation window = 1000, 
+umass.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.39719 | bw = 0.00
+// tot_access_cost = 701495, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 149971
+// estimation window = 1000, 
+scarab.C10K.bpe14.700Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.696614285714286 | bw = 0.00
+// tot_access_cost = 959830, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 212278
+// estimation window = 1000, 
+umass.C10K.bpe14.600Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 30.616778333333333 | bw = 0.00
+// tot_access_cost = 851167, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 175189
+// estimation window = 1000, 
+gradle.C10K.bpe14.100Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 27.76914 | bw = 0.00
+// tot_access_cost = 184614, hit_ratio = 0.91, non_comp_miss_cnt = 0, comp_miss_cnt = 8641
+// estimation window = 1000, 
+scarab.C10K.bpe14.800Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.550825 | bw = 0.00
+// tot_access_cost = 1099760, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 241409
+// estimation window = 1000, 
+umass.C10K.bpe14.700Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 30.09994142857143 | bw = 0.00
+// tot_access_cost = 1000459, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 200695
+// estimation window = 1000, 
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 22.78241 | bw = 0.00
+// tot_access_cost = 376582, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 13933
+// estimation window = 1000, 
+scarab.C10K.bpe14.900Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 31.429294444444444 | bw = 0.00
+// tot_access_cost = 1239665, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 270467
+// estimation window = 1000, 
+umass.C10K.bpe14.800Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 30.73415625 | bw = 0.00
+// tot_access_cost = 1133025, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 234543
+// estimation window = 1000, 
+gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 21.87051 | bw = 0.00
+// tot_access_cost = 568653, hit_ratio = 0.93, non_comp_miss_cnt = 0, comp_miss_cnt = 19975
+// estimation window = 1000, 
+gradle.C10K.bpe14.400Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 20.51794 | bw = 0.00
+// tot_access_cost = 761476, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 24819
+// estimation window = 1000, 
+umass.C10K.bpe14.900Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 30.665867777777777 | bw = 0.00
+// tot_access_cost = 1275781, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 263235
+// estimation window = 1000, 
+scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 109.04569 | bw = 0.00
+// tot_access_cost = 125269, hit_ratio = 0.64, non_comp_miss_cnt = 0, comp_miss_cnt = 35931
+// estimation window = 1000, 
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 19.395664 | bw = 0.00
+// tot_access_cost = 950732, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 29157
+// estimation window = 1000, 
+scarab.C10K.bpe14.200Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 98.89022 | bw = 0.00
+// tot_access_cost = 264844, hit_ratio = 0.67, non_comp_miss_cnt = 0, comp_miss_cnt = 65044
+// estimation window = 1000, 
+gradle.C10K.bpe14.600Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 19.565875 | bw = 0.00
+// tot_access_cost = 1139325, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 35334
+// estimation window = 1000, 
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 126.63141 | bw = 0.00
+// tot_access_cost = 116841, hit_ratio = 0.58, non_comp_miss_cnt = 0, comp_miss_cnt = 41821
+// estimation window = 1000, 
+scarab.C10K.bpe14.300Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 95.85090666666666 | bw = 0.00
+// tot_access_cost = 403772, hit_ratio = 0.68, non_comp_miss_cnt = 0, comp_miss_cnt = 94505
+// estimation window = 1000, 
+gradle.C10K.bpe14.700Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 19.173722857142856 | bw = 0.00
+// tot_access_cost = 1331006, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 40302
+// estimation window = 1000, 
+umass.C10K.bpe14.200Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 107.81593 | bw = 0.00
+// tot_access_cost = 258686, hit_ratio = 0.64, non_comp_miss_cnt = 0, comp_miss_cnt = 71015
+// estimation window = 1000, 
+scarab.C10K.bpe14.400Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 94.0754125 | bw = 0.00
+// tot_access_cost = 543565, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 123622
+// estimation window = 1000, 
+gradle.C10K.bpe14.800Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 19.7120375 | bw = 0.00
+// tot_access_cost = 1513330, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 47521
+// estimation window = 1000, 
+umass.C10K.bpe14.300Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 100.09034333333334 | bw = 0.00
+// tot_access_cost = 403603, hit_ratio = 0.67, non_comp_miss_cnt = 0, comp_miss_cnt = 98745
+// estimation window = 1000, 
+scarab.C10K.bpe14.500Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 92.92639 | bw = 0.00
+// tot_access_cost = 683195, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 152600
+// estimation window = 1000, 
+gradle.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 20.681442222222223 | bw = 0.00
+// tot_access_cost = 1697198, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 56387
+// estimation window = 1000, 
+umass.C10K.bpe14.400Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 95.54576 | bw = 0.00
+// tot_access_cost = 550304, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 125560
+// estimation window = 1000, 
+scarab.C10K.bpe14.600Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 92.96766333333333 | bw = 0.00
+// tot_access_cost = 820298, hit_ratio = 0.69, non_comp_miss_cnt = 0, comp_miss_cnt = 183201
+// estimation window = 1000, 
+umass.C10K.bpe14.500Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 91.38559 | bw = 0.00
+// tot_access_cost = 701495, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 149971
+// estimation window = 1000, 
+scarab.C10K.bpe14.700Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 92.34747142857142 | bw = 0.00
+// tot_access_cost = 959830, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 212278
+// estimation window = 1000, 
+umass.C10K.bpe14.600Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 89.01311166666666 | bw = 0.00
+// tot_access_cost = 851167, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 175189
+// estimation window = 1000, 
+scarab.C10K.bpe14.800Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 91.903075 | bw = 0.00
+// tot_access_cost = 1099760, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 241409
+// estimation window = 1000, 
+umass.C10K.bpe14.700Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 87.44137 | bw = 0.00
+// tot_access_cost = 1000459, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 200695
+// estimation window = 1000, 
+scarab.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 91.53307222222222 | bw = 0.00
+// tot_access_cost = 1239665, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 270467
+// estimation window = 1000, 
+umass.C10K.bpe14.800Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 89.36990625 | bw = 0.00
+// tot_access_cost = 1133025, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 234543
+// estimation window = 1000, 
+umass.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 89.16253444444445 | bw = 0.00
+// tot_access_cost = 1275781, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 263235
+// estimation window = 1000, 
+wiki.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.98529 | bw = 0.00
+// tot_access_cost = 165809, hit_ratio = 0.86, non_comp_miss_cnt = 0, comp_miss_cnt = 14424
+// estimation window = 1000, 
+wiki.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.721065 | bw = 0.00
+// tot_access_cost = 336163, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 26935
+// estimation window = 1000, 
+wiki.C10K.bpe14.300Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.6047666666666665 | bw = 0.00
+// tot_access_cost = 505790, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 39188
+// estimation window = 1000, 
+wiki.C10K.bpe14.400Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.543495 | bw = 0.00
+// tot_access_cost = 675368, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 51401
+// estimation window = 1000, 
+wiki.C10K.bpe14.500Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.51035 | bw = 0.00
+// tot_access_cost = 845105, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 63669
+// estimation window = 1000, 
+wiki.C10K.bpe14.600Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.480738333333333 | bw = 0.00
+// tot_access_cost = 1015493, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 75765
+// estimation window = 1000, 
+wiki.C10K.bpe14.700Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.467047142857143 | bw = 0.00
+// tot_access_cost = 1184803, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 88071
+// estimation window = 1000, 
+wiki.C10K.bpe14.800Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.4519725 | bw = 0.00
+// tot_access_cost = 1355158, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 100214
+// estimation window = 1000, 
+wiki.C10K.bpe14.900Kreq.3DSs.Kloc1.M30.B0.U1000.Opt | service_cost = 5.438123333333333 | bw = 0.00
+// tot_access_cost = 1525461, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 112295
+// estimation window = 1000, 
+wiki.C10K.bpe14.100Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 16.08209 | bw = 0.00
+// tot_access_cost = 165809, hit_ratio = 0.86, non_comp_miss_cnt = 0, comp_miss_cnt = 14424
+// estimation window = 1000, 
+wiki.C10K.bpe14.200Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 15.148315 | bw = 0.00
+// tot_access_cost = 336163, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 26935
+// estimation window = 1000, 
+wiki.C10K.bpe14.300Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.748633333333334 | bw = 0.00
+// tot_access_cost = 505790, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 39188
+// estimation window = 1000, 
+wiki.C10K.bpe14.400Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.53867 | bw = 0.00
+// tot_access_cost = 675368, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 51401
+// estimation window = 1000, 
+wiki.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.42401 | bw = 0.00
+// tot_access_cost = 845105, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 63669
+// estimation window = 1000, 
+wiki.C10K.bpe14.600Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.319988333333333 | bw = 0.00
+// tot_access_cost = 1015493, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 75765
+// estimation window = 1000, 
+wiki.C10K.bpe14.700Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.274147142857142 | bw = 0.00
+// tot_access_cost = 1184803, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 88071
+// estimation window = 1000, 
+wiki.C10K.bpe14.800Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.2206975 | bw = 0.00
+// tot_access_cost = 1355158, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 100214
+// estimation window = 1000, 
+wiki.C10K.bpe14.900Kreq.3DSs.Kloc1.M100.B0.U1000.Opt | service_cost = 14.172178888888888 | bw = 0.00
+// tot_access_cost = 1525461, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 112295
+// estimation window = 1000, 
+wiki.C10K.bpe14.100Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 44.93009 | bw = 0.00
+// tot_access_cost = 165809, hit_ratio = 0.86, non_comp_miss_cnt = 0, comp_miss_cnt = 14424
+// estimation window = 1000, 
+wiki.C10K.bpe14.200Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 42.083315 | bw = 0.00
+// tot_access_cost = 336163, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 26935
+// estimation window = 1000, 
+wiki.C10K.bpe14.300Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 40.87396666666667 | bw = 0.00
+// tot_access_cost = 505790, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 39188
+// estimation window = 1000, 
+wiki.C10K.bpe14.400Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 40.23917 | bw = 0.00
+// tot_access_cost = 675368, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 51401
+// estimation window = 1000, 
+wiki.C10K.bpe14.500Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.89161 | bw = 0.00
+// tot_access_cost = 845105, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 63669
+// estimation window = 1000, 
+wiki.C10K.bpe14.600Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.57498833333333 | bw = 0.00
+// tot_access_cost = 1015493, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 75765
+// estimation window = 1000, 
+wiki.C10K.bpe14.700Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.43729 | bw = 0.00
+// tot_access_cost = 1184803, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 88071
+// estimation window = 1000, 
+wiki.C10K.bpe14.800Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.2741975 | bw = 0.00
+// tot_access_cost = 1355158, hit_ratio = 0.87, non_comp_miss_cnt = 0, comp_miss_cnt = 100214
+// estimation window = 1000, 
+wiki.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.126623333333335 | bw = 0.00
+// tot_access_cost = 1525461, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 112295
+// estimation window = 1000, 

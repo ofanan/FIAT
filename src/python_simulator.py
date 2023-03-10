@@ -73,7 +73,8 @@ class Simulator(object):
         self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_ewma_window_size = self.ewma_window_size, 
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
-                        DS_send_fpr_fnr_updates  = not (self.calc_mr_by_hist),
+                        DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
+                        hit_ratio_based_uInterval = hit_ratio_based_uInterval,
                         mr_output_file      = self.mr_output_file[i], 
                         collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
                         analyse_ind_deltas  = not (self.calc_mr_by_hist),
@@ -81,7 +82,7 @@ class Simulator(object):
                         designed_mr1        = self.designed_mr1,
                         use_EWMA            = self.use_EWMA,
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
-                        hist_based_uInterval = self.hist_based_uInterval
+                        hist_based_uInterval = self.hist_based_uInterval,
                         ) 
                         for i in range(self.num_of_DSs)]
             
@@ -105,7 +106,8 @@ class Simulator(object):
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = False, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
-                 hist_based_uInterval = False # when true, send advertisements according to the hist-based estimations of mr.
+                 hist_based_uInterval = False, # when true, send advertisements according to the hist-based estimations of mr.
+                 hit_ratio_based_uInterval = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -150,7 +152,7 @@ class Simulator(object):
             exit ()
 
         if (self.k_loc > self.num_of_DSs):
-            print ('error: k_loc must be at most num_of_DSs')
+            print ('k_loc must be at most num_of_DSs')
             exit ()
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
@@ -182,11 +184,16 @@ class Simulator(object):
         self.bw                   = bw
         if (MyConfig.VERBOSE_FULL_RES in self.verbose):
             self.full_res_file           = open ('../res/{}_full.res' .format(self.res_file_name), "a")
-        if (not (self.calc_mr_by_hist)):
+        if (self.calc_mr_by_hist):
+            self.hist_based_uInterval      = hist_based_uInterval
+            self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
+        else:
             print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
             self.hist_based_uInterval = False
-        else:
-            self.hist_based_uInterval = hist_based_uInterval
+            self.hit_ratio_based_uInterval = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
+        
+        if (self.hit_ratio_based_uInterval and not(self.hist_based_uInterval)):
+            MyConfig.error ('hit_ratio_based_uInterval is currently supported only if hist_based_uInterval==True')
         
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
@@ -299,6 +306,9 @@ class Simulator(object):
         printf (res_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
+        if (self.mode=='Opt'):
+            printf (res_file, '\n')
+            return
         printf (res_file, '// estimation window = {}, ' .format (self.ewma_window_size))
         if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
             printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
@@ -430,8 +440,13 @@ class Simulator(object):
             for i in range (self.num_of_DSs):
                 self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
             if (self.calc_mr_by_hist):
-                self.handle_single_req_pgm_fna_mr_by_perfect_hist  () if self.use_perfect_hist else \
-                self.handle_single_req_pgm_fna_mr_by_practical_hist ()
+                if self.use_perfect_hist:
+                    self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
+                else:
+                    for ds_id in range(self.num_of_DSs): #$$$ assume here there exists only a single client
+                        self.DS_list[DS_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id] 
+                    self.handle_single_req_pgm_fna_mr_by_practical_hist ()
+
             else: # Use analysis to estimate mr0, mr1 
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
                 self.access_pgm_fna_hetro ()
@@ -446,6 +461,10 @@ class Simulator(object):
         for ds in range (self.num_of_DSs):            
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
+        for client in self.client_list:
+            client.update_q ()
+        
+        self.pr_of_pos_ind_estimation
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
@@ -565,7 +584,7 @@ class Simulator(object):
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         self.insert_key_to_DSs ()
         if (self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
-            MyConfig.error ('error: num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
+            MyConfig.error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
 
     def insert_key_to_closest_DS(self, req):
         """

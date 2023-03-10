@@ -228,9 +228,7 @@ class DataStore (object):
                 practical_hit_ratio = self.pr_of_pos_ind_estimation*(1-self.mr1_cur) + (1 - self.pr_of_pos_ind_estimation)*(1-self.mr0_cur)
                 # printf (self.q_file, 'q={:.2f}, mr0={}, mr1={}, estimated_q={:.2f}\n' .format(perf_ind_hit_ratio, self.mr0_cur, self.mr1_cur, practical_hit_ratio)) #$$$
                 if (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > 0.15:
-                # printf (self.q_file, 'q={:.2f}, mr0={}, mr1={}, estimated_q={:.2f}\n' .format(perf_ind_hit_ratio, self.mr0_cur, self.mr1_cur, practical_hit_ratio)) #$$$
-                # relative_err        = abs (perf_ind_hit_ratio - practical_hit_ratio)
-                # if (relative_err / perf_ind_hit_ratio > 0.5):
+                    printf (self.q_file, 'q={:.2f}, mr0={}\n' .format(perf_ind_hit_ratio, self.mr0_cur)) #$$$
                     printf (self.q_file, 'advertising\n')
                     self.advertise_ind()
             else:

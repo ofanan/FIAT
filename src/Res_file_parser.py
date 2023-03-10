@@ -38,27 +38,34 @@ class Res_file_parser (object):
     def parse_line (self, line):
         splitted_line = line.split ("|")
          
-        settings        = splitted_line[0]
-        cost            = float(splitted_line[1].split(" = ")[1])
-        splitted_line   = settings.split (".")
+        settings      = splitted_line[0]
+        # costs         = splitted_line[1].split(" = ")
+        # print ('costs={}' .format (costs))
+        serviceCost   = float(splitted_line[1].split(" = ")[1])
+        bwCosts       = None # default value, to be checked later
+        if (len(splitted_line)>2):
+            bwCost    = float(splitted_line[2].split(" = ")[1])
+        splitted_line = settings.split (".")
+        mode          = splitted_line[alg_idx].split(" ")[0]
 
         if len (splitted_line) < num_of_fields:
             print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
             return False
         self.dict = {
-            "trace"      : splitted_line        [trace_idx],
-            "cache_size" : int (splitted_line   [cache_size_idx].split("C")[1].split("K")[0]),   
-            "bpe"        : int (splitted_line   [bpe_idx]       .split("bpe")[1]),
-            "num_of_req" : splitted_line        [num_of_req_idx].split("req")[0],
-            "num_of_DSs" : int (splitted_line   [num_of_DSs_idx].split("DSs")[0]), 
-            "Kloc"       : int (splitted_line   [kloc_idx]      .split("Kloc")[1]),
-            "missp"      : int (splitted_line   [missp_idx]     .split("M")[1]),
-            "bw"         : int(splitted_line    [bw_idx]        .split('B')[1]), 
-            "uInterval"  : int(splitted_line    [uInterval_idx] .split('U')[1]), 
-            "alg_mode"   : splitted_line        [alg_idx]       .split(" ")[0],
-            "cost"       : cost
+            "trace"       : splitted_line        [trace_idx],
+            "cache_size"  : int (splitted_line   [cache_size_idx].split("C")[1].split("K")[0]),   
+            "bpe"         : int (splitted_line   [bpe_idx]       .split("bpe")[1]),
+            "num_of_req"  : splitted_line        [num_of_req_idx].split("req")[0],
+            "num_of_DSs"  : int (splitted_line   [num_of_DSs_idx].split("DSs")[0]), 
+            "Kloc"        : int (splitted_line   [kloc_idx]      .split("Kloc")[1]),
+            "missp"       : int (splitted_line   [missp_idx]     .split("M")[1]),
+            'designed_bw' : int(splitted_line    [bw_idx]        .split('B')[1]), 
+            "uInterval"   : int(splitted_line    [uInterval_idx] .split('U')[1]), 
+            "alg_mode"    : mode,
+            'serviceCost' : serviceCost
             }
-
+        if (bwCosts != None):
+            self.dict['bwCost'] = bwCost
 
     def print_tbl (self):
         """
@@ -87,10 +94,10 @@ class Res_file_parser (object):
                 for trace in traces:
                     opt_cost = self.gen_filtered_list(self.list_of_dicts, 
                                                               trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1, 
-                                                              missp = missp, alg_mode = 'Opt')[0]['cost']
+                                                              missp = missp, alg_mode = 'Opt')[0]['serviceCost']
                     alg_cost = self.gen_filtered_list(self.list_of_dicts, 
                                                               trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, 
-                                                              missp = missp, uInterval = 1000, alg_mode = alg_mode)[0]['cost']
+                                                              missp = missp, uInterval = 1000, alg_mode = alg_mode)[0]['serviceCost']
                     printf (self.tbl_output_file, ' & {:.4f}' .format(alg_cost / opt_cost))
                 printf (self.tbl_output_file, ' \\\\\n')
             printf (self.tbl_output_file, '\t\\hline\n\n')
@@ -119,9 +126,9 @@ class Res_file_parser (object):
                     if (opt_cost == []):
                         opt_cost = self.gen_filtered_list(self.list_of_dicts, 
                                 uInterval = 1024, num_of_DSs = 8, Kloc = Kloc, alg_mode = 'Opt')
-                    opt_cost = opt_cost[0]['cost']
+                    opt_cost = opt_cost[0]['serviceCost']
                     alg_cost = self.gen_filtered_list(self.list_of_dicts, 
-                            uInterval = uInterval, bpe = 14, num_of_DSs = 8, Kloc = Kloc, alg_mode = alg_mode)[0]['cost']
+                            uInterval = uInterval, bpe = 14, num_of_DSs = 8, Kloc = Kloc, alg_mode = alg_mode)[0]['serviceCost']
                     printf (self.bar_k_loc_output_file, ' {:.4f}\t\t' .format(alg_cost / opt_cost))
             printf (self.bar_k_loc_output_file, ' \n')
 
@@ -134,28 +141,35 @@ class Res_file_parser (object):
         # scarab    2.5036    2.3053    3.2211    1.1940    3.3310    1.1183
         # F2        2.3688    2.2609    2.9604    1.1507    3.0546    1.0766
         """
-        self.missp_bars_output_file    = open ("../res/missp.txt", "w")
+        serviceCost_by_missp_output_file = open ("../res/cost_by_missp.txt", "w")
+        bwCost_by_missp_output_file      = open ("../res/bwCost_by_missp.txt", "w")
         traces = ['wiki', 'scarab', 'umass']
 
         missp_vals = [30, 100, 300]
-        printf (self.missp_bars_output_file, 'input \t\t FNAA{} \t\t FNAH{} \t\t FNAA{} \t FNAH{} \t FNAA{} \t FNAH{}\n' 
-                .format (missp_vals[0], missp_vals[0], missp_vals[1], missp_vals[1], missp_vals[2], missp_vals[2]))
+        for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
+            printf (output_file, 'input \t\t FNAA{} \t\t FNAH{} \t\t FNAA{} \t FNAH{} \t FNAA{} \t FNAH{}\n' 
+                    .format (missp_vals[0], missp_vals[0], missp_vals[1], missp_vals[1], missp_vals[2], missp_vals[2]))
         
         self.gen_filtered_list(self.list_of_dicts, num_of_req = 1000) 
         for trace in traces:
             trace_to_print = 'F2\t' if trace == 'umass' else trace 
-            printf (self.missp_bars_output_file, '{}\t\t' .format (trace_to_print))
+            for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
+                printf (output_file, '{}\t\t' .format (trace_to_print))
             for missp in missp_vals:
                 for alg_mode in ['FNAA', 'FNA']:
-                    opt_cost = self.gen_filtered_list(self.list_of_dicts, 
-                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt') \
-                            [0]['cost']  
-                    alg_cost = self.gen_filtered_list(self.list_of_dicts, 
+                    opt_serviceCost = self.gen_filtered_list(self.list_of_dicts, 
+                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')[0]['serviceCost']
+                    point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval = 1000, 
-                            alg_mode = alg_mode) \
-                            [0]['cost']
-                    printf (self.missp_bars_output_file, ' {:.4f} \t' .format(alg_cost / opt_cost))
-            printf (self.missp_bars_output_file, ' \n')
+                            alg_mode = alg_mode) 
+                    alg_serviceCost = point[0]['serviceCost']
+                    print (point) #$$$
+                    alg_bwCost      = point[0]['bwCost']  
+                    printf (serviceCost_by_missp_output_file, ' {:.4f} \t' .format(alg_serviceCost / opt_serviceCost))
+                    printf (bwCost_by_missp_output_file,      ' {:.4f} \t' .format(alg_bwCost))
+                    # printf (bwCost_by_missp_output_file, ' {:.4f} \t' .format(alg_bwCost / opt_bwCost))
+            for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
+                printf (output_file, ' \n')
 
     def gen_filtered_list (self, list_to_filter, trace = None, cache_size = 0, bpe = 0, num_of_DSs = 0, Kloc = 0, missp = 0, uInterval = 0, 
                            num_of_req = 0, alg_mode = None):
@@ -201,7 +215,7 @@ class Res_file_parser (object):
         if (not (addplot_str == None)):
             printf (self.output_file, addplot_str)
         for dict in sorted (list_of_dict, key = lambda i: i[key_to_sort]):
-            printf (self.output_file, '({:.0f}, {:.04f})' .format (dict[key_to_sort], dict['cost']))
+            printf (self.output_file, '({:.0f}, {:.04f})' .format (dict[key_to_sort], dict['serviceCost']))
         printf (self.output_file, self.end_add_plot_str)
         if (not (add_legend_str == None)): # if the caller requested to print an "add legend" str          
             printf (self.output_file, '\t\t{}{}' .format (self.add_legend_str, legend_entry))    
@@ -225,7 +239,7 @@ class Res_file_parser (object):
                                                         alg_mode = alg_mode, uInterval = uInterval)
                 for dict in filtered_list: 
     
-                     dict['cost'] /= self.gen_filtered_list (opt_list, cache_size = dict['cache_size'])[0]['cost'] # normalize the cost w.r.t. Opt
+                     dict['serviceCost'] /= self.gen_filtered_list (opt_list, cache_size = dict['cache_size'])[0]['serviceCost'] # normalize the cost w.r.t. Opt
      
                 self.print_single_tikz_plot (filtered_list, key_to_sort = 'cache_size', addplot_str = self.add_plot_str_dict[alg_mode], 
                                              add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
@@ -305,7 +319,7 @@ class Res_file_parser (object):
         The print shows FNO and FNA, both normalized w.r.t. Opt
         """    
         filtered_list = self.gen_filtered_list (self.list_of_dicts, cache_size = 10, missp = 100, bpe = 14, num_of_req = 1000) # Filter only relevant from the results file  
-        opt_cost = self.gen_filtered_list(self.list_of_dicts, cache_size = 10, num_of_DSs = 3, Kloc = 1, missp = 100, alg_mode = 'Opt')[0]['cost']
+        opt_cost = self.gen_filtered_list(self.list_of_dicts, cache_size = 10, num_of_DSs = 3, Kloc = 1, missp = 100, alg_mode = 'Opt')[0]['serviceCost']
 
         if (uInterval > 0 ):
             printf (self.output_file, '%% uInterval = {}\n' .format (uInterval))
@@ -314,7 +328,7 @@ class Res_file_parser (object):
             filtered_list  = self.gen_filtered_list(self.list_of_dicts, uInterval = uInterval, cache_size = 10, num_of_DSs = 3, Kloc = 1, missp = 100, alg_mode = alg_mode)
             add_legend_str = self.add_legend_str if print_add_legend else None
             for dict in filtered_list: 
-                dict['cost'] /= opt_cost
+                dict['serviceCost'] /= opt_cost
 
             self.print_single_tikz_plot (filtered_list, key_to_sort = key_to_sort, addplot_str = self.add_plot_str_dict[alg_mode], 
                                          add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
@@ -360,7 +374,7 @@ class Res_file_parser (object):
                                                         alg_mode = alg_mode, uInterval = uInterval)
                 for dict in filtered_list: 
     
-                     dict['cost'] /= self.gen_filtered_list (opt_list, num_of_DSs = dict['num_of_DSs'])[0]['cost'] # normalize the cost w.r.t. Opt
+                     dict['serviceCost'] /= self.gen_filtered_list (opt_list, num_of_DSs = dict['num_of_DSs'])[0]['serviceCost'] # normalize the cost w.r.t. Opt
      
                 self.print_single_tikz_plot (filtered_list, key_to_sort = 'num_of_DSs', addplot_str = self.add_plot_str_dict[alg_mode], 
                                              add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
@@ -411,8 +425,4 @@ if __name__ == "__main__":
 #     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 256, print_add_legend = False)
 #     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 1024, print_add_legend = True)
 
-    # my_Res_file_parser.print_cache_size_plot_abs()
-
-
-
-
+# my_Res_file_parser.print_cache_size_plot_abs()

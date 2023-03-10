@@ -37,22 +37,6 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M500.B0.U1000.Opt | service_cost = 34.2043
 // tot_access_cost= 1845847.0, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
 // estimation window = 100, // single client
 
-gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HPflat | service_cost = 7.5793375793375795
-// tot_access_cost = 3819180.0, hit_ratio = 0.92, non_comp_miss_cnt = 10486, comp_miss_cnt = 64717
-// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
-// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
-
-gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HPewma | service_cost = 7.602825602825603
-// tot_access_cost = 3870218.0, hit_ratio = 0.93, non_comp_miss_cnt = 9935, comp_miss_cnt = 64717
-// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
-// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
-
-gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNA.HEflat | service_cost = 9.165878165878166
-// tot_access_cost = 2597619, hit_ratio = 0.87, non_comp_miss_cnt = 66648, comp_miss_cnt = 64717
-// estimation window = 100, // num of insertions between fpr_fnr estimations = 50
-// avg num of fpr_fnr_updates = 0, fpr_fnr_updates bw = 0.0000
-// spec accs cost = 1333302, num of spec hits = 280922
-
 scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNAA.adF | service_cost = 13.23074123074123 | bw = 105.56
 // tot_access_cost = 1885178, hit_ratio = 0.62, non_comp_miss_cnt = 78499, comp_miss_cnt = 299686
 // estimation window = 1000, // num of insertions between fpr_fnr estimations = 150

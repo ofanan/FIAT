@@ -2901,3 +2901,10 @@ wiki.C10K.bpe14.800Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.2741975
 wiki.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.126623333333335 | bw = 0.00
 // tot_access_cost = 1525461, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 112295
 // estimation window = 1000, 
+
+
+wiki.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 8.34625 | bw = 75.60
+// tot_access_cost = 397855, hit_ratio = 0.85, non_comp_miss_cnt = 135, comp_miss_cnt = 14424
+// estimation window = 1000, // spec accs cost = 297894, num of spec hits = 33271
+// num of ads per DS=[2, 14, 11]
+// avg update interval = 11111.111111111111 req

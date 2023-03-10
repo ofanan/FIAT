@@ -1,6 +1,0 @@
-q=0.50, mr0=0.82575, mr1=0, estimated_q=0.59
-q=0.50, mr0=0.8085625, mr1=0, estimated_q=0.60
-q=0.50, mr0=0.793921875, mr1=0, estimated_q=0.60
-q=0.50, mr0=0.79444140625, mr1=0, estimated_q=0.60
-q=0.50, mr0=0.7820810546875001, mr1=0, estimated_q=0.61
-q=0.50, mr0=0.7828107910156251, mr1=0, estimated_q=0.61

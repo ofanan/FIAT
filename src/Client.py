@@ -35,7 +35,7 @@ class Client(object):
 
         self.mr                 = np.zeros (self.num_of_DSs) # mr[i] will hold the estimated prob' of a miss, given the ind' of DS[i]'s indicator
         self.ind_cnt            = 0  # Number of indications requested by this client during this window
-        self.num_ind_since_last_update, self.num_ind_since_last_update = 0, 0 
+        self.num_ind_since_last_update, self.num_pos_ind_since_last_update = int(0), int(0) 
         self.pos_ind_cnt        = np.zeros (self.num_of_DSs) #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
         self.pr_of_pos_ind_estimation = 0.5 * np.ones (self.num_of_DSs) # pr_of_pos_ind_estimation[i] will hold the estimation for the prob' that DS[i] gives positive ind' for a requested item.  
         self.first_estimate     = True # indicates whether this is the first estimation window
@@ -80,9 +80,10 @@ class Client(object):
         """
         self.num_ind_since_last_update     += 1 
         self.num_pos_ind_since_last_update += indications 
-        if (self.num_ind_since_last_update % self.window_size == 0 and self.num_pos_ind_since_last_update>0): 
+        if (self.num_ind_since_last_update % self.window_size == 0): 
             self.pr_of_pos_ind_estimation  = self.alpha_over_window * self.num_pos_ind_since_last_update + self.one_min_alpha * self.pr_of_pos_ind_estimation
-            self.num_ind_since_last_update = np.zeros (self.num_of_DSs , dtype='uint16') 
+            self.num_pos_ind_since_last_update = np.zeros (self.num_of_DSs , dtype='uint16')
+            self.num_ind_since_last_update = 0 
         
     
     def estimate_pr_of_pos_ind_and_hit_ratio (self, indications):

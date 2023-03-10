@@ -36,7 +36,7 @@ class Client(object):
         self.mr                 = np.zeros (self.num_of_DSs) # mr[i] will hold the estimated prob' of a miss, given the ind' of DS[i]'s indicator
         self.ind_cnt            = 0  # Number of indications requested by this client during this window 
         self.pos_ind_cnt        = np.zeros (self.num_of_DSs) #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
-        self.pr_of_pos_ind_estimation       = 0.5 * np.ones (self.num_of_DSs) # pr_of_pos_ind_estimation[i] will hold the estimation for the prob' that DS[i] gives positive ind' for a requested item.  
+        self.pr_of_pos_ind_estimation = 0.5 * np.ones (self.num_of_DSs) # pr_of_pos_ind_estimation[i] will hold the estimation for the prob' that DS[i] gives positive ind' for a requested item.  
         self.first_estimate     = True # indicates whether this is the first estimation window
         self.window_size  = np.uint16 (window_size) # Number of requests performed by this client during each window
         self.window_alpha       = window_alpha # window's alpha parameter 

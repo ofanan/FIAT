@@ -1,0 +1,1 @@
+q=0.00, estimated_q=0.19q=0.00, estimated_q=0.22q=0.00, estimated_q=0.24q=0.00, estimated_q=0.27

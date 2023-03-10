@@ -83,6 +83,7 @@ class Simulator(object):
                         use_EWMA            = self.use_EWMA,
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
                         hist_based_uInterval = self.hist_based_uInterval,
+                        non_comp_miss_th     = self.non_comp_miss_th
                         ) 
                         for i in range(self.num_of_DSs)]
             
@@ -127,7 +128,8 @@ class Simulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
-        self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter 
+        self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
+        self.non_comp_miss_th   = 0.13 
         self.res_file_name      = res_file_name
         self.res_file           = open ('../res/{}.res' .format(self.res_file_name), "a")
         self.trace_file_name    = trace_file_name
@@ -317,9 +319,9 @@ class Simulator(object):
 
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
-        if (self.mode != 'opt'):
-            printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-            printf (res_file, '\n// avg update interval = {} req\n' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+        printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
+        printf (res_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+        printf (res_file, '\n// non_comp_miss_th={}\n' .format (self.non_comp_miss_th))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 

@@ -65,9 +65,9 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                use_EWMA             = True,
                                hist_based_uInterval = True,
                                hit_ratio_based_uInterval = True,
-                               verbose              = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES]
+                               verbose              = [MyConfig.VERBOSE_RES]
                                )
-            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+            sm.run_simulator(interval_between_mid_reports=max_num_of_req)
             toc()
 
 def run_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
@@ -269,4 +269,4 @@ F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
 # num_of_req = 1000000
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
-run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000) 
+run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000) 

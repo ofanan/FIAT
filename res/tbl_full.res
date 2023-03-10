@@ -2903,8 +2903,39 @@ wiki.C10K.bpe14.900Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.1266233
 // estimation window = 1000, 
 
 
+// self.non_comp_miss_th = 0.15
 wiki.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 8.34625 | bw = 75.60
 // tot_access_cost = 397855, hit_ratio = 0.85, non_comp_miss_cnt = 135, comp_miss_cnt = 14424
 // estimation window = 1000, // spec accs cost = 297894, num of spec hits = 33271
 // num of ads per DS=[2, 14, 11]
 // avg update interval = 11111.111111111111 req
+
+scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 15.69531 | bw = 19.60
+// tot_access_cost = 303981, hit_ratio = 0.58, non_comp_miss_cnt = 6254, comp_miss_cnt = 35931
+// estimation window = 1000, // spec accs cost = 220572, num of spec hits = 15051
+// num of ads per DS=[3, 2, 2]
+// avg update interval = 42857.142857142855 req
+
+// self.non_comp_miss_th = 0.13
+scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 15.20607 | bw = 22.40
+// tot_access_cost = 328617, hit_ratio = 0.6, non_comp_miss_cnt = 3802, comp_miss_cnt = 35931
+// estimation window = 1000, // spec accs cost = 241751, num of spec hits = 16158
+// num of ads per DS=[3, 2, 3]
+// avg update interval = 37500.0 req
+
+// self.non_comp_miss_th = 0.13, but with better starter for client.estimated_pos_ind_ratio ewma
+
+scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 15.12273 | bw = 28.00
+// tot_access_cost = 339333, hit_ratio = 0.61, non_comp_miss_cnt = 3167, comp_miss_cnt = 35931
+// estimation window = 1000, // spec accs cost = 251740, num of spec hits = 16463
+// num of ads per DS=[3, 3, 4]
+// avg update interval = 30000.0 req
+// non_comp_miss_th=0.13
+
+scarab.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 13.83936 | bw = 36.40
+// tot_access_cost = 693642, hit_ratio = 0.65, non_comp_miss_cnt = 4097, comp_miss_cnt = 65044
+// estimation window = 1000, // spec accs cost = 487295, num of spec hits = 26842
+// num of ads per DS=[8, 9, 9]
+// avg update interval = 23076.923076923078 req
+
+// non_comp_miss_th=0.13

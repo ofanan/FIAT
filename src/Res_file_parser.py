@@ -64,7 +64,7 @@ class Res_file_parser (object):
         """
         Print table of service costs, normalized w.r.t. to Opt, in tikz format
         """
-        self.tbl_output_file    = open ("../res/missp.dat", "w")
+        self.tbl_output_file    = open ("../res/missp.txt", "w")
         traces = ['wiki', 'gradle', 'scarab', 'umass']
 
         printf (self.tbl_output_file, '\tMiss Penalty & Policy ')
@@ -102,7 +102,7 @@ class Res_file_parser (object):
         # 256          2.0280    1.7800    2.4294    1.1564    2.4859    1.1039
         # 1024         2.0280    1.7800    2.4294    1.1564    2.4859    1.1039
         """
-        self.bar_k_loc_output_file    = open ("../res/k_loc.dat", "w")
+        self.bar_k_loc_output_file    = open ("../res/k_loc.txt", "w")
 
         printf (self.bar_k_loc_output_file, 'uInterval\t FNO_kloc1\t FNA_kloc1\t FNO_kloc2\t FNA_kloc2\t FNO_kloc3\t FNA_kloc3\n')
         
@@ -135,7 +135,7 @@ class Res_file_parser (object):
         # F2        2.3688    2.2609    2.9604    1.1507    3.0546    1.0766
         """
         self.missp_bars_output_file    = open ("../res/missp.txt", "w")
-        traces = ['wiki', 'gradle', 'scarab', 'umass']
+        traces = ['wiki', 'scarab', 'umass']
 
         missp_vals = [30, 100, 300]
         printf (self.missp_bars_output_file, 'input \t\t FNAA{} \t\t FNAH{} \t\t FNAA{} \t FNAH{} \t FNAA{} \t FNAH{}\n' 
@@ -323,7 +323,7 @@ class Res_file_parser (object):
     def parse_file (self, input_file_name):
     
         self.input_file         = open ("../res/" + input_file_name,  "r")
-        self.output_file        = open ("../res/" + input_file_name.split(".")[0] + ".dat", "w")
+        # self.output_file        = open ("../res/" + input_file_name.split(".")[0] + ".dat", "w")
         lines               = (line.rstrip() for line in self.input_file) # "lines" contains all lines in input file
         lines               = (line for line in lines if line)       # Discard blank lines
         self.list_of_dicts  = []

@@ -23,6 +23,7 @@ class DataStore (object):
                  designed_mr1               = 0.001,
                  use_EWMA                   = False,
                  initial_mr0                = 0.85,
+                 non_comp_miss_th           = 0.13,
                  mr_output_file             = None,
                  use_indicator              = True,
                  hist_based_uInterval       = False,
@@ -67,6 +68,8 @@ class DataStore (object):
         if (self.hist_based_uInterval):
             self.mr0_ad_th, self.mr1_ad_th = 0.7, 0.01 
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
+            if (self.hit_ratio_based_uInterval):
+                self.non_comp_miss_th = non_comp_miss_th 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
@@ -96,7 +99,8 @@ class DataStore (object):
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ("../res/fna.txt", "w")
-        self.q_file = open ('../res/q{}.txt' .format(self.ID), "w") #$$$
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            self.q_file = open ('../res/q{}.txt' .format(self.ID), "w") #$$$
 
     def __contains__(self, key):
         """
@@ -172,8 +176,12 @@ class DataStore (object):
                     self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                     self.num_of_fpr_fnr_updates += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
-            if (not(self.hist_based_uInterval) and (self.ins_since_last_ad == self.uInterval)):
-                self.advertise_ind ()
+            if (self.hist_based_uInterval):
+                if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.uInterval): # force a "warmup" advertisement
+                    self.advertise_ind ()
+            else: # fixed uInterval 
+                if (self.ins_since_last_ad == self.uInterval):
+                    self.advertise_ind ()
                 
     def get_indication (self, key):
         """
@@ -190,6 +198,8 @@ class DataStore (object):
         If input check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
         
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            printf (self.q_file, 'advertising\n') 
         self.num_of_advertisements += 1
         if (check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -206,7 +216,6 @@ class DataStore (object):
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'Advertising\n')
-            # printf (self.mr_output_file, 'Upon advertising: mr0={:.4f}, mr1={:.4f}\n' .format (self.mr0_cur, self.mr1_cur))
         
         if (self.collect_mr_stat):
             self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
@@ -226,9 +235,9 @@ class DataStore (object):
             if (self.hit_ratio_based_uInterval):
                 perf_ind_hit_ratio  = self.pr_of_pos_ind_estimation
                 practical_hit_ratio = self.pr_of_pos_ind_estimation*(1-self.mr1_cur) + (1 - self.pr_of_pos_ind_estimation)*(1-self.mr0_cur)
-                printf (self.q_file, 'q={:.2f}, mr0={}\n' .format(perf_ind_hit_ratio, self.mr0_cur)) #$$$
-                if (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > 0.15:
-                    printf (self.q_file, 'advertising\n')
+                if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                    printf (self.q_file, 'q={:.2f}, mr0={}\n' .format(perf_ind_hit_ratio, self.mr0_cur)) #$$$
+                if (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th:
                     self.advertise_ind()
             else:
                 if self.mr0_cur < self.mr0_ad_th: 

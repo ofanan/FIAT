@@ -4,14 +4,6 @@ gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M50.B0.U1000.FNAA.adF | service_cost = 11.
 // avg num of fpr_fnr updates = 1257, fpr_fnr_updates bw = 0.0013
 // spec accs cost = 934199, num of spec hits = 133972
 
-gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNAA.adF | service_cost = 8.831349831349831 | bw = 64.12
-// tot_access_cost = 1934191, hit_ratio = 0.77, non_comp_miss_cnt = 165188, comp_miss_cnt = 64717
-// estimation window = 1000, // num of insertions between fpr_fnr estimations = 150
-// avg num of fpr_fnr updates = 510, fpr_fnr_updates bw = 0.0005
-// spec accs cost = 487490, num of spec hits = 58771
-// num of ads per DS=[65, 81, 83]
-// avg update interval = 13100.423580786028 req
-
 gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.FNAA.adF | service_cost = 17.4016104016104 | bw = 40.60
 // tot_access_cost = 2799693, hit_ratio = 0.85, non_comp_miss_cnt = 81302, comp_miss_cnt = 64717
 // estimation window = 1000, // num of insertions between fpr_fnr estimations = 150
@@ -139,7 +131,7 @@ scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNAA.adF | service_cost = 96
 // num of ads per DS=[102, 103, 104]
 // avg update interval = 9708.728155339806 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNAA.adF | service_cost = 12.231230231230231 | bw = 94.08
+F2.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNAA.adF | service_cost = 12.231230231230231 | bw = 94.08
 // tot_access_cost = 2125958, hit_ratio = 0.66, non_comp_miss_cnt = 43169, comp_miss_cnt = 293673
 // estimation window = 1000, // num of insertions between fpr_fnr estimations = 150
 // avg num of fpr_fnr updates = 748, fpr_fnr_updates bw = 0.0007
@@ -147,7 +139,7 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNAA.adF | service_cost = 12.2
 // num of ads per DS=[102, 114, 120]
 // avg update interval = 8928.5625 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.FNAA.adF | service_cost = 33.53386253386253 | bw = 84.84
+F2.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.FNAA.adF | service_cost = 33.53386253386253 | bw = 84.84
 // tot_access_cost = 3107629, hit_ratio = 0.7, non_comp_miss_cnt = 10589, comp_miss_cnt = 293673
 // estimation window = 1000, // num of insertions between fpr_fnr estimations = 150
 // avg num of fpr_fnr updates = 676, fpr_fnr_updates bw = 0.0007
@@ -155,7 +147,7 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.FNAA.adF | service_cost = 33.
 // num of ads per DS=[98, 101, 104]
 // avg update interval = 9900.980198019803 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNAA.adF | service_cost = 93.12197412197412 | bw = 83.16
+F2.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNAA.adF | service_cost = 93.12197412197412 | bw = 83.16
 // tot_access_cost = 3317481, hit_ratio = 0.7, non_comp_miss_cnt = 5675, comp_miss_cnt = 293673
 // estimation window = 1000, // num of insertions between fpr_fnr estimations = 150
 // avg num of fpr_fnr updates = 665, fpr_fnr_updates bw = 0.0007
@@ -205,21 +197,3 @@ wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNA.HEewma.adH | service_cost 
 // num of ads per DS=[1, 1, 1]
 // avg update interval = 999999.0 req
 
-
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.adH | service_cost = 24.025474025474026 | bw = 0.00
-// tot_access_cost = 1015000, hit_ratio = 0.23, non_comp_miss_cnt = 473342, comp_miss_cnt = 293673
-// estimation window = 1000, // spec accs cost = 1015000, num of spec hits = 232985
-// num of ads per DS=[0, 0, 0]
-// avg update interval = inf req
-
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000.FNA.HEewma.adH | service_cost = 35.367335367335365 | bw = 0.00
-// tot_access_cost = 6000000, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 293673
-// estimation window = 1000, // spec accs cost = 6000000, num of spec hits = 706327
-// num of ads per DS=[0, 0, 0]
-// avg update interval = inf req
-
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.FNA.HEewma.adH | service_cost = 94.10199410199411 | bw = 0.00
-// tot_access_cost = 6000000, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 293673
-// estimation window = 1000, // spec accs cost = 6000000, num of spec hits = 706327
-// num of ads per DS=[0, 0, 0]
-// avg update interval = inf req

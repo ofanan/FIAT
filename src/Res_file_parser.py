@@ -74,15 +74,15 @@ class Res_file_parser (object):
         printf (self.tbl_output_file, '\\\\\n\t\\hline\n\t\\hline\n')
 
         self.gen_filtered_list(self.list_of_dicts, num_of_req = 1000) 
-        for missp in [40, 400, 4000]:
+        for missp in [30, 100, 300]:
             printf (self.tbl_output_file, '\t\\multirow{3}{*}{')
             printf (self.tbl_output_file, '{}' .format (missp))
             printf (self.tbl_output_file, '}\n')
-            for alg_mode in ['FNOA', 'FNAA']:
-                if (alg_mode == 'FNOA'):
-                    printf (self.tbl_output_file, '\t&$\\fno$' .format(alg_mode))
+            for alg_mode in ['FNA', 'FNAA']:
+                if (alg_mode == 'FNA'):
+                    printf (self.tbl_output_file, '\t&FNAH' .format(alg_mode))
                 if (alg_mode == 'FNAA'):
-                    printf (self.tbl_output_file, '\t&$\\fna$' .format(alg_mode))
+                    printf (self.tbl_output_file, '\t&FNAA$' .format(alg_mode))
                     
                 for trace in traces:
                     opt_cost = self.gen_filtered_list(self.list_of_dicts, 
@@ -384,6 +384,8 @@ class Res_file_parser (object):
     
 if __name__ == "__main__":
     my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_file ('tbl.res')
+    my_Res_file_parser.print_tbl()
     
 #     my_Res_file_parser.parse_file ('tbl.res')
 #     my_Res_file_parser.print_bar_all_traces()
@@ -407,8 +409,7 @@ if __name__ == "__main__":
 #     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 256, print_add_legend = False)
 #     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 1024, print_add_legend = True)
 
-    my_Res_file_parser.parse_file ('wiki_cache_size.res') 
-    my_Res_file_parser.print_cache_size_plot_abs()
+    # my_Res_file_parser.print_cache_size_plot_abs()
 
 
 

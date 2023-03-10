@@ -126,14 +126,14 @@ class DataStore (object):
             self.spec_accs_cnt += 1
             if (not(hit)):
                 self.tn_events_cnt += 1
-            if (not(self.use_EWMA)): # use "flat" history
+            if (self.use_EWMA): 
+                if (self.spec_accs_cnt % self.mr0_ewma_window_size == 0 and self.spec_accs_cnt>0):
+                    self.update_mr0 ()
+            else: # use "flat" history
                 self.mr0_cur = float(self.tn_events_cnt) / float (self.spec_accs_cnt)
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                     printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
-            else: # now we know that we should use EWMA
-                if (self.spec_accs_cnt % self.mr0_ewma_window_size == 0):
-                    self.update_mr0 ()
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
@@ -189,7 +189,7 @@ class DataStore (object):
         In practice, this means merely generate a new indicator (simple Bloom filter).
         If input check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
-            
+        
         self.num_of_advertisements += 1
         if (check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -226,8 +226,10 @@ class DataStore (object):
             if (self.hit_ratio_based_uInterval):
                 perf_ind_hit_ratio  = self.pr_of_pos_ind_estimation
                 practical_hit_ratio = self.pr_of_pos_ind_estimation*(1-self.mr1_cur) + (1 - self.pr_of_pos_ind_estimation)*(1-self.mr0_cur)
-                printf (self.q_file, 'q={:.2f}, estimated_q={:.2f}\n' .format(perf_ind_hit_ratio, practical_hit_ratio)) #$$$
-                if self.mr0_cur < self.mr0_ad_th: #$$$$ 
+                printf (self.q_file, 'q={:.2f}, mr0={}, mr1={}, estimated_q={:.2f}\n' .format(perf_ind_hit_ratio, self.mr0_cur, self.mr1_cur, practical_hit_ratio)) #$$$
+                relative_err        = abs (perf_ind_hit_ratio - practical_hit_ratio)
+                if (relative_err / perf_ind_hit_ratio > 0.3):
+                    printf (self.q_file, 'advertising\n')
                     self.advertise_ind()
             else:
                 if self.mr0_cur < self.mr0_ad_th: 

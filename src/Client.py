@@ -34,11 +34,12 @@ class Client(object):
         self.total_access_cost  = 0
 
         self.mr                 = np.zeros (self.num_of_DSs) # mr[i] will hold the estimated prob' of a miss, given the ind' of DS[i]'s indicator
-        self.ind_cnt            = 0  # Number of indications requested by this client during this window 
+        self.ind_cnt            = 0  # Number of indications requested by this client during this window
+        self.num_ind_since_last_update, self.num_ind_since_last_update = 0, 0 
         self.pos_ind_cnt        = np.zeros (self.num_of_DSs) #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
         self.pr_of_pos_ind_estimation = 0.5 * np.ones (self.num_of_DSs) # pr_of_pos_ind_estimation[i] will hold the estimation for the prob' that DS[i] gives positive ind' for a requested item.  
         self.first_estimate     = True # indicates whether this is the first estimation window
-        self.window_size  = np.uint16 (window_size) # Number of requests performed by this client during each window
+        self.window_size        = np.uint16 (window_size) # Number of requests performed by this client during each window
         self.window_alpha       = window_alpha # window's alpha parameter 
         self.one_min_alpha      = 1 - self.window_alpha
         self.alpha_over_window  = float (self.window_alpha) / float (self.window_size)
@@ -77,18 +78,11 @@ class Client(object):
         """
         Update the estimation of q, namely the prob' of a pos' ind
         """
-        self.ind_cnt += 1 # Received a new set of indications
-        self.pos_ind_cnt += indications 
-        if (self.ind_cnt < self.window_size ): # Init period - use merely the data collected so far
-            self.pr_of_pos_ind_estimation   = self.pos_ind_cnt/self.window_size
-            # return True
-        elif (self.ind_cnt % self.window_size == 0): # run period - update the estimation once in a self.window_size time
-            if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose and self.ID == 0):
-                print ('q = ', self.pr_of_pos_ind_estimation, ', new q = ', self.pos_ind_cnt/self.window_size)
-            self.pr_of_pos_ind_estimation = self.alpha_over_window * self.pos_ind_cnt + self.one_min_alpha * self.pr_of_pos_ind_estimation
-            self.pos_ind_cnt    = np.zeros (self.num_of_DSs , dtype='uint16') #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
-            # return True
-        # return False
+        self.num_ind_since_last_update     += 1 
+        self.num_pos_ind_since_last_update += indications 
+        if (self.num_ind_since_last_update % self.window_size == 0 and self.num_pos_ind_since_last_update>0): 
+            self.pr_of_pos_ind_estimation  = self.alpha_over_window * self.num_pos_ind_since_last_update + self.one_min_alpha * self.pr_of_pos_ind_estimation
+            self.num_ind_since_last_update = np.zeros (self.num_of_DSs , dtype='uint16') 
         
     
     def estimate_pr_of_pos_ind_and_hit_ratio (self, indications):

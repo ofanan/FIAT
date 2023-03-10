@@ -1,1 +1,8 @@
-q=0.00, estimated_q=0.19q=0.00, estimated_q=0.22q=0.00, estimated_q=0.24q=0.00, estimated_q=0.27
+q=0.50, mr0=0.80875, mr1=0, estimated_q=0.60
+q=0.50, mr0=0.7788125, mr1=0, estimated_q=0.61
+q=0.50, mr0=0.7583593750000001, mr1=0, estimated_q=0.62
+q=0.50, mr0=0.72826953125, mr1=0, estimated_q=0.64
+q=0.50, mr0=0.7157021484375, mr1=0, estimated_q=0.64
+q=0.50, mr0=0.704276611328125, mr1=0, estimated_q=0.65
+q=0.50, mr0=0.6989574584960938, mr1=0, estimated_q=0.65
+advertising

@@ -91,7 +91,7 @@ class Simulator(object):
         Init a list of clients
         """
         
-        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, window_size = 100, verbose = self.verbose, 
+        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, window_size = self.DS_size/10, verbose = self.verbose, 
         use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
         verbose_file = self.res_file) 
         for i in range(self.num_of_clients)]
@@ -462,8 +462,9 @@ class Simulator(object):
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
         if (self.hit_ratio_based_uInterval):
-            for client in self.client_list:
-                client.update_q (self.indications)
+            if all([DS.num_of_advertisements>0 for DS in self.DS_list]): # all the DSs have already advertised at least one indicator
+                for client in self.client_list:
+                    client.update_q (self.indications)
         
         self.pr_of_pos_ind_estimation
 

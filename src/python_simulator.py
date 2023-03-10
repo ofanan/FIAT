@@ -74,7 +74,7 @@ class Simulator(object):
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
-                        hit_ratio_based_uInterval = hit_ratio_based_uInterval,
+                        hit_ratio_based_uInterval = self.hit_ratio_based_uInterval,
                         mr_output_file      = self.mr_output_file[i], 
                         collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
                         analyse_ind_deltas  = not (self.calc_mr_by_hist),
@@ -444,7 +444,7 @@ class Simulator(object):
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
                 else:
                     for ds_id in range(self.num_of_DSs): #$$$ assume here there exists only a single client
-                        self.DS_list[DS_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id] 
+                        self.DS_list[ds_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id] 
                     self.handle_single_req_pgm_fna_mr_by_practical_hist ()
 
             else: # Use analysis to estimate mr0, mr1 
@@ -461,8 +461,9 @@ class Simulator(object):
         for ds in range (self.num_of_DSs):            
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
-        for client in self.client_list:
-            client.update_q ()
+        if (self.hit_ratio_based_uInterval):
+            for client in self.client_list:
+                client.update_q (self.indications)
         
         self.pr_of_pos_ind_estimation
 

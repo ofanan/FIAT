@@ -100,7 +100,7 @@ class DataStore (object):
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ("../res/fna.txt", "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            self.q_file = open ('../res/q{}.txt' .format(self.ID), "w") #$$$
+            self.q_file = open ('../res/q{}.txt' .format(self.ID), "w") 
 
     def __contains__(self, key):
         """
@@ -228,16 +228,18 @@ class DataStore (object):
         """
         #if (self.spec_accs_cnt==self.tn_events_cnt): # this is the first 
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+        if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
         if self.hist_based_uInterval:
             if (self.hit_ratio_based_uInterval):
-                perf_ind_hit_ratio  = self.pr_of_pos_ind_estimation
                 practical_hit_ratio = self.pr_of_pos_ind_estimation*(1-self.mr1_cur) + (1 - self.pr_of_pos_ind_estimation)*(1-self.mr0_cur)
                 if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                    printf (self.q_file, 'q={:.2f}, mr0={}\n' .format(perf_ind_hit_ratio, self.mr0_cur)) #$$$
+                    printf (self.q_file, 'q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.2f}\n' 
+                            .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr0_cur)) 
                 if (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th:
+                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                        printf (self.q_file, 'calling from mr0\n')                     
                     self.advertise_ind()
             else:
                 if self.mr0_cur < self.mr0_ad_th: 
@@ -251,7 +253,12 @@ class DataStore (object):
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            printf (self.q_file, 'q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.2f}\n' 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr0_cur)) 
         if self.hist_based_uInterval and self.mr1_cur > self.mr1_ad_th: 
+            if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                printf (self.q_file, 'calling from mr0\n')                     
             self.advertise_ind()
         self.fp_events_cnt = int(0)
         

@@ -42,9 +42,11 @@ class Res_file_parser (object):
         # costs         = splitted_line[1].split(" = ")
         # print ('costs={}' .format (costs))
         serviceCost   = float(splitted_line[1].split(" = ")[1])
-        bwCosts       = None # default value, to be checked later
+        bwCost        = None # default value, to be checked later
         if (len(splitted_line)>2):
             bwCost    = float(splitted_line[2].split(" = ")[1])
+        # else:
+        #     print ('splitted_line={}' .format (splitted_line))
         splitted_line = settings.split (".")
         mode          = splitted_line[alg_idx].split(" ")[0]
 
@@ -64,7 +66,7 @@ class Res_file_parser (object):
             "alg_mode"    : mode,
             'serviceCost' : serviceCost
             }
-        if (bwCosts != None):
+        if (bwCost != None):
             self.dict['bwCost'] = bwCost
 
     def print_tbl (self):
@@ -141,7 +143,7 @@ class Res_file_parser (object):
         # scarab    2.5036    2.3053    3.2211    1.1940    3.3310    1.1183
         # F2        2.3688    2.2609    2.9604    1.1507    3.0546    1.0766
         """
-        serviceCost_by_missp_output_file = open ("../res/cost_by_missp.txt", "w")
+        serviceCost_by_missp_output_file = open ("../res/serviceCost_by_missp.txt", "w")
         bwCost_by_missp_output_file      = open ("../res/bwCost_by_missp.txt", "w")
         traces = ['wiki', 'scarab', 'umass']
 
@@ -163,7 +165,6 @@ class Res_file_parser (object):
                             trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval = 1000, 
                             alg_mode = alg_mode) 
                     alg_serviceCost = point[0]['serviceCost']
-                    print (point) #$$$
                     alg_bwCost      = point[0]['bwCost']  
                     printf (serviceCost_by_missp_output_file, ' {:.4f} \t' .format(alg_serviceCost / opt_serviceCost))
                     printf (bwCost_by_missp_output_file,      ' {:.4f} \t' .format(alg_bwCost))

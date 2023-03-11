@@ -18,7 +18,7 @@ VERBOSE_LOG                 = 3 # write to log files
 VERBOSE_DETAILED_LOG        = 4 
 VERBOSE_LOG_MR              = 5 # Write a log file detailing the mr upon every advertisement
 VERBOSE_DETAILED_LOG_MR     = 6 # Write a log file detailing the mr upon every advertisement
-VERBOSE_LOG_Q               = 6 # Write a log file detailing the q (prob' of pos ind')
+VERBOSE_LOG_Q               = 7 # Write a log file detailing the q (prob' of pos ind')
 VERBOSE_DEBUG               = 9
 VERBOSE_CNT_FN_BY_STALENESS = 10 
 

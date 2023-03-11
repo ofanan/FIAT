@@ -1,2 +1,0 @@
-input 		 FNAA30 		 FNAH30 		 FNAA100 	 FNAH100 	 FNAA300 	 FNAH300
-wiki		

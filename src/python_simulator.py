@@ -70,6 +70,10 @@ class Simulator(object):
         """
         Init a list of empty DSs (Data Stores == caches)
         """
+        if (self.missp < 50):
+            initial_mr0 = 0.85
+        else:
+            initial_mr0 = 0.95
         self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_ewma_window_size = self.ewma_window_size, 
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
@@ -83,7 +87,8 @@ class Simulator(object):
                         use_EWMA            = self.use_EWMA,
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
                         hist_based_uInterval = self.hist_based_uInterval,
-                        non_comp_miss_th     = self.non_comp_miss_th
+                        non_comp_miss_th     = self.non_comp_miss_th,
+                        initial_mr0          = initial_mr0 
                         ) 
                         for i in range(self.num_of_DSs)]
             

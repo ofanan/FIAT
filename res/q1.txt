@@ -1,3 +1,87 @@
-q=0.50, mr0=0.96, mult0=0.02, mr1=0.0000, mult1=0.48
-q=0.50, mr0=0.96, mult0=0.02, mr1=0.0000, mult1=0.48
-q=0.50, mr0=0.96, mult0=0.02, mr1=0.0000, mult1=0.48
+in update mr0: q=0.50, mr0=0.90, mult0=0.05, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.86, mult0=0.07, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.84, mult0=0.08, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.83, mult0=0.09, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.81, mult0=0.10, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.80, mult0=0.10, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.80, mult0=0.10, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.80, mult0=0.10, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.79, mult0=0.11, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.78, mult0=0.11, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.78, mult0=0.11, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.77, mult0=0.11, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.76, mult0=0.12, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.75, mult0=0.12, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.75, mult0=0.12, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+in update mr0: q=0.50, mr0=0.76, mult0=0.12, mr1=0.0000, mult1=0.0000, reg accs cnt=0
+advertising
+in update mr0: q=0.50, mr0=0.95, mult0=0.03, mr1=0.0010, mult1=0.0005, reg accs cnt=175
+in update mr0: q=0.50, mr0=0.90, mult0=0.05, mr1=0.0010, mult1=0.0005, reg accs cnt=405
+in update mr0: q=0.17, mr0=0.87, mult0=0.11, mr1=0.0010, mult1=0.0002, reg accs cnt=839
+in update mr1: q=0.16, mr0=0.87, mult0=0.11, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.16, mr0=0.84, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1133
+calling from mr0
+advertising
+in update mr0: q=0.16, mr0=0.92, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=369
+in update mr0: q=0.15, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=692
+in update mr0: q=0.15, mr0=0.87, mult0=0.11, mr1=0.0010, mult1=0.0002, reg accs cnt=993
+in update mr1: q=0.15, mr0=0.87, mult0=0.11, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.15, mr0=0.84, mult0=0.13, mr1=0.0008, mult1=0.0001, reg accs cnt=1368
+calling from mr0
+advertising
+in update mr0: q=0.15, mr0=0.92, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=389
+in update mr0: q=0.15, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=762
+in update mr1: q=0.15, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.15, mr0=0.85, mult0=0.13, mr1=0.0008, mult1=0.0001, reg accs cnt=1070
+calling from mr0
+advertising
+in update mr0: q=0.15, mr0=0.91, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=383
+in update mr0: q=0.15, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=741
+in update mr1: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.16, mr0=0.85, mult0=0.12, mr1=0.0008, mult1=0.0001, reg accs cnt=1182
+in update mr0: q=0.16, mr0=0.83, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1498
+calling from mr0
+advertising
+in update mr0: q=0.16, mr0=0.92, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=395
+in update mr0: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=765
+in update mr1: q=0.15, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.15, mr0=0.86, mult0=0.12, mr1=0.0008, mult1=0.0001, reg accs cnt=1137
+in update mr0: q=0.16, mr0=0.83, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1555
+calling from mr0
+advertising
+in update mr0: q=0.17, mr0=0.91, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=477
+in update mr0: q=0.17, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=883
+in update mr1: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.16, mr0=0.85, mult0=0.12, mr1=0.0008, mult1=0.0001, reg accs cnt=1275
+in update mr0: q=0.16, mr0=0.83, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1618
+calling from mr0
+advertising
+in update mr0: q=0.16, mr0=0.91, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=428
+in update mr0: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=806
+in update mr1: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.16, mr0=0.85, mult0=0.13, mr1=0.0008, mult1=0.0001, reg accs cnt=1245
+in update mr0: q=0.16, mr0=0.83, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1623
+calling from mr0
+advertising
+in update mr0: q=0.17, mr0=0.91, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=460
+in update mr0: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=801
+in update mr1: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.16, mr0=0.86, mult0=0.12, mr1=0.0008, mult1=0.0001, reg accs cnt=1234
+in update mr0: q=0.16, mr0=0.83, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1649
+calling from mr0
+advertising
+in update mr0: q=0.17, mr0=0.91, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=471
+in update mr0: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=839
+in update mr1: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.15, mr0=0.86, mult0=0.12, mr1=0.0008, mult1=0.0001, reg accs cnt=1169
+in update mr0: q=0.15, mr0=0.84, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1559
+calling from mr0
+advertising
+in update mr0: q=0.17, mr0=0.92, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=482
+in update mr0: q=0.17, mr0=0.88, mult0=0.10, mr1=0.0010, mult1=0.0002, reg accs cnt=898
+in update mr1: q=0.16, mr0=0.88, mult0=0.10, mr1=0.0008, mult1=0.0001, reg accs cnt=1000
+in update mr0: q=0.17, mr0=0.85, mult0=0.12, mr1=0.0008, mult1=0.0001, reg accs cnt=1320
+in update mr0: q=0.16, mr0=0.83, mult0=0.14, mr1=0.0008, mult1=0.0001, reg accs cnt=1730
+calling from mr0
+advertising
+in update mr0: q=0.17, mr0=0.92, mult0=0.07, mr1=0.0010, mult1=0.0002, reg accs cnt=476

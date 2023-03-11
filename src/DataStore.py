@@ -23,7 +23,8 @@ class DataStore (object):
                  designed_mr1               = 0.001,
                  use_EWMA                   = False,
                  initial_mr0                = 0.85,
-                 non_comp_miss_th           = 0.13,
+                 non_comp_miss_th           = 0.15,
+                 mult1_th                   = 0.22,
                  mr_output_file             = None,
                  use_indicator              = True,
                  hist_based_uInterval       = False,
@@ -69,7 +70,8 @@ class DataStore (object):
             self.mr0_ad_th, self.mr1_ad_th = 0.7, 0.01 
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
-                self.non_comp_miss_th = non_comp_miss_th 
+                self.non_comp_miss_th = non_comp_miss_th
+            self.mult1_th            = mult1_th 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
@@ -126,7 +128,7 @@ class DataStore (object):
             return hit 
         
         # Now we know that we have to collect and print some stat
-        if (is_speculative_accs):
+        if is_speculative_accs:
             self.spec_accs_cnt += 1
             if (not(hit)):
                 self.tn_events_cnt += 1
@@ -142,14 +144,14 @@ class DataStore (object):
             self.reg_accs_cnt += 1
             if (not(hit)):
                 self.fp_events_cnt += 1
-            if (not(self.use_EWMA)): # use "flat" history
+            if self.use_EWMA: 
+                if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
+                    self.update_mr1 ()
+            else: # use "flat" history
                 self.mr1_cur = float(self.fp_events_cnt) / float (self.reg_accs_cnt) 
                 # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                     printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
-            else: # now we know that we should use EWMA
-                if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
-                    self.update_mr1 ()
                 
         return hit 
 
@@ -233,11 +235,10 @@ class DataStore (object):
 
         if self.hist_based_uInterval:
             if (self.hit_ratio_based_uInterval):
-                practical_hit_ratio = self.pr_of_pos_ind_estimation*(1-self.mr1_cur) + (1 - self.pr_of_pos_ind_estimation)*(1-self.mr0_cur)
                 if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                    printf (self.q_file, 'q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.2f}\n' 
-                            .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr0_cur)) 
-                if (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th:
+                    printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, reg accs cnt={}\n' 
+                            .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.reg_accs_cnt)) 
+                if ((self.num_of_advertisements>0) and (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                         printf (self.q_file, 'calling from mr0\n')                     
                     self.advertise_ind()
@@ -254,12 +255,17 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_file, 'q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.2f}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr0_cur)) 
-        if self.hist_based_uInterval and self.mr1_cur > self.mr1_ad_th: 
-            if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                printf (self.q_file, 'calling from mr0\n')                     
-            self.advertise_ind()
+            printf (self.q_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, reg accs cnt={}\n' 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.reg_accs_cnt)) 
+        if self.hist_based_uInterval and (self.num_of_advertisements>0):
+            if (self.hit_ratio_based_uInterval):
+                if (self.pr_of_pos_ind_estimation*self.mr1_cur > self.mult1_th):
+                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                        printf (self.q_file, 'calling from mr1\n')                     
+                    self.advertise_ind()
+            else:           
+                if self.mr1_cur > self.mr1_ad_th: 
+                    self.advertise_ind()
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

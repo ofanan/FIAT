@@ -60,10 +60,14 @@ class Simulator(object):
         else: # mode isn't 'Opt', and the mr-estimation is BF-analysis-based
             settings_str = '{}A' .format (settings_str) # 'A' stands for 'by Analysis'
         
+        settings_str = '{}.ad' .format (settings_str) # 'ad' stands for advertisements
         if (self.hist_based_uInterval):
-            return '{}.adH' .format (settings_str) # history-based advertisements
-        else:
-            return '{}.adF' .format (settings_str) # fixed-update-interval advertisements
+            settings_str = '{}_hist' .format (settings_str) # history-based advertisements
+            if (self.hit_ratio_based_uInterval):
+                settings_str = '{}NhitRatio' .format (settings_str) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
+        if self.ins_cnt_based_uInterval:
+            settings_str = '{}_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
+        return settings_str
         
                 
     def init_DS_list(self):
@@ -79,6 +83,7 @@ class Simulator(object):
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
                         hit_ratio_based_uInterval = self.hit_ratio_based_uInterval,
+                        ins_cnt_based_uInterval   = self.ins_cnt_based_uInterval,
                         mr_output_file      = self.mr_output_file[i], 
                         collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
                         analyse_ind_deltas  = not (self.calc_mr_by_hist),
@@ -107,13 +112,14 @@ class Simulator(object):
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
                  use_given_client_per_item  = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item      = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
+                 hist_based_uInterval       = False, # when true, send advertisements according to the hist-based estimations of mr.
+                 ins_cnt_based_uInterval    = False, # when True, send advertisements according to the # of insertions since the last update
+                 hit_ratio_based_uInterval  = False, # when True, send advertisements according to the hist-based estimations of the hit ratio 
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
                  uInterval          = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = False, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
-                 hist_based_uInterval = False, # when true, send advertisements according to the hist-based estimations of mr.
-                 hit_ratio_based_uInterval = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -193,10 +199,12 @@ class Simulator(object):
             self.full_res_file           = open ('../res/{}_full.res' .format(self.res_file_name), "a")
         if (self.calc_mr_by_hist):
             self.hist_based_uInterval      = hist_based_uInterval
+            self.ins_cnt_based_uInterval   = ins_cnt_based_uInterval
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
         else:
             print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
-            self.hist_based_uInterval = False
+            self.hist_based_uInterval      = False
+            self.ins_cnt_based_uInterval   = True
             self.hit_ratio_based_uInterval = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
         
         if (self.hit_ratio_based_uInterval and not(self.hist_based_uInterval)):

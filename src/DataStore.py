@@ -16,18 +16,19 @@ class DataStore (object):
 
     def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_ewma_window_size = 100, 
                  max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
-                 num_of_insertions_between_estimations = np.uint8 (50),
-                 DS_send_fpr_fnr_updates    = True, 
-                 collect_mr_stat            = True,
+                 num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.  
+                 DS_send_fpr_fnr_updates    = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
+                 collect_mr_stat            = True, 
                  analyse_ind_deltas         = True,
-                 designed_mr1               = 0.001,
-                 use_EWMA                   = False,
-                 initial_mr0                = 0.85,
-                 non_comp_miss_th           = 0.15,
-                 mult1_th                   = 0.22,
-                 mr_output_file             = None,
-                 use_indicator              = True,
-                 hist_based_uInterval       = False,
+                 designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
+                 use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
+                 initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
+                 non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > mult1_th.
+                 mult1_th                   = 0.22, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > mult1_th.  
+                 mr_output_file             = None, # When this input isn't known, log data about the mr to this file
+                 use_indicator              = True, # when True, generate and maintain an indicator (BF). 
+                 hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
+                 ins_cnt_based_uInterval    = False, # when True, advertise an indicator based on the # of insertions since the last advertisement.
                  hit_ratio_based_uInterval  = False  
                  ):
         """
@@ -62,10 +63,11 @@ class DataStore (object):
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
         self.mr1_cur                 = 0
-        self.mr1_ewma_window_size   = mr1_ewma_window_size
-        self.mr0_ewma_window_size   = mr1_ewma_window_size
+        self.mr1_ewma_window_size    = mr1_ewma_window_size
+        self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
+        self.ins_cnt_based_uInterval = ins_cnt_based_uInterval
         if (self.hist_based_uInterval):
             self.mr0_ad_th, self.mr1_ad_th = 0.7, 0.01 
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
@@ -178,10 +180,10 @@ class DataStore (object):
                     self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                     self.num_of_fpr_fnr_updates += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
-            if (self.hist_based_uInterval):
+            if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.uInterval): # force a "warmup" advertisement
-                    self.advertise_ind ()
-            else: # fixed uInterval 
+                    return self.advertise_ind ()
+            if self.ins_cnt_based_uInterval:
                 if (self.ins_since_last_ad == self.uInterval):
                     self.advertise_ind ()
                 

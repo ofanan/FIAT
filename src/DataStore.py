@@ -25,6 +25,7 @@ class DataStore (object):
                  initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
                  non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > mult1_th.
                  mult1_th                   = 0.22, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > mult1_th.  
+                 mr0_ad_th                  = 0.7,
                  mr_output_file             = None, # When this input isn't known, log data about the mr to this file
                  use_indicator              = True, # when True, generate and maintain an indicator (BF). 
                  hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
@@ -69,7 +70,7 @@ class DataStore (object):
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         self.ins_cnt_based_uInterval = ins_cnt_based_uInterval
         if (self.hist_based_uInterval):
-            self.mr0_ad_th, self.mr1_ad_th = 0.7, 0.01 
+            self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, 0.01 
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
                 self.non_comp_miss_th = non_comp_miss_th

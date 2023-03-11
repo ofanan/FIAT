@@ -93,7 +93,8 @@ class Simulator(object):
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
                         hist_based_uInterval = self.hist_based_uInterval,
                         non_comp_miss_th     = self.non_comp_miss_th,
-                        initial_mr0          = initial_mr0 
+                        initial_mr0          = initial_mr0,
+                        mr0_ad_th            = self.mr0_ad_th 
                         ) 
                         for i in range(self.num_of_DSs)]
             
@@ -140,7 +141,8 @@ class Simulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
-        self.non_comp_miss_th   = 0.13 
+        self.non_comp_miss_th   = 0.13
+        self.mr0_ad_th          = 0.7 
         self.res_file_name      = res_file_name
         self.res_file           = open ('../res/{}.res' .format(self.res_file_name), "a")
         self.trace_file_name    = trace_file_name
@@ -334,7 +336,10 @@ class Simulator(object):
             printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
         printf (res_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
-        printf (res_file, '\n// non_comp_miss_th={}\n' .format (self.non_comp_miss_th))
+        if self.hist_based_uInterval:
+            printf (res_file, '\n// mr0_ad_th={}\n' .format (self.mr0_ad_th)) 
+        if self.hit_ratio_based_uInterval:
+            printf (res_file, '\n// non_comp_miss_th={}\n' .format (self.non_comp_miss_th))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 

@@ -3477,3 +3477,17 @@ scarab.C10K.bpe14.300Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | 
 // num of ads per DS=[18, 17, 17]
 // avg update interval = 17307.69230769231 req
 // mr0_ad_th=0.7
+
+wiki.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 16.44 | bw = 18.48
+// tot_access_cost = 1838047, hit_ratio = 0.87, non_comp_miss_cnt = 167, comp_miss_cnt = 63669
+// estimation window = 1000, // spec accs cost = 1258140, num of spec hits = 133018
+// num of ads per DS=[11, 11, 11]
+// avg update interval = 45454.545454545456 req
+// mr0_ad_th=0.7
+
+gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 10.57 | bw = 22.96
+// tot_access_cost = 1975510, hit_ratio = 0.93, non_comp_miss_cnt = 3951, comp_miss_cnt = 29157
+// estimation window = 1000, // spec accs cost = 1403269, num of spec hits = 192405
+// num of ads per DS=[8, 16, 17]
+// avg update interval = 36585.365853658535 req
+// mr0_ad_th=0.7

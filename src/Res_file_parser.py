@@ -156,16 +156,23 @@ class Res_file_parser (object):
         for trace in traces:
             trace_to_print = 'F2\t' if trace == 'umass' else trace 
             for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
-                printf (output_file, '{}\t\t' .format (trace_to_print))
+                printf (output_file, '{}\t' .format (trace_to_print))
             for missp in missp_vals:
                 for alg_mode in ['FNAA', 'FNA']:
-                    opt_serviceCost = self.gen_filtered_list(self.list_of_dicts, 
-                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')[0]['serviceCost']
+                    point = self.gen_filtered_list(self.list_of_dicts, 
+                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
+                    if (point==None):
+                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
+                    opt_serviceCost = point[0]['serviceCost']
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval = 1000, 
-                            alg_mode = alg_mode) 
+                            alg_mode = alg_mode)
+                    if (point==None): # no results for this settings 
+                        printf (serviceCost_by_missp_output_file, 'N/A\t')
+                        printf (bwCost_by_missp_output_file,      'N/A\t')
+                        continue
                     alg_serviceCost = point[0]['serviceCost']
-                    alg_bwCost      = point[0]['bwCost']  
+                    alg_bwCost      = point[0]['bwCost']
                     printf (serviceCost_by_missp_output_file, ' {:.4f} \t' .format(alg_serviceCost / opt_serviceCost))
                     printf (bwCost_by_missp_output_file,      ' {:.4f} \t' .format(alg_bwCost))
                     # printf (bwCost_by_missp_output_file, ' {:.4f} \t' .format(alg_bwCost / opt_bwCost))
@@ -401,6 +408,7 @@ class Res_file_parser (object):
     
 if __name__ == "__main__":
     my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_file ('Opt_n_FNAA.res')
     my_Res_file_parser.parse_file ('tbl.res')
     my_Res_file_parser.print_missp_bars_for_tikz ()
     

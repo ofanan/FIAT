@@ -3491,3 +3491,17 @@ gradle.C10K.bpe14.500Kreq.3DSs.Kloc1.M100.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | 
 // num of ads per DS=[8, 16, 17]
 // avg update interval = 36585.365853658535 req
 // mr0_ad_th=0.7
+
+umass.C10K.bpe14.400Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 98.0738725 | bw = 53.90
+// tot_access_cost = 1480849, hit_ratio = 0.69, non_comp_miss_cnt = 269, comp_miss_cnt = 125560
+// estimation window = 1000, // spec accs cost = 977999, num of spec hits = 28019
+// num of ads per DS=[26, 25, 26]
+// avg update interval = 15584.415584415583 req
+// mr0_ad_th=0.7
+
+scarab.C10K.bpe14.400Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 96.735575 | bw = 46.90
+// tot_access_cost = 1545230, hit_ratio = 0.69, non_comp_miss_cnt = 208, comp_miss_cnt = 123622
+// estimation window = 1000, // spec accs cost = 1091591, num of spec hits = 47957
+// num of ads per DS=[23, 22, 22]
+// avg update interval = 17910.44776119403 req
+// mr0_ad_th=0.7

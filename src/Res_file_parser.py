@@ -147,7 +147,7 @@ class Res_file_parser (object):
         """
         serviceCost_by_missp_output_file = open ("../res/serviceCost_by_missp.txt", "w")
         bwCost_by_missp_output_file      = open ("../res/bwCost_by_missp.txt", "w")
-        traces = ['wiki', 'scarab', 'umass', 'F2']
+        traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         missp_vals = [30, 100, 300]
         for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
@@ -160,15 +160,16 @@ class Res_file_parser (object):
             for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
                 printf (output_file, '{}\t' .format (trace_to_print))
             for missp in missp_vals:
-                for alg in ['FNAA', 'FNA']:
+                for alg_mode in ['FNAA', 'FNA']:
                     point = self.gen_filtered_list(self.list_of_dicts, 
-                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg = 'Opt')
+                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
-                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
+                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace_to_print, missp))
                     opt_serviceCost = point[0]['serviceCost']
+                    uInterval = 1000 if alg_mode=='FNAA' else 2000
                     point = self.gen_filtered_list(self.list_of_dicts, 
-                            trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval=1000 if alg='FNAA' else 2000, 
-                            alg = alg)
+                            trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval=uInterval, 
+                            alg_mode = alg_mode)
                     if (point==[]): # no results for this settings 
                         printf (serviceCost_by_missp_output_file, 'N/A\t\t')
                         printf (bwCost_by_missp_output_file,      'N/A\t\t')

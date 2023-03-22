@@ -176,6 +176,7 @@ class Res_file_parser (object):
                         continue
                     alg_serviceCost = point[0]['serviceCost']
                     alg_bwCost      = point[0]['bwCost']
+                    # alg_hitRatio    = point[0]['bwCost']
                     printf (serviceCost_by_missp_output_file, ' {:.4f}\t' .format(alg_serviceCost / opt_serviceCost))
                     printf (bwCost_by_missp_output_file,      ' {:.4f}\t' .format(alg_bwCost))
                     # printf (bwCost_by_missp_output_file, ' {:.4f} \t' .format(alg_bwCost / opt_bwCost))
@@ -409,10 +410,6 @@ class Res_file_parser (object):
         
     
 if __name__ == "__main__":
-    my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_file ('Opt_n_FNAA.res')
-    my_Res_file_parser.parse_file ('tbl.res')
-    my_Res_file_parser.print_missp_bars_for_tikz ()
 
 #     my_Res_file_parser.parse_file ('wiki_k_loc.res')
 #     my_Res_file_parser.print_bar_k_loc()          
@@ -434,3 +431,7 @@ if __name__ == "__main__":
 #     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 1024, print_add_legend = True)
 
 # my_Res_file_parser.print_cache_size_plot_abs()
+    my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_file ('Opt_n_FNAA.res')
+    my_Res_file_parser.parse_file ('tbl.res')
+    my_Res_file_parser.print_missp_bars_for_tikz ()

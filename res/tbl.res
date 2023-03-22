@@ -47,3 +47,38 @@ scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U2000.FNA.HEewma.ad_hist_ins_cnt |
 // num of ads per DS=[61, 57, 56]
 // avg update interval = 17241.362068965518 req
 // mr0_ad_th=0.7
+
+wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 16.13 | bw = 18.76
+// tot_access_cost = 3607923, hit_ratio = 0.87, non_comp_miss_cnt = 749, comp_miss_cnt = 124511
+// estimation window = 1000, // spec accs cost = 2413611, num of spec hits = 251593
+// num of ads per DS=[25, 21, 21]
+// avg update interval = 44776.07462686567 req
+// mr0_ad_th=0.7
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 10.98 | bw = 22.40
+// tot_access_cost = 3894728, hit_ratio = 0.93, non_comp_miss_cnt = 6158, comp_miss_cnt = 64717
+// estimation window = 1000, // spec accs cost = 2740469, num of spec hits = 365931
+// num of ads per DS=[16, 31, 33]
+// avg update interval = 37499.9625 req
+// mr0_ad_th=0.7
+
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 91.94981094981095 | bw = 56.56
+// tot_access_cost = 3639619, hit_ratio = 0.71, non_comp_miss_cnt = 694, comp_miss_cnt = 293673
+// estimation window = 1000, // spec accs cost = 2354584, num of spec hits = 75441
+// num of ads per DS=[67, 67, 68]
+// avg update interval = 14851.470297029704 req
+// mr0_ad_th=0.7
+
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 93.98380498380499 | bw = 49.28
+// tot_access_cost = 3808511, hit_ratio = 0.7, non_comp_miss_cnt = 898, comp_miss_cnt = 299686
+// estimation window = 1000, // spec accs cost = 2647837, num of spec hits = 116314
+// num of ads per DS=[61, 58, 57]
+// avg update interval = 17045.4375 req
+// mr0_ad_th=0.7
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 23.59 | bw = 21.00
+// tot_access_cost = 3997000, hit_ratio = 0.93, non_comp_miss_cnt = 602, comp_miss_cnt = 64717
+// estimation window = 1000, // spec accs cost = 2844024, num of spec hits = 373947
+// num of ads per DS=[16, 29, 30]
+// avg update interval = 39999.96 req
+// mr0_ad_th=0.7

@@ -7,7 +7,7 @@ import os, pickle, sys
 
 import MyConfig
 import numpy as np
-import pandas as pd
+#import pandas as pd
 from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
@@ -52,7 +52,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     res_file_name       = 'tbl'# open ('../res/tbl_full.res', 'a')
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [30, 100]: #, 100, 300
+    for missp in [300]: #, 100, 300
         for mode in ['fna']: 
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 

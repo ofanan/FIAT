@@ -3703,3 +3703,21 @@ umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatio | s
 // mr0_ad_th=0.7
 
 // non_comp_miss_th=0.13
+
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatio | service_cost = 23.50 | bw = 11.20
+// tot_access_cost = 108352, hit_ratio = 0.25, non_comp_miss_cnt = 32890, comp_miss_cnt = 41821
+// estimation window = 1000, // spec accs cost = 69088, num of spec hits = 3091
+// num of ads per DS=[2, 1, 1]
+// avg update interval = 75000.0 req
+// mr0_ad_th=0.7
+
+// non_comp_miss_th=0.13
+
+umass.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatio | service_cost = 23.63 | bw = 7.00
+// tot_access_cost = 160791, hit_ratio = 0.24, non_comp_miss_cnt = 81143, comp_miss_cnt = 71015
+// estimation window = 1000, // spec accs cost = 80893, num of spec hits = 4155
+// num of ads per DS=[3, 1, 1]
+// avg update interval = 120000.0 req
+// mr0_ad_th=0.7
+
+// non_comp_miss_th=0.13

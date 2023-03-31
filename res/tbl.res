@@ -91,3 +91,12 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatio | 
 // mr0_ad_th=0.7
 
 // non_comp_miss_th=0.13
+
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U2000.FNA.HEewma.ad_histNhitRatio | service_cost = 92.22 | bw = 15.40
+// tot_access_cost = 3985607, hit_ratio = 0.71, non_comp_miss_cnt = 439, comp_miss_cnt = 293673
+// estimation window = 1000, // spec accs cost = 2758544, num of spec hits = 135428
+// num of ads per DS=[16, 19, 20]
+// avg update interval = 54545.4 req
+// mr0_ad_th=0.7
+
+// non_comp_miss_th=0.13

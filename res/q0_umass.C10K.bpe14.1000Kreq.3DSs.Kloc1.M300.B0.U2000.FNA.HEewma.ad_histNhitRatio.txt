@@ -838,3 +838,19 @@ in update mr0: q=0.17, mr0=0.87, mult0=0.11, mr1=0.1014, mult1=0.0169, spec_accs
 in update mr0: q=0.15, mr0=0.86, mult0=0.12, mr1=0.1014, mult1=0.0156, spec_accs_cnt=45000, reg_accs_cnt=14631
 in update mr0: q=0.16, mr0=0.85, mult0=0.12, mr1=0.1014, mult1=0.0163, spec_accs_cnt=46000, reg_accs_cnt=14962
 in update mr1: q=0.16, mr0=0.85, mult0=0.12, mr1=0.1008, mult1=0.0162, spec_accs_cnt=46088, reg_accs_cnt=15000
+in update mr0: q=0.20, mr0=0.86, mult0=0.11, mr1=0.1008, mult1=0.0199, spec_accs_cnt=47000, reg_accs_cnt=15399
+in update mr0: q=0.21, mr0=0.86, mult0=0.11, mr1=0.1008, mult1=0.0209, spec_accs_cnt=48000, reg_accs_cnt=15792
+in update mr1: q=0.20, mr0=0.86, mult0=0.11, mr1=0.1359, mult1=0.0273, spec_accs_cnt=48672, reg_accs_cnt=16000
+calling from mr1
+advertising
+in update mr0: q=0.20, mr0=0.96, mult0=0.03, mr1=0.0010, mult1=0.0002, spec_accs_cnt=1000, reg_accs_cnt=285
+in update mr0: q=0.20, mr0=0.97, mult0=0.03, mr1=0.0010, mult1=0.0002, spec_accs_cnt=2000, reg_accs_cnt=535
+in update mr0: q=0.21, mr0=0.96, mult0=0.03, mr1=0.0010, mult1=0.0002, spec_accs_cnt=3000, reg_accs_cnt=829
+in update mr1: q=0.21, mr0=0.96, mult0=0.03, mr1=0.0043, mult1=0.0009, spec_accs_cnt=3654, reg_accs_cnt=1000
+in update mr0: q=0.21, mr0=0.96, mult0=0.03, mr1=0.0043, mult1=0.0009, spec_accs_cnt=4000, reg_accs_cnt=1145
+in update mr0: q=0.19, mr0=0.95, mult0=0.04, mr1=0.0043, mult1=0.0008, spec_accs_cnt=5000, reg_accs_cnt=1379
+in update mr0: q=0.19, mr0=0.95, mult0=0.04, mr1=0.0043, mult1=0.0008, spec_accs_cnt=6000, reg_accs_cnt=1586
+in update mr0: q=0.16, mr0=0.93, mult0=0.06, mr1=0.0043, mult1=0.0007, spec_accs_cnt=7000, reg_accs_cnt=1726
+in update mr0: q=0.14, mr0=0.94, mult0=0.05, mr1=0.0043, mult1=0.0006, spec_accs_cnt=8000, reg_accs_cnt=1863
+in update mr1: q=0.14, mr0=0.94, mult0=0.05, mr1=0.0109, mult1=0.0015, spec_accs_cnt=8264, reg_accs_cnt=2000
+in update mr0: q=0.19, mr0=0.94, mult0=0.05, mr1=0.0109, mult1=0.0021, spec_accs_cnt=9000, reg_accs_cnt=2433

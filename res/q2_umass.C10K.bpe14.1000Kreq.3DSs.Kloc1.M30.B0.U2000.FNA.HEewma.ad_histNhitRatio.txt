@@ -1,0 +1,2 @@
+in update mr0: q=0.50, mr0=0.88, mult0=0.06, mr1=0.0000, mult1=0.0000, spec_accs_cnt=1000, reg_accs_cnt=0
+in update mr0: q=0.50, mr0=0.90, mult0=0.05, mr1=0.0000, mult1=0.0000, spec_accs_cnt=2000, reg_accs_cnt=0

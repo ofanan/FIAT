@@ -24,6 +24,7 @@ class DataStore (object):
                  use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
                  initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
                  non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > mult1_th.
+                 non_comp_accs_th           = 0.02,
                  mult1_th                   = 0.22, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > mult1_th.  
                  mr0_ad_th                  = 0.7,
                  mr_output_file             = None, # When this input isn't known, log data about the mr to this file
@@ -75,6 +76,7 @@ class DataStore (object):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
                 self.non_comp_miss_th = non_comp_miss_th
+                self.non_comp_accs_th = non_comp_accs_th
             self.mult1_th            = mult1_th 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
@@ -243,7 +245,9 @@ class DataStore (object):
                 if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                     printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
                             .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
-                if ((self.num_of_advertisements>0) and (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
+                if ((self.num_of_advertisements>0) and 
+                    ((1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th or 
+                        self.pr_of_pos_ind_estimation * self.mr1_cur    > self.non_comp_accs_th)):
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                         printf (self.q_file, 'calling from mr0\n')                     
                     self.advertise_ind()

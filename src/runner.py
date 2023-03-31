@@ -66,7 +66,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                ins_cnt_based_uInterval  = False,
                                hist_based_uInterval     = True,
                                hit_ratio_based_uInterval= True,
-                               verbose                  = [MyConfig.VERBOSE_LOG_Q]
+                               verbose                  = [MyConfig.VERBOSE_LOG_Q, MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES]
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()

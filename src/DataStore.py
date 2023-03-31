@@ -30,7 +30,8 @@ class DataStore (object):
                  use_indicator              = True, # when True, generate and maintain an indicator (BF). 
                  hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
                  ins_cnt_based_uInterval    = False, # when True, advertise an indicator based on the # of insertions since the last advertisement.
-                 hit_ratio_based_uInterval  = False  
+                 hit_ratio_based_uInterval  = False,
+                 settings_str               = "",  
                  ):
         """
         Return a DataStore object with the following attributes:
@@ -97,15 +98,16 @@ class DataStore (object):
         self.uInterval               = uInterval if (self.use_only_updated_ind == False) else float('inf')
         self.collect_mr_stat         = collect_mr_stat
         if (self.DS_send_fpr_fnr_updates):
-            self.fnr                    = 0 # Initially, there are no false indications
-            self.fpr                    = 0 # Initially, there are no false indications
+            self.fnr                 = 0 # Initially, there are no false indications
+            self.fpr                 = 0 # Initially, there are no false indications
         
+        self.settings_str            = settings_str
         self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
-            self.debug_file = open ("../res/fna.txt", "w")
+            self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            self.q_file = open ('../res/q{}.txt' .format(self.ID), "w") 
+            self.q_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
 
     def __contains__(self, key):
         """

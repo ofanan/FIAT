@@ -94,7 +94,8 @@ class Simulator(object):
                         hist_based_uInterval = self.hist_based_uInterval,
                         non_comp_miss_th     = self.non_comp_miss_th,
                         initial_mr0          = initial_mr0,
-                        mr0_ad_th            = self.mr0_ad_th 
+                        mr0_ad_th            = self.mr0_ad_th,
+                        settings_str         = self.gen_settings_string (num_of_req=self.trace_len) 
                         ) 
                         for i in range(self.num_of_DSs)]
             
@@ -115,12 +116,13 @@ class Simulator(object):
                  use_given_DS_per_item      = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  hist_based_uInterval       = False, # when true, send advertisements according to the hist-based estimations of mr.
                  ins_cnt_based_uInterval    = False, # when True, send advertisements according to the # of insertions since the last update
-                 hit_ratio_based_uInterval  = False, # when True, send advertisements according to the hist-based estimations of the hit ratio 
+                 hit_ratio_based_uInterval  = False, # when True, send advertisements according to the hist-based estimations of the hit ratio
+                 use_global_uInerval        = False, 
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
-                 uInterval          = -1, # update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator 
+                 uInterval          = None, # if ins_cnt_based_uInterval==True AND use_global_uInerval==False, this is the update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator. When None, decide when to advertise update in another way. 
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
-                 use_EWMA           = False, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
+                 use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
                  ):
         """
         Return a Simulator object with the following attributes:
@@ -214,12 +216,11 @@ class Simulator(object):
         
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
-        if (uInterval == -1): # Should calculate uInterval by the given bw parameter
-            self.use_global_uInerval = True
+        self.use_global_uInerval = use_global_uInerval
+        if self.use_global_uInerval:
             self.uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
             self.advertise_cycle_of_DS = np.array ( [ds_id * self.uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         else:
-            self.use_global_uInerval = False
             self.uInterval = uInterval
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (uInterval == 1) else False

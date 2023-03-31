@@ -58,7 +58,7 @@ def greedySearchForOptSol ():
             print ('suggestedSol={}, cost={}' .format (suggestedSol, solCost))
         if (solCost < minCost):
             minCost = solCost
-            optSol  = suggestedSol
+            optSol  = suggestedSol.copy()
         curStepSol = optSol.copy ()
 
 

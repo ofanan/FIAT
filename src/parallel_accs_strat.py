@@ -12,6 +12,8 @@ def calcSolCost (sol):
 
 def exhaustSearchForOptSol ():
     for numUsedTimeSlots in range(1, numRsrc+1): # iterate over all possible combinations
+        if (numUsedTimeSlots > T):
+            break
         minCost = float ('inf')
         optSol  = None
         for c in combinations(range(1, numRsrc + numUsedTimeSlots), numUsedTimeSlots - 1):
@@ -49,10 +51,11 @@ def greedySearchForOptSol ():
             if (solCost < minCost):
                 minCost = solCost
                 optSol  = suggestedSol
-        suggestedSol = curStepSol.copy ()
-        suggestedSol.append (1)
-        solCost      = calcSolCost(suggestedSol)
-        print ('suggestedSol={}, cost={}' .format (suggestedSol, solCost))
+        if (len(curStepSol) < T):
+            suggestedSol = curStepSol.copy ()
+            suggestedSol.append (1)
+            solCost      = calcSolCost(suggestedSol)
+            print ('suggestedSol={}, cost={}' .format (suggestedSol, solCost))
         if (solCost < minCost):
             minCost = solCost
             optSol  = suggestedSol
@@ -61,8 +64,8 @@ def greedySearchForOptSol ():
 
 q       = 0.2 # prob' of failure
 missp   = 10
-numRsrc = 5
-numUsedTimeSlots = 5  # number of balls
+numRsrc = 5 # num of balls
+T = 3  # number of bins
 
 greedySearchForOptSol ()
 exhaustSearchForOptSol ()

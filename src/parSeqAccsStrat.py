@@ -41,8 +41,9 @@ class parSeqAccsStrat (object):
         if (solCost < self.optCost):
             self.optCost        = solCost
             self.optSol         = sol.copy ()
+            self.updatedOpt     = True
             # self.localOptCost   = sol.copy () # will hold the opt for a concrete sol-size
-            print ('optSol={}, minCost={}' .format (self.optSol, self.optCost))
+            # print ('optSol={}, minCost={}' .format (self.optSol, self.optCost))
         
     
     def greedySearchForOptSol (self):
@@ -53,6 +54,7 @@ class parSeqAccsStrat (object):
         print ('optSol={}, minCost={}' .format (self.optSol, self.optCost))
     
         while (sum (curSol) < maxNumRsrc):
+            self.updatedOpt = False
             if (curSol==[0]):
                 curSol  = [1]
                 solCost = self.calcSolCost(curSol)
@@ -67,7 +69,9 @@ class parSeqAccsStrat (object):
                 suggestedSol.append (1)
                 self.updateOptSol (suggestedSol)
             curSol = self.optSol.copy ()
-        # print ('greedy optSol={}' .format (self.optSol))
+            if (not(self.updatedOpt)): # didn't decrease the cost for all options of incrementing the sol size by 1 (trying 1 more rsrc w.r.t. the previous opt sol).
+                break
+        print ('greedy optSol={}' .format (self.optSol))
 
 q       = 0.1 # prob' of failure
 missp   = 2

@@ -10,4 +10,6 @@
 /tmp*
 /tmp/*
 /res/q*.txt
+/res/old*
+/res/old*/*
 

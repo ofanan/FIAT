@@ -4381,3 +4381,24 @@ umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatiomin_
 // num of ads per DS=[2, 1, 1]
 // avg update interval = 75000.0 req
 // non_comp_miss_th=0.13, non_comp_accs_th=0.02
+
+gradle.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatiomin_ins_cnt | service_cost = 10.62 | bw = 9.80
+// tot_access_cost = 588336, hit_ratio = 0.74, non_comp_miss_cnt = 37240, comp_miss_cnt = 13933
+// estimation window = 1000, // spec accs cost = 458794, num of spec hits = 88117
+// num of ads per DS=[2, 2, 3]
+// avg update interval = 85714.28571428571 req
+// non_comp_miss_th=0.13, non_comp_accs_th=0.02
+
+scarab.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatiomin_ins_cnt | service_cost = 15.13 | bw = 8.40
+// tot_access_cost = 464843, hit_ratio = 0.57, non_comp_miss_cnt = 20314, comp_miss_cnt = 65044
+// estimation window = 1000, // spec accs cost = 275385, num of spec hits = 20984
+// num of ads per DS=[2, 2, 2]
+// avg update interval = 100000.0 req
+// non_comp_miss_th=0.13, non_comp_accs_th=0.02
+
+umass.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatiomin_ins_cnt | service_cost = 22.60 | bw = 11.20
+// tot_access_cost = 223231, hit_ratio = 0.28, non_comp_miss_cnt = 72229, comp_miss_cnt = 71015
+// estimation window = 1000, // spec accs cost = 139251, num of spec hits = 10333
+// num of ads per DS=[4, 2, 2]
+// avg update interval = 75000.0 req
+// non_comp_miss_th=0.13, non_comp_accs_th=0.02

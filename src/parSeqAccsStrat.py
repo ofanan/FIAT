@@ -33,40 +33,42 @@ class parSeqAccsStrat (object):
 
     def updateOptSol (self, sol):
         """
-        check a given solution. If its cost < self.optSol, update self.optSol and self.minCost accordingly. 
+        check a given solution. If its cost < self.optSol, update self.optSol and self.optCost accordingly. 
         """
         solCost    = self.calcSolCost(sol)
-        if (solCost < self.minCost):
-            self.minCost = solCost
-            self.optSol  = sol.copy ()
-            print ('optSol={}, minCost={}' .format (self.optSol, self.minCost))
+        if (solCost < self.optCost):
+            self.optCost        = solCost
+            self.optSol         = sol.copy ()
+            # self.localOptCost   = sol.copy () # will hold the opt for a concrete sol-size
+            print ('optSol={}, minCost={}' .format (self.optSol, self.optCost))
         
     
     def greedySearchForOptSol (self):
-        curStepSol      = [0]
-        self.optSol     = curStepSol.copy ()
-        self.minCost    = self.calcSolCost(curStepSol)
-        print ('optSol={}, minCost={}' .format (self.optSol, self.minCost))
+        curSol              = [0]
+        self.optSol         = curSol.copy () # default global opt sol 
+        self.optCost        = self.calcSolCost(curSol)
+        # self.localOptCost   = float ('inf')
+        print ('optSol={}, minCost={}' .format (self.optSol, self.optCost))
     
-        while (sum (curStepSol) < numRsrc):
-            if (curStepSol==[0]):
-                curStepSol = [1]
-                solCost    = self.calcSolCost(curStepSol)
-                self.updateOptSol (curStepSol)
-            for slot in range (len(curStepSol)):
-                suggestedSol        = curStepSol.copy ()
+        while (sum (curSol) < numRsrc):
+            if (curSol==[0]):
+                curSol  = [1]
+                solCost = self.calcSolCost(curSol)
+                self.updateOptSol (curSol)
+                continue
+            for slot in range (len(curSol)):
+                suggestedSol        = curSol.copy ()
                 suggestedSol[slot] += 1
-                self.updateOptSol (curStepSol)
-            if (len(curStepSol) < T):
-                suggestedSol = curStepSol.copy ()
+                self.updateOptSol (suggestedSol)
+            if (len(curSol) < T):
+                suggestedSol = curSol.copy ()
                 suggestedSol.append (1)
-                self.updateOptSol (curStepSol)
-            curStepSol = self.optSol.copy ()
-            print ('curStepSol={}. sum={}' .format (curStepSol, sum (curStepSol)))
+                self.updateOptSol (suggestedSol)
+            curSol = self.optSol.copy ()
 
 
 q       = 0.2 # prob' of failure
-missp   = 2
+missp   = 100
 numRsrc = 5 # num of balls
 T = 3  # number of bins
 

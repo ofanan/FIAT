@@ -16,20 +16,22 @@ class parSeqAccsStrat (object):
         return solCost 
     
     def exhaustSearchForOptSol (self):
-        for numUsedTimeSlots in range(1, numRsrc+1): # iterate over all possible combinations
-            if (numUsedTimeSlots > T):
-                break
-            minCost = float ('inf')
-            optSol  = None
-            for c in combinations(range(1, numRsrc + numUsedTimeSlots), numUsedTimeSlots - 1):
-                sol = [b - a - 1 for a, b in zip((-1,) + c, c + (numRsrc + numUsedTimeSlots - 1,))]
-                if not (all(x > 0 for x in sol)): # illegal sol --> skip
-                    continue
-                solCost = calcSolCost(sol)
-                if (solCost < minCost):
-                    optSol  = sol
-                    minCost = solCost 
-        print ('optSol={}, minCost={}' .format (optSol, minCost))
+        optCost = float ('inf')
+        optSol  = None
+        for numRsrc in range (maxNumRsrc):
+            for numUsedTimeSlots in range(1, numRsrc+1): # iterate over all possible combinations
+                if (numUsedTimeSlots > T):
+                    break
+                for c in combinations(range(1, numRsrc + numUsedTimeSlots), numUsedTimeSlots - 1):
+                    sol = [b - a - 1 for a, b in zip((-1,) + c, c + (numRsrc + numUsedTimeSlots - 1,))]
+                    if not (all(x > 0 for x in sol)): # illegal sol --> skip
+                        continue
+                    solCost = self.calcSolCost(sol)
+                    if (solCost < optCost):
+                        optSol  = sol.copy ()
+                        optCost = solCost 
+                        print ('optSol={}, optCost={}' .format (optSol, optCost))
+        print ('real optSol={}, minCost={}' .format (optSol, optCost))
 
     def updateOptSol (self, sol):
         """
@@ -50,7 +52,7 @@ class parSeqAccsStrat (object):
         # self.localOptCost   = float ('inf')
         print ('optSol={}, minCost={}' .format (self.optSol, self.optCost))
     
-        while (sum (curSol) < numRsrc):
+        while (sum (curSol) < maxNumRsrc):
             if (curSol==[0]):
                 curSol  = [1]
                 solCost = self.calcSolCost(curSol)
@@ -65,13 +67,13 @@ class parSeqAccsStrat (object):
                 suggestedSol.append (1)
                 self.updateOptSol (suggestedSol)
             curSol = self.optSol.copy ()
+        # print ('greedy optSol={}' .format (self.optSol))
 
-
-q       = 0.2 # prob' of failure
-missp   = 100
-numRsrc = 5 # num of balls
+q       = 0.1 # prob' of failure
+missp   = 2
+maxNumRsrc = 5 # num of balls
 T = 3  # number of bins
 
 my_parSeqAccsStrat = parSeqAccsStrat () 
 my_parSeqAccsStrat.greedySearchForOptSol ()
-# exhaustSearchForOptSol ()
+my_parSeqAccsStrat.exhaustSearchForOptSol ()

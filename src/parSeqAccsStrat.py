@@ -18,7 +18,7 @@ class parSeqAccsStrat (object):
     def exhaustSearchForOptSol (self):
         optCost = float ('inf')
         optSol  = None
-        for numRsrc in range (maxNumRsrc):
+        for numRsrc in range (maxNumRsrc+1):
             for numUsedTimeSlots in range(1, numRsrc+1): # iterate over all possible combinations
                 if (numUsedTimeSlots > T):
                     break
@@ -30,7 +30,7 @@ class parSeqAccsStrat (object):
                     if (solCost < optCost):
                         optSol  = sol.copy ()
                         optCost = solCost 
-                        print ('optSol={}, optCost={}' .format (optSol, optCost))
+                        # print ('optSol={}, optCost={}' .format (optSol, optCost))
         print ('real optSol={}, minCost={}' .format (optSol, optCost))
 
     def updateOptSol (self, sol):
@@ -71,10 +71,10 @@ class parSeqAccsStrat (object):
             curSol = self.optSol.copy ()
             if (not(self.updatedOpt)): # didn't decrease the cost for all options of incrementing the sol size by 1 (trying 1 more rsrc w.r.t. the previous opt sol).
                 break
-        print ('greedy optSol={}' .format (self.optSol))
+        print ('greedy optSol={}, optCost={}' .format (self.optSol, self.optCost))
 
 q       = 0.1 # prob' of failure
-missp   = 2
+missp   = 200
 maxNumRsrc = 5 # num of balls
 T = 3  # number of bins
 

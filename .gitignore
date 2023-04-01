@@ -9,4 +9,5 @@
 /res/*.mr*
 /tmp*
 /tmp/*
+/res/q*.txt
 

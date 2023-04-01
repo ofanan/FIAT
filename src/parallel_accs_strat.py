@@ -38,7 +38,7 @@ def greedySearchForOptSol ():
             solCost    = calcSolCost(curStepSol)
             if (solCost < minCost):
                 minCost = solCost
-                optSol  = curStepSol
+                optSol  = curStepSol.copy ()
                 print ('suggestedSol={}, cost={}' .format (optSol, solCost))
                 continue
             else:
@@ -50,7 +50,8 @@ def greedySearchForOptSol ():
             print ('suggestedSol={}, cost={}' .format (suggestedSol, solCost))
             if (solCost < minCost):
                 minCost = solCost
-                optSol  = suggestedSol
+                optSol  = suggestedSol.copy()
+                print ('optSol={}' .format (optSol))
         if (len(curStepSol) < T):
             suggestedSol = curStepSol.copy ()
             suggestedSol.append (1)
@@ -59,7 +60,9 @@ def greedySearchForOptSol ():
         if (solCost < minCost):
             minCost = solCost
             optSol  = suggestedSol.copy()
+            print ('optSol={}' .format (optSol))
         curStepSol = optSol.copy ()
+        print ('curStepSol={}. sum={}' .format (curStepSol, sum (curStepSol)))
 
 
 q       = 0.2 # prob' of failure

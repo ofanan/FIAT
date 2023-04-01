@@ -26,10 +26,12 @@ class DataStore (object):
                  non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
                  non_comp_accs_th           = 0.02, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
                  mr0_ad_th                  = 0.7,
+                 mr1_ad_th                  = 0.01,
                  mr_output_file             = None, # When this input isn't known, log data about the mr to this file
                  use_indicator              = True, # when True, generate and maintain an indicator (BF). 
                  hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
-                 ins_cnt_based_uInterval    = False, # when True, advertise an indicator based on the # of insertions since the last advertisement.
+                 min_ins_cnt_based_uInterval = False, # when True, advertise an indicator AT LEAST after uInterval insertions since the last advertisement.
+                 max_ins_cnt_based_uInterval = False, # when True, advertise an indicator AT MOST after uInterval insertions since the last advertisement.
                  hit_ratio_based_uInterval  = False,
                  settings_str               = "",  
                  ):
@@ -69,13 +71,14 @@ class DataStore (object):
         self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
-        self.ins_cnt_based_uInterval = ins_cnt_based_uInterval
+        self.max_ins_cnt_based_uInterval = ins_cnt_based_uInterval
         if (self.hist_based_uInterval):
-            self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, 0.01 
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
                 self.non_comp_miss_th = non_comp_miss_th
                 self.non_comp_accs_th = non_comp_accs_th
+            else:
+                self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, mr1_ad_th 
         self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
@@ -186,7 +189,7 @@ class DataStore (object):
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.uInterval): # force a "warmup" advertisement
                     return self.advertise_ind ()
-            if self.ins_cnt_based_uInterval:
+            if self.max_ins_cnt_based_uInterval:
                 if (self.ins_since_last_ad == self.uInterval):
                     self.advertise_ind ()
                 
@@ -239,18 +242,19 @@ class DataStore (object):
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
         if self.hist_based_uInterval:
-            if (self.hit_ratio_based_uInterval):
-                if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                    printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
-                            .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
-                if ((self.num_of_advertisements>0) and 
-                    (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
+            if (!self.min_ins_cnt_based_uInterval) or (self.ins_since_last_ad >= self.uInterval):
+                if (self.hit_ratio_based_uInterval):
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                        printf (self.q_file, 'calling from mr0\n')                     
-                    self.advertise_ind()
-            else:
-                if self.mr0_cur < self.mr0_ad_th: 
-                    self.advertise_ind()
+                        printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
+                                .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
+                    if ((self.num_of_advertisements>0) and 
+                        (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
+                        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                            printf (self.q_file, 'calling from mr0\n')                     
+                        self.advertise_ind()
+                else:
+                    if self.mr0_cur < self.mr0_ad_th: 
+                        self.advertise_ind()
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -264,15 +268,16 @@ class DataStore (object):
             printf (self.q_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
         if self.hist_based_uInterval and (self.num_of_advertisements>0):
-            if (self.hit_ratio_based_uInterval):
-                if ((self.num_of_advertisements>0) and 
-                     self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                        printf (self.q_file, 'calling from mr1\n')                     
-                    self.advertise_ind()
-            else:           
-                if self.mr1_cur > self.mr1_ad_th: 
-                    self.advertise_ind()
+            if (!self.min_ins_cnt_based_uInterval) or (self.ins_since_last_ad >= self.uInterval):
+                if (self.hit_ratio_based_uInterval):
+                    if ((self.num_of_advertisements>0) and 
+                         self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
+                        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                            printf (self.q_file, 'calling from mr1\n')                     
+                        self.advertise_ind()
+                else:           
+                    if self.mr1_cur > self.mr1_ad_th: 
+                        self.advertise_ind()
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

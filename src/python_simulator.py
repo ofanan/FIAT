@@ -65,8 +65,10 @@ class Simulator(object):
             settings_str = '{}_hist' .format (settings_str) # history-based advertisements
             if (self.hit_ratio_based_uInterval):
                 settings_str = '{}NhitRatio' .format (settings_str) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
-        if self.ins_cnt_based_uInterval:
-            settings_str = '{}_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
+        if self.max_ins_cnt_based_uInterval:
+            settings_str = '{}max_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
+        if self.min_ins_cnt_based_uInterval:
+            settings_str = '{}min_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
         return settings_str
         
                 
@@ -83,7 +85,8 @@ class Simulator(object):
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
                         hit_ratio_based_uInterval = self.hit_ratio_based_uInterval,
-                        ins_cnt_based_uInterval   = self.ins_cnt_based_uInterval,
+                        max_ins_cnt_based_uInterval = self.max_ins_cnt_based_uInterval,
+                        min_ins_cnt_based_uInterval = self.min_ins_cnt_based_uInterval,
                         mr_output_file      = self.mr_output_file[i], 
                         collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
                         analyse_ind_deltas  = not (self.calc_mr_by_hist),
@@ -93,6 +96,7 @@ class Simulator(object):
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
                         hist_based_uInterval = self.hist_based_uInterval,
                         non_comp_miss_th     = self.non_comp_miss_th,
+                        non_comp_accs_th     = self.non_comp_accs_th,
                         initial_mr0          = initial_mr0,
                         mr0_ad_th            = self.mr0_ad_th,
                         settings_str         = self.gen_settings_string (num_of_req=self.trace_len) 
@@ -112,12 +116,13 @@ class Simulator(object):
     def __init__(self, res_file_name, trace_file_name, 
                  mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
-                 use_given_client_per_item  = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
-                 use_given_DS_per_item      = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
-                 hist_based_uInterval       = False, # when true, send advertisements according to the hist-based estimations of mr.
-                 ins_cnt_based_uInterval    = False, # when True, send advertisements according to the # of insertions since the last update
-                 hit_ratio_based_uInterval  = False, # when True, send advertisements according to the hist-based estimations of the hit ratio
-                 use_global_uInerval        = False, 
+                 use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
+                 use_given_DS_per_item       = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
+                 hist_based_uInterval        = False, # when true, send advertisements according to the hist-based estimations of mr.
+                 max_ins_cnt_based_uInterval = False, # when True, send advertisements according to the # of insertions since the last update
+                 min_ins_cnt_based_uInterval = False, # when True, send advertisements according to the # of insertions since the last update
+                 hit_ratio_based_uInterval   = False, # when True, send advertisements according to the hist-based estimations of the hit ratio
+                 use_global_uInerval         = False, 
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
                  uInterval          = None, # if ins_cnt_based_uInterval==True AND use_global_uInerval==False, this is the update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator. When None, decide when to advertise update in another way. 
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
@@ -144,7 +149,9 @@ class Simulator(object):
         """
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.13
+        self.non_comp_accs_th   = 0.02
         self.mr0_ad_th          = 0.7 
+        self.mr1_ad_th          = 0.01 
         self.res_file_name      = res_file_name
         self.res_file           = open ('../res/{}.res' .format(self.res_file_name), "a")
         self.trace_file_name    = trace_file_name
@@ -202,14 +209,15 @@ class Simulator(object):
         if (MyConfig.VERBOSE_FULL_RES in self.verbose):
             self.full_res_file           = open ('../res/{}_full.res' .format(self.res_file_name), "a")
         if (self.calc_mr_by_hist):
-            self.hist_based_uInterval      = hist_based_uInterval
-            self.ins_cnt_based_uInterval   = ins_cnt_based_uInterval
-            self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
+            self.hist_based_uInterval        = hist_based_uInterval
+            self.max_ins_cnt_based_uInterval = max_ins_cnt_based_uInterval
+            self.min_ins_cnt_based_uInterval = min_ins_cnt_based_uInterval
+            self.hit_ratio_based_uInterval   = hit_ratio_based_uInterval
         else:
             print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
-            self.hist_based_uInterval      = False
-            self.ins_cnt_based_uInterval   = True
-            self.hit_ratio_based_uInterval = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
+            self.hist_based_uInterval        = False
+            self.max_ins_cnt_based_uInterval = True
+            self.hit_ratio_based_uInterval   = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
         
         if (self.hit_ratio_based_uInterval and not(self.hist_based_uInterval)):
             MyConfig.error ('hit_ratio_based_uInterval is currently supported only if hist_based_uInterval==True')
@@ -338,9 +346,10 @@ class Simulator(object):
         printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
         printf (res_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
         if self.hist_based_uInterval:
-            printf (res_file, '\n// mr0_ad_th={}\n' .format (self.mr0_ad_th)) 
-        if self.hit_ratio_based_uInterval:
-            printf (res_file, '\n// non_comp_miss_th={}\n' .format (self.non_comp_miss_th))
+            if self.hit_ratio_based_uInterval:
+                printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
+            else:
+                printf (res_file, '\n// mr0_ad_th={}, mr1_ad_th={}' .format (self.mr0_ad_th, self.mr1_ad_th)) 
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
 

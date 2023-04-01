@@ -71,7 +71,8 @@ class DataStore (object):
         self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
-        self.max_ins_cnt_based_uInterval = ins_cnt_based_uInterval
+        self.max_ins_cnt_based_uInterval = max_ins_cnt_based_uInterval
+        self.min_ins_cnt_based_uInterval = min_ins_cnt_based_uInterval
         if (self.hist_based_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
@@ -242,7 +243,7 @@ class DataStore (object):
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
         if self.hist_based_uInterval:
-            if (!self.min_ins_cnt_based_uInterval) or (self.ins_since_last_ad >= self.uInterval):
+            if (not(self.min_ins_cnt_based_uInterval)) or (self.ins_since_last_ad >= self.uInterval):
                 if (self.hit_ratio_based_uInterval):
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                         printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
@@ -268,7 +269,7 @@ class DataStore (object):
             printf (self.q_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
         if self.hist_based_uInterval and (self.num_of_advertisements>0):
-            if (!self.min_ins_cnt_based_uInterval) or (self.ins_since_last_ad >= self.uInterval):
+            if (not(self.min_ins_cnt_based_uInterval)) or (self.ins_since_last_ad >= self.uInterval):
                 if (self.hit_ratio_based_uInterval):
                     if ((self.num_of_advertisements>0) and 
                          self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):

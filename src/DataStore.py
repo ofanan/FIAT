@@ -87,8 +87,6 @@ class DataStore (object):
         self.designed_mr1            = designed_mr1
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
-        print ('self.DS_send_fpr_fnr_updates=', self.DS_send_fpr_fnr_updates) #$$$
-        exit ()
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0

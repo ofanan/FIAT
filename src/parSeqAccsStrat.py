@@ -74,9 +74,9 @@ class parSeqAccsStrat (object):
         print ('greedy optSol={}, optCost={}' .format (self.optSol, self.optCost))
 
 q       = 0.1 # prob' of failure
-missp   = 200
-maxNumRsrc = 5 # num of balls
-T = 3  # number of bins
+missp   = 2000
+maxNumRsrc = 10 # num of balls
+T = 4  # number of bins
 
 my_parSeqAccsStrat = parSeqAccsStrat () 
 my_parSeqAccsStrat.greedySearchForOptSol ()

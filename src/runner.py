@@ -45,28 +45,27 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     Run a simulation with different miss penalties for the initial table
     """
     num_of_DSs          = 3
-    uInterval           = 1000
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     res_file_name       = 'tbl'# open ('../res/tbl_full.res', 'a')
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [30, 300]: #, 100, 300
+    for missp in [30, 100, 300]: #, 100, 300
         for mode in ['fna']: 
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
                                missp        = missp,
                                DS_size      = 10000,  
-                               uInterval    = 2000, 
+                               uInterval    = 1000, 
                                calc_mr_by_hist          = True,
                                use_perfect_hist         = False,
                                use_EWMA                 = True,
                                hist_based_uInterval     = True,
                                hit_ratio_based_uInterval= True,
                                verbose                  = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
-                               max_ins_cnt_based_uInterval = False,
+                               max_ins_cnt_based_uInterval = True,
                                min_ins_cnt_based_uInterval = True,
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
@@ -271,4 +270,4 @@ F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
 # num_of_req = 1000000
 # for missp in [50, 500]:
 #     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
-run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000) 
+run_var_missp_sim(trace_file_name=F2_trace_file_name, max_num_of_req=1000000) 

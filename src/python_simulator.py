@@ -64,11 +64,11 @@ class Simulator(object):
         if (self.hist_based_uInterval):
             settings_str = '{}_hist' .format (settings_str) # history-based advertisements
             if (self.hit_ratio_based_uInterval):
-                settings_str = '{}NhitRatio' .format (settings_str) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
+                settings_str = '{}NhitRatio_mult0_{}_mult1_{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
         if self.max_ins_cnt_based_uInterval:
-            settings_str = '{}max_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
+            settings_str = '{}_max_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
         if self.min_ins_cnt_based_uInterval:
-            settings_str = '{}min_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
+            settings_str = '{}_min_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
         return settings_str
         
                 
@@ -148,8 +148,8 @@ class Simulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
-        self.non_comp_miss_th   = 0.13
-        self.non_comp_accs_th   = 0.02
+        self.non_comp_miss_th   = 0.1
+        self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.7 
         self.mr1_ad_th          = 0.01 
         self.res_file_name      = res_file_name
@@ -589,6 +589,14 @@ class Simulator(object):
             self.indications            = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
+        # elif (self.mode == 'fnaa'):
+        #     self.speculate_accs_cost    = 0 # Total accs cost paid for speculative accs
+        #     self.speculate_accs_cnt     = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
+        #     self.speculate_hit_cnt      = 0 # num of hits among speculative accss
+        #     self.indications            = np.array (range (self.num_of_DSs), dtype = 'bool')
+        #     self.min_ins_cnt_based_uInterval = self
+        #     self.run_trace_pgm_fna_hetro ()
+        #     self.gather_statistics()
         else: 
             printf (self.res_file, 'Wrong mode: {:.0f}\n' .format (self.mode))
 

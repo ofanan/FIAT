@@ -191,7 +191,7 @@ class DataStore (object):
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.uInterval): # force a "warmup" advertisement
                     return self.advertise_ind ()
             if self.max_ins_cnt_based_uInterval:
-                if (self.ins_since_last_ad == self.uInterval):
+                if (self.ins_since_last_ad == 2*self.uInterval):
                     self.advertise_ind ()
                 
     def get_indication (self, key):

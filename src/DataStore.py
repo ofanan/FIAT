@@ -15,7 +15,7 @@ from printf import printf
 class DataStore (object):
 
     def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_ewma_window_size = 100, 
-                 max_fnr = 0.03, max_fpr = 0.03, verbose = [], uInterval = 1,
+                 max_fnr = 0.03, max_fpr = 0.03, verbose = [], min_uInterval = 1, max_uInterval = 1,
                  num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.  
                  DS_send_fpr_fnr_updates    = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
                  collect_mr_stat            = True, 
@@ -30,8 +30,6 @@ class DataStore (object):
                  mr_output_file             = None, # When this input isn't known, log data about the mr to this file
                  use_indicator              = True, # when True, generate and maintain an indicator (BF). 
                  hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
-                 min_ins_cnt_based_uInterval = False, # when True, advertise an indicator AT LEAST after uInterval insertions since the last advertisement.
-                 max_ins_cnt_based_uInterval = False, # when True, advertise an indicator AT MOST after uInterval insertions since the last advertisement.
                  hit_ratio_based_uInterval  = False,
                  settings_str               = "",  
                  ):
@@ -71,8 +69,6 @@ class DataStore (object):
         self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
-        self.max_ins_cnt_based_uInterval = max_ins_cnt_based_uInterval
-        self.min_ins_cnt_based_uInterval = min_ins_cnt_based_uInterval
         if (self.hist_based_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
@@ -91,6 +87,8 @@ class DataStore (object):
         self.designed_mr1            = designed_mr1
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
+        print ('self.DS_send_fpr_fnr_updates=', self.DS_send_fpr_fnr_updates) #$$$
+        exit ()
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
@@ -98,8 +96,9 @@ class DataStore (object):
         self.verbose                 = verbose 
         self.ins_since_last_ad       = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
-        self.use_only_updated_ind    = True if (uInterval == 1) else False
-        self.uInterval               = uInterval if (self.use_only_updated_ind == False) else float('inf')
+        self.min_uInterval           = min_uInterval
+        self.max_uInterval           = max_uInterval
+        self.use_only_updated_ind    = True if (self.max_uInterval == 1) else False
         self.collect_mr_stat         = collect_mr_stat
         if (self.DS_send_fpr_fnr_updates):
             self.fnr                 = 0 # Initially, there are no false indications
@@ -188,10 +187,9 @@ class DataStore (object):
                     self.num_of_fpr_fnr_updates += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
-                if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.uInterval): # force a "warmup" advertisement
+                if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                     return self.advertise_ind ()
-            if self.max_ins_cnt_based_uInterval:
-                if (self.ins_since_last_ad == 2*self.uInterval):
+            if self.ins_since_last_ad == self.max_uInterval:
                     self.advertise_ind ()
                 
     def get_indication (self, key):
@@ -243,7 +241,7 @@ class DataStore (object):
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
         if self.hist_based_uInterval:
-            if (not(self.min_ins_cnt_based_uInterval)) or (self.ins_since_last_ad >= self.uInterval):
+            if (self.ins_since_last_ad >= self.minuInterval):
                 if (self.hit_ratio_based_uInterval):
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                         printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
@@ -269,7 +267,7 @@ class DataStore (object):
             printf (self.q_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
         if self.hist_based_uInterval and (self.num_of_advertisements>0):
-            if (not(self.min_ins_cnt_based_uInterval)) or (self.ins_since_last_ad >= self.uInterval):
+            if (self.ins_since_last_ad >= self.min_uInterval):
                 if (self.hit_ratio_based_uInterval):
                     if ((self.num_of_advertisements>0) and 
                          self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):

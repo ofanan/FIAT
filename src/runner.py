@@ -52,28 +52,25 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [30, 100, 300]: #, 100, 300
-        for mode in ['fna']: 
+        for mode in ['fnaa']: 
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
                                missp        = missp,
                                DS_size      = 10000,  
-                               uInterval    = 1000, 
+                               min_uInterval    = 1000, 
+                               max_uInterval    = 1000, 
                                calc_mr_by_hist          = True,
                                use_perfect_hist         = False,
                                use_EWMA                 = True,
-                               hist_based_uInterval     = True,
-                               hit_ratio_based_uInterval= True,
                                verbose                  = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
-                               max_ins_cnt_based_uInterval = True,
-                               min_ins_cnt_based_uInterval = True,
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-def run_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
+def run_max_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
     """
-    Run a simulation where the running parameter is uInterval.
+    Run a simulation where the running parameter is max_uInterval.
     """
     max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
     num_of_DSs          = 3
@@ -81,16 +78,16 @@ def run_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
     trace_file_name     = trace_file_name.split("/")[0]
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    res_file_name       = 'uInterval' #open ("../res/" + trace_file_name + "_uInterval.res", "a")
+    res_file_name       = 'uInterval' #open ("../res/" + trace_file_name + "_max_uInterval.res", "a")
     
     print("now = ", datetime.now(), 'running uInterval sim')
     for mode in ['fna']:  
         calc_mr_by_hist = False
-        for uInterval in [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16]:
-            if (mode == 'fna' and not(calc_mr_by_hist) and uInterval < 50): # When uInterval < parameters updates interval, FNO and FNA are identical, so no need to run also FNA
+        for min_uInterval in [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16]:
+            if (mode == 'fna' and not(calc_mr_by_hist) and min_uInterval < 50): # When max_uInterval < parameters updates interval, FNO and FNA are identical, so no need to run also FNA
                 continue
             tic()
-            sm = sim.Simulator(res_file_name, trace_file_name, mode, requests, DS_cost, uInterval = uInterval, calc_mr_by_hist=calc_mr_by_hist)        
+            sm = sim.Simulator(res_file_name, trace_file_name, mode, requests, DS_cost, min_uInterval = min_uInterval, calc_mr_by_hist=calc_mr_by_hist)        
             sm.run_simulator()
             toc()
 
@@ -109,11 +106,11 @@ def run_cache_size_sim (trace_file_name, use_homo_DS_cost = False):
     if (num_of_req < 4300000):
         print ('Note: you used only {} requests for a cache size sim' .format(num_of_req))
     for DS_size in [1000, 2000, 4000, 8000, 16000, 32000]:
-        for uInterval in [1024, 256]:
+        for max_uInterval in [1024, 256]:
             for alg_mode in ['f']: 
                 print("now = ", datetime.now(), 'running cache_size sim')
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, DS_size = DS_size, calc_mr_by_hist=True, use_fresh_hist=False)
+                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, DS_size = DS_size, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
                      
@@ -133,10 +130,10 @@ def run_bpe_sim (trace_file_name, use_homo_DS_cost = False):
                        
     print("now = ", datetime.now(), 'running bpe sim')
     for bpe in [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
-        for uInterval in [1024, 256]:
+        for max_uInterval in [1024, 256]:
             for alg_mode in ['fno']:              
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, bpe = bpe, uInterval = uInterval, calc_mr_by_hist=True, use_fresh_hist=False) 
+                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, bpe = bpe, max_uInterval = max_uInterval, calc_mr_by_hist=True, use_fresh_hist=False) 
                 sm.run_simulator()
                 toc()
 
@@ -158,7 +155,7 @@ def run_num_of_caches_sim (trace_file_name, use_homo_DS_cost = True):
         print ('Note: you used only {} requests for a num of caches sim' .format(num_of_req))
 
     for num_of_DSs in [1, 2, 3, 4, 5, 6, 7, 8]: 
-        for uInterval in [1024]:
+        for max_uInterval in [1024]:
             DS_cost = calc_DS_cost (num_of_DSs, use_homo_DS_cost)            
             missp    = 50 * np.average (DS_cost)
      
@@ -166,7 +163,7 @@ def run_num_of_caches_sim (trace_file_name, use_homo_DS_cost = True):
                         
                 print("now = ", datetime.now(), 'running num of caches sim')
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, calc_mr_by_hist=True, use_fresh_hist=False)
+                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
 
@@ -189,7 +186,7 @@ def run_k_loc_sim (trace_file_name, use_homo_DS_cost = True):
         print ('Note: you used only {} requests for a num of caches sim' .format(num_of_req))
 
     for k_loc in [3]:
-        for uInterval in [256]:
+        for max_uInterval in [256]:
     
             DS_cost = calc_DS_cost (num_of_DSs, use_homo_DS_cost)            
             missp    = 50 * np.average (DS_cost)
@@ -198,7 +195,7 @@ def run_k_loc_sim (trace_file_name, use_homo_DS_cost = True):
                         
                 print("now = ", datetime.now(), 'running k_loc sim')
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, uInterval = uInterval, k_loc = k_loc, calc_mr_by_hist=True, use_fresh_hist=False)
+                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, k_loc = k_loc, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
 
@@ -217,26 +214,26 @@ def run_FN_by_staleness_sim ():
         for bpe in [2, 4, 8, 16]:
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name, 'fno', requests, DS_cost, bpe = bpe,    
-                               verbose = [MyConfig.VERBOSE_CNT_FN_BY_STALENESS, MyConfig.VERBOSE_RES], uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
+                               verbose = [MyConfig.VERBOSE_CNT_FN_BY_STALENESS, MyConfig.VERBOSE_RES], max_uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
             sm.run_simulator()
             toc()
 
 
-def run_FN_by_uInterval_sim (trace_file_name): 
+def run_FN_by_max_uInterval_sim (trace_file_name): 
     max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # In this sim', each item's location will be calculated as a hash of the key. Hence we actually don't use the k_loc pre-computed entries. 
     DS_cost             = calc_DS_cost(num_of_DSs=1)            
     trace_file_name     = trace_file_name.split("/")[0]
     num_of_req          = requests.shape[0]
     
-    print("now = ", datetime.now(), 'running FN_by_uInterval_sim sim')
+    print("now = ", datetime.now(), 'running FN_by_max_uInterval_sim sim')
     for bpe in [4, 8, 16]:
-        res_file_name = "_FN_by_uInterval_bpe" + str(bpe) #open ("../res/" + trace_file_name + "_FN_by_uInterval_bpe" + str(bpe) +".res", "a")
+        res_file_name = "_FN_by_max_uInterval_bpe" + str(bpe) #open ("../res/" + trace_file_name + "_FN_by_max_uInterval_bpe" + str(bpe) +".res", "a")
 
-        for uInterval in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
+        for max_uInterval in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name, 'measure fp fn', requests, DS_cost,    
-                               bpe = bpe, uInterval = uInterval)
+                               bpe = bpe, max_uInterval = max_uInterval)
             sm.run_simulator()
             toc()
 
@@ -251,11 +248,11 @@ scarab_trace_file_name = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'
 F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
 # print (MyConfig.gen_requests ('wiki/wiki2.1191403252.gz.txt', max_num_of_req=5))
 
-# run_FN_by_uInterval_sim (trace_file_name)
+# run_FN_by_max_uInterval_sim (trace_file_name)
 
 # run_FN_by_staleness_sim ()
 # run_bpe_sim              (trace_file_name)
-# run_uInterval_sim(trace_file_name)
+# run_max_uInterval_sim(trace_file_name)
 
 # run_cache_size_sim(trace_file_name)
 # run_num_of_caches_sim  (trace_file_name, use_homo_DS_cost = True)

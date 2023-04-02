@@ -41,9 +41,9 @@ class Simulator(object):
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
         # generate the initial string, that does not include the mode information    
         settings_str = \
-            '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{:.0f}' .format (
+            '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.Um{:.0f}.UM{:.0f}' .format (
             self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
-            self.num_of_DSs, self.k_loc, self.missp, self.bw, self.uInterval)
+            self.num_of_DSs, self.k_loc, self.missp, self.bw, self.min_uInterval, self.max_uInterval)
         
         # Add the string representing the mode   
         if (self.mode=='opt'):
@@ -52,26 +52,16 @@ class Simulator(object):
         settings_str = '{}.{}' .format (settings_str, self.mode.upper()) 
 
         # Now we know that the mode isn't 'Opt'
-        if self.calc_mr_by_hist:
-            settings_str = '{}.H{}{}' .format (
+        if self.calc_mr_by_hist and self.mode not in ['salsa,' 'salsa2']:
+            settings_str = '{}.{}{}' .format (
                 settings_str,   
                 'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
-        else: # mode isn't 'Opt', and the mr-estimation is BF-analysis-based
-            settings_str = '{}A' .format (settings_str) # 'A' stands for 'by Analysis'
         
-        settings_str = '{}.ad' .format (settings_str) # 'ad' stands for advertisements
-        if (self.hist_based_uInterval):
-            settings_str = '{}_hist' .format (settings_str) # history-based advertisements
-            if (self.hit_ratio_based_uInterval):
-                settings_str = '{}NhitRatio_mult0_{}_mult1_{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
-        if self.max_ins_cnt_based_uInterval:
-            settings_str = '{}_max_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
-        if self.min_ins_cnt_based_uInterval:
-            settings_str = '{}_min_ins_cnt' .format (settings_str) # ins_cnt-based advertisements
+        if (self.mode=='salsa2'):
+            settings_str = '{}_mult0_{}_mult1_{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
         return settings_str
-        
-                
+    
     def init_DS_list(self):
         """
         Init a list of empty DSs (Data Stores == caches)
@@ -81,12 +71,12 @@ class Simulator(object):
         else:
             initial_mr0 = 0.95
         self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_ewma_window_size = self.ewma_window_size, 
-                        max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, uInterval = self.uInterval,
+                        max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, 
+                        min_uInterval = self.min_uInterval,
+                        max_uInterval = self.max_uInterval,
                         num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
                         DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
                         hit_ratio_based_uInterval = self.hit_ratio_based_uInterval,
-                        max_ins_cnt_based_uInterval = self.max_ins_cnt_based_uInterval,
-                        min_ins_cnt_based_uInterval = self.min_ins_cnt_based_uInterval,
                         mr_output_file      = self.mr_output_file[i], 
                         collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
                         analyse_ind_deltas  = not (self.calc_mr_by_hist),
@@ -119,12 +109,11 @@ class Simulator(object):
                  use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item       = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  hist_based_uInterval        = False, # when true, send advertisements according to the hist-based estimations of mr.
-                 max_ins_cnt_based_uInterval = False, # when True, send advertisements according to the # of insertions since the last update
-                 min_ins_cnt_based_uInterval = False, # when True, send advertisements according to the # of insertions since the last update
                  hit_ratio_based_uInterval   = False, # when True, send advertisements according to the hist-based estimations of the hit ratio
                  use_global_uInerval         = False, 
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
-                 uInterval          = None, # if ins_cnt_based_uInterval==True AND use_global_uInerval==False, this is the update interval, namely, number of new insertions to a datastore between sequencing advertisements of a fresh indicator. When None, decide when to advertise update in another way. 
+                 min_uInterval      = 0,  
+                 max_uInterval      = float('inf'),  
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
@@ -210,13 +199,10 @@ class Simulator(object):
             self.full_res_file           = open ('../res/{}_full.res' .format(self.res_file_name), "a")
         if (self.calc_mr_by_hist):
             self.hist_based_uInterval        = hist_based_uInterval
-            self.max_ins_cnt_based_uInterval = max_ins_cnt_based_uInterval
-            self.min_ins_cnt_based_uInterval = min_ins_cnt_based_uInterval
             self.hit_ratio_based_uInterval   = hit_ratio_based_uInterval
         else:
             print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
             self.hist_based_uInterval        = False
-            self.max_ins_cnt_based_uInterval = True
             self.hit_ratio_based_uInterval   = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
         
         if (self.hit_ratio_based_uInterval and not(self.hist_based_uInterval)):
@@ -225,13 +211,14 @@ class Simulator(object):
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
         self.use_global_uInerval = use_global_uInerval
+        self.min_uInterval       = min_uInterval
         if self.use_global_uInerval:
-            self.uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
-            self.advertise_cycle_of_DS = np.array ( [ds_id * self.uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
+            self.max_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
+            self.advertise_cycle_of_DS = np.array ( [ds_id * self.max_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         else:
-            self.uInterval = uInterval
+            self.max_uInterval = max_uInterval
         self.cur_updating_DS = 0
-        self.use_only_updated_ind = True if (uInterval == 1) else False
+        self.use_only_updated_ind = True if (self.max_uInterval == 1) else False
         self.num_of_insertions_between_estimations = np.uint8 (150)
         if (self.num_of_clients == 1):
             self.use_given_client_per_item = False # if there's only 1 client, all requests belong to this client, disregarding what was pre-computed in the trace file.
@@ -241,7 +228,7 @@ class Simulator(object):
 
         self.avg_DS_accessed_per_req = float(0)
         if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
-            lg_uInterval = np.log2 (self.uInterval).astype (int)
+            lg_uInterval = np.log2 (self.max_uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
@@ -259,6 +246,27 @@ class Simulator(object):
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
+
+        if self.mode in ['fnaa', 'salsa', 'salsa2']:
+            self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
+            self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
+            self.speculate_hit_cnt          = 0 # num of hits among speculative accss
+            self.indications                = np.array (range (self.num_of_DSs), dtype = 'bool')
+        
+        elif (self.mode == 'fnaa'):
+            self.min_uInterval              = self.max_uInterval
+            self.calc_mr_by_hist            = False
+            self.hist_based_uInterval       = False
+            self.hit_ratio_based_uInterval  = False
+        elif (self.mode == 'salsa'):
+            self.min_uInterval              = self.max_uInterval
+            self.calc_mr_by_hist            = True
+            self.hist_based_uInterval       = False
+            self.hit_ratio_based_uInterval  = False
+        elif (self.mode == 'salsa2'):
+            self.calc_mr_by_hist            = True
+            self.hist_based_uInterval       = True
+            self.hit_ratio_based_uInterval  = True
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):
@@ -369,7 +377,7 @@ class Simulator(object):
                     self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
             else: # miss
                 self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
-        printf (self.res_file, '({}, {})' .format (self.uInterval, self.FN_miss_cnt/self.hit_cnt))               
+        printf (self.res_file, '({}, {})' .format (self.max_uInterval, self.FN_miss_cnt/self.hit_cnt))               
 
     def run_trace_opt_hetro (self):
         """
@@ -405,7 +413,7 @@ class Simulator(object):
         """
         if (not(self.use_global_uInerval)): # To be used only if we have a "globally calculated uInterval"
             return
-        remainder = self.req_cnt % self.uInterval
+        remainder = self.req_cnt % self.max_uInterval
         for ds_id in range (self.num_of_DSs):
             if (remainder == self.advertise_cycle_of_DS[ds_id]):
                 self.DS_list[ds_id].advertise_ind (check_delta_th=False)
@@ -572,8 +580,9 @@ class Simulator(object):
         """
         np.random.seed(self.rand_seed)
         num_of_req = self.trace_len
-        print ('running', self.gen_settings_string (num_of_req=num_of_req))
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
+        print ('running', self.gen_settings_string (num_of_req=num_of_req))
+        
         if (self.mode == 'measure fp fn'):
             self.run_trace_measure_fp_fn ()
         elif self.mode == 'opt':
@@ -582,21 +591,10 @@ class Simulator(object):
         elif (self.mode == 'fno'):
             self.run_trace_pgm_fno_hetro ()
             self.gather_statistics ()
-        elif (self.mode == 'fna'):
-            self.speculate_accs_cost    = 0 # Total accs cost paid for speculative accs
-            self.speculate_accs_cnt     = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
-            self.speculate_hit_cnt      = 0 # num of hits among speculative accss
-            self.indications            = np.array (range (self.num_of_DSs), dtype = 'bool')
+        
+        elif self.mode in ['fnaa', 'salsa', 'salsa2']:
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
-        # elif (self.mode == 'fnaa'):
-        #     self.speculate_accs_cost    = 0 # Total accs cost paid for speculative accs
-        #     self.speculate_accs_cnt     = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
-        #     self.speculate_hit_cnt      = 0 # num of hits among speculative accss
-        #     self.indications            = np.array (range (self.num_of_DSs), dtype = 'bool')
-        #     self.min_ins_cnt_based_uInterval = self
-        #     self.run_trace_pgm_fna_hetro ()
-        #     self.gather_statistics()
         else: 
             printf (self.res_file, 'Wrong mode: {:.0f}\n' .format (self.mode))
 

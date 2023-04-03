@@ -338,7 +338,7 @@ class Simulator(object):
         self.mean_service_cost  = self.total_cost / self.req_cnt 
         bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
-        printf (res_file, '\n\n{} | service_cost = {:.2f} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
+        printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
         #Each update is a full indicator, sent to n-1 DSs)
         # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         # if (self.bw != bw_in_practice):
@@ -366,7 +366,8 @@ class Simulator(object):
                 printf (res_file, '\n// mr0_ad_th={}, mr1_ad_th={}' .format (self.mr0_ad_th, self.mr1_ad_th)) 
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
-
+        printf (res_file, '\n\n')
+        
     def run_trace_measure_fp_fn (self):
         """
         Run a trace on a single cache, only to measure the FN, or FP ratio.

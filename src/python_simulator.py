@@ -39,11 +39,16 @@ class Simulator(object):
         Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_file_name, update intervals etc.). 
         """
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
-        # generate the initial string, that does not include the mode information    
+        
+        # generate the initial string, that does not include the mode information
+        if (self.min_uInterval==self.max_uInterval):
+            uInterval_str = '{:.0f}' .format(self.max_uInterval)
+        else:
+            uInterval_str = '{:.0f}-{:.0f}' .format(self.min_uInterval, self.max_uInterval)
         settings_str = \
-            '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.Um{:.0f}.UM{:.0f}' .format (
+            '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{}' .format (
             self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
-            self.num_of_DSs, self.k_loc, self.missp, self.bw, self.min_uInterval, self.max_uInterval)
+            self.num_of_DSs, self.k_loc, self.missp, self.bw, uInterval_str)
         
         # Add the string representing the mode   
         if (self.mode=='opt'):
@@ -59,7 +64,7 @@ class Simulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode=='salsa2'):
-            settings_str = '{}_mult0_{}_mult1_{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
+            settings_str = '{}.mult{}-{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
         return settings_str
     
     def init_DS_list(self):
@@ -332,7 +337,7 @@ class Simulator(object):
         self.mean_service_cost  = self.total_cost / self.req_cnt 
         bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
-        printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
+        printf (res_file, '\n\n{} | service_cost = {:.2f} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
         #Each update is a full indicator, sent to n-1 DSs)
         # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         # if (self.bw != bw_in_practice):

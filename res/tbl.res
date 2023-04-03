@@ -224,3 +224,21 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.Um1000.UM1000.SALSA.Eewma | service
 // estimation window = 1000, 
 // num of ads per DS=[97, 98, 98]
 // avg update interval = 10238.897610921502 req
+
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost = 16.58 | bw = 56.00
+// tot_access_cost = 305199, hit_ratio = 0.55, non_comp_miss_cnt = 3262, comp_miss_cnt = 41823
+// estimation window = 1000, 
+// num of ads per DS=[6, 7, 7]
+// avg update interval = 14999.849999999999 req
+
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost = 25.23 | bw = 0.00
+// tot_access_cost = 115000, hit_ratio = 0.2, non_comp_miss_cnt = 38448, comp_miss_cnt = 41823
+// estimation window = 1000, 
+// num of ads per DS=[0, 0, 0]
+// avg update interval = inf req
+
+umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost = 19.60 | bw = 64.40
+// tot_access_cost = 488573, hit_ratio = 0.51, non_comp_miss_cnt = 7230, comp_miss_cnt = 41823
+// estimation window = 1000, 
+// num of ads per DS=[6, 7, 10]
+// avg update interval = 13043.347826086956 req

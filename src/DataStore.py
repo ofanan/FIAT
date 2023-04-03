@@ -9,17 +9,30 @@ as described in the paper:
 import numpy as np
 import mod_pylru, itertools, copy
 import CountingBloomFilter as CBF
+import SimpleBloomFilter   as SBF
 import MyConfig 
 from printf import printf
 
 class DataStore (object):
 
-    def __init__(self, ID, size = 1000, bpe = 14, EWMA_alpha = 0.85, mr1_ewma_window_size = 100, 
-                 max_fnr = 0.03, max_fpr = 0.03, verbose = [], min_uInterval = 1, max_uInterval = 1,
-                 num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.  
+    def __init__(self, 
+                 ID, # datastore ID
+                 size                   = 1000, # number of elements that can be stored in the datastore
+                 bpe                    = 14, # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
+                 EWMA_alpha             = 0.85, # sliding window parameter for miss-rate estimation
+                 mr1_ewma_window_size   = 100, # Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
+                 max_fnr = 0.03,max_fpr = 0.03, # maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
+                                                 # fpr: False Positive Ratio, fnr: False Negative Ratio).
+                                                 # currently max_fnr, max_fpr are usually unused, 
+                 num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.
+                                                                        # Each time a new indicator is published, the updated indicator contains a fresh estimation, and a counter is reset. 
+                                                                        # Then, each time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
+                 verbose                    = [], # what output will be written. See macros in MyConfig.py 
+                 min_uInterval              = 1, # min num of insertions of new items into the cache before advertising again 
+                 max_uInterval              = 1, # max num of insertions of new items into the cache before advertising again
                  DS_send_fpr_fnr_updates    = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
-                 collect_mr_stat            = True, 
-                 analyse_ind_deltas         = True,
+                 collect_mr_stat            = True,  
+                 analyse_ind_deltas         = True, # analyze the differences between the stale (last advertised) and the current, updated, indicator
                  designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
                  use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
                  initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
@@ -28,39 +41,43 @@ class DataStore (object):
                  mr0_ad_th                  = 0.7,
                  mr1_ad_th                  = 0.01,
                  mr_output_file             = None, # When this input isn't known, log data about the mr to this file
-                 use_indicator              = True, # when True, generate and maintain an indicator (BF). 
+                 use_indicator              = True, # when True, generate and maintain an indicator (BF).
+                 use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale). 
                  hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
-                 hit_ratio_based_uInterval  = False,
-                 settings_str               = "",  
+                 hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
+                 settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.  
                  ):
         """
-        Return a DataStore object with the following attributes:
-            ID:                 datastore ID 
-            size:               number of elements that can be stored in the datastore
-            bpe:                Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
-            EWMA_alpha:    sliding window parameter for miss-rate estimation 
-            mr1_ewma_window_size:  Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
-            max_fnr, max_fpr : maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
-                               (FPR: False Positive Ratio, FNR: False Negative Ratio).
-                               currently usually unused, as the time to update is defined exclusively by the update interval.
-            num_of_insertions_between_estimations : number of cache insertions between performing fresh estimations of fpr, and fnr.
-                - Each time a new indicator is published, the update contains a fresh estimation, and a counter is reset. Then, each 
-                  time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
-            DS_send_fpr_fnr_updates - when True, the DS will estimate the fpr/fnr
-            collect_mr_stat - when True, collect historical statistics about exclusion probabilities (mr_zero and mr_one).
-            analyse_ind_deltas - When True, keep the stale (lastly-advertised) indicator and periodically compare the updated and the stale indicators to estimate (by analysis) fpr, fnr, and mr. 
-            hit_ratio_based_uInterval - When True, decide when to advertise an indicator based on the estimated hit ratio     
-            verbose:           how much details are written to the output
+        Return a DataStore object. 
+            For the DataStore's see documentation within the __init__ function.
         """
-        self.use_indicator           = use_indicator
-        self.mr_output_file          = mr_output_file
         self.ID                      = ID
+        self.verbose                 = verbose 
         self.cache_size              = size
+        self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
+        self.settings_str            = settings_str
+        self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
+        if (MyConfig.VERBOSE_DEBUG in self.verbose):
+            self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            self.q_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
+        self.use_indicator           = use_indicator # used e.g. for Opt, that merely checks whether the requested item is indeed cached
+        if not(self.use_indicator): # if no indicator is used, no need for all the further fields
+            return
+
+        # inializations related to the indicator, statistics, and advertising mechanism
+        self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
         self.BF_size                 = self.bpe * self.cache_size
         self.lg_BF_size              = np.log2 (self.BF_size) 
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
+        self.use_CountingBloomFilter = use_CountingBloomFilter
+        if use_CountingBloomFilter: 
+            self.updated_indicator   = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
+            self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
+        else: # instead of keeping also an "updated" CBF, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale).
+            self.stale_indicator     = SBF.SimpleBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
@@ -68,7 +85,6 @@ class DataStore (object):
         self.mr1_ewma_window_size    = mr1_ewma_window_size
         self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
-        self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
         if (self.hist_based_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
@@ -82,16 +98,12 @@ class DataStore (object):
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
-        self.updated_indicator       = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
-        self.stale_indicator         = self.updated_indicator.gen_SimpleBloomFilter ()
         self.designed_mr1            = designed_mr1
-        self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
         self.num_of_advertisements   = 0
-        self.verbose                 = verbose 
         self.ins_since_last_ad       = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
@@ -102,13 +114,8 @@ class DataStore (object):
             self.fnr                 = 0 # Initially, there are no false indications
             self.fpr                 = 0 # Initially, there are no false indications
         
-        self.settings_str            = settings_str
         self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
         self.ins_since_last_fpr_fnr_estimation      = int (0)
-        if (MyConfig.VERBOSE_DEBUG in self.verbose):
-            self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            self.q_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
 
     def __contains__(self, key):
         """
@@ -173,16 +180,17 @@ class DataStore (object):
             # if so, remove it from the updated indicator
 			# Removal from the cache is implemented automatically by the cache object
         self.cache[key] = key
-        if (self.use_indicator):
-            if (self.cache.currSize() == self.cache.size()):
-                self.updated_indicator.remove(self.cache.get_tail())
-            self.updated_indicator.add(key)
-            self.ins_since_last_ad                 += 1
+        if self.use_indicator:
+            if self.use_CountingBloomFilter:
+                if (self.cache.currSize() == self.cache.size()):
+                    self.updated_indicator.remove(self.cache.get_tail())
+                self.updated_indicator.add(key)
+            self.ins_since_last_ad += 1
             if (self.DS_send_fpr_fnr_updates):
                 self.ins_since_last_fpr_fnr_estimation += 1
                 if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
                     self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
-                    self.num_of_fpr_fnr_updates += 1
+                    self.num_of_fpr_fnr_updates           += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
@@ -214,8 +222,11 @@ class DataStore (object):
             if (MyConfig.VERBOSE_DEBUG in self.verbose and sum (Delta) < self.delta_th):
                 MyConfig.error ('sum_Delta = ', sum (Delta), 'delta_th = ', self.delta_th, 'Sending delta updates is cheaper\n')
 
-        # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator 
-        self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+        # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
+        if self.use_CountingBloomFilter: 
+            self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+        else:
+            self.stale_indicator.add_all (keys=[key for key in self.cache])
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)

@@ -89,6 +89,7 @@ class Simulator(object):
                         designed_mr1        = self.designed_mr1,
                         use_EWMA            = self.use_EWMA,
                         use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+                        use_CountingBloomFilter = (self.mode in ['fno', 'fnaa']),
                         hist_based_uInterval = self.hist_based_uInterval,
                         non_comp_miss_th     = self.non_comp_miss_th,
                         non_comp_accs_th     = self.non_comp_accs_th,

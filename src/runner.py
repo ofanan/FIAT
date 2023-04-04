@@ -12,6 +12,11 @@ from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
 
+wiki_trace_file_name   = 'wiki/wiki1.1190448987.txt'
+gradle_trace_file_name = 'gradle/gradle.build-cache.xz.txt'
+scarab_trace_file_name = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'
+F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
+
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
     Returns a DS_cost matrix, representing an homogeneous access cost of 2 from each client to each DS. 
@@ -39,34 +44,6 @@ def calc_DS_cost (num_of_DSs = 3, use_homo_DS_cost = False):
         return calc_homo_costs(num_of_DSs, num_of_clients)
     else:
         return calc_hetro_costs(num_of_DSs, num_of_clients)
-
-def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000):
-    """
-    Run a simulation with different miss penalties for the initial table
-    """
-    num_of_DSs          = 3
-    requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
-    num_of_req          = requests.shape[0]
-    DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    res_file_name       = 'salsa'
-    
-    print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [30]: #30, 100, 300 
-        for mode in ['salsa']:
-            tic()
-            sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
-                               mode, requests, DS_cost, 
-                               missp            = missp,
-                               DS_size          = 10000,  
-                               min_uInterval    = 1000, 
-                               max_uInterval    = 2000, 
-                               calc_mr_by_hist  = True,
-                               use_perfect_hist = False,
-                               use_EWMA         = True,
-                               verbose          = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
-                               )
-            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
-            toc()
 
 def run_max_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
     """
@@ -238,33 +215,45 @@ def run_FN_by_max_uInterval_sim (trace_file_name):
             toc()
 
 
+def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000):
+    """
+    Run a simulation with different miss penalties for the initial table
+    """
+    num_of_DSs          = 3
+    requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
+    num_of_req          = requests.shape[0]
+    DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
+    res_file_name       = 'salsa'
+    
+    print("now = ", datetime.now(), 'running var_missp sim')
+    for missp in [10]: #30, 100, 300 
+        for mode in ['salsa']:
+            tic()
+            sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
+                               mode, requests, DS_cost, 
+                               missp            = missp,
+                               DS_size          = 10000,  
+                               min_uInterval    = 1000, 
+                               max_uInterval    = 2000, 
+                               calc_mr_by_hist  = True,
+                               use_perfect_hist = False,
+                               use_EWMA         = True,
+                               verbose          = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
+                               )
+            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+            toc()
+
 def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
+    """
+    Opt's behavior is not depended upon parameters such as the indicaror's size, and miss penalty.
+    Hence, it suffices to run Opt only once per trace and network, and then calculate its service cost for other 
+    parameters' values. Below is the relevant auxiliary code. 
+    tot_access_cost= 1805450.0
+    comp_miss_cnt = 104710
+    num_of_req = 1000000
+    for missp in [50, 500]:
+    print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
+    """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
-
-wiki_trace_file_name   = 'wiki/wiki1.1190448987.txt'
-gradle_trace_file_name = 'gradle/gradle.build-cache.xz.txt'
-scarab_trace_file_name = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'
-F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
-# print (MyConfig.gen_requests ('wiki/wiki2.1191403252.gz.txt', max_num_of_req=5))
-
-# run_FN_by_max_uInterval_sim (trace_file_name)
-
-# run_FN_by_staleness_sim ()
-# run_bpe_sim              (trace_file_name)
-# run_max_uInterval_sim(trace_file_name)
-
-# run_cache_size_sim(trace_file_name)
-# run_num_of_caches_sim  (trace_file_name, use_homo_DS_cost = True)
-# run_k_loc_sim (trace_file_name)
-
-
-# # Opt's behavior is not depended upon parameters such as the indicaror's size, and miss penalty.
-# # Hence, it suffices to run Opt only once per trace and network, and then calculate its service cost for other 
-# # parameters' values. Below is the relevant auxiliary code. 
-# tot_access_cost= 1805450.0
-# comp_miss_cnt = 104710
-# num_of_req = 1000000
-# for missp in [50, 500]:
-#     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
 run_var_missp_sim(trace_file_name=F2_trace_file_name, max_num_of_req=300000) 

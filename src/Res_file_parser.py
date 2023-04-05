@@ -20,12 +20,14 @@ alg_idx             = 9 # the cache selection and advertisement alg', e.g.: Opt,
 alg_details_idx     = 10 # More details about the alg, e.g.: flat, ewma.
 min_num_of_fields   = alg_idx + 1
 
+BAR_WIDTH = 0.25
+FONT_SIZE = 15
+
 class Res_file_parser (object):  
 
     def __init__ (self):
         """
         """
-        self.barWidth = 0.25
         # List of algorithms' names, used in the plots' legend, for the dist' case
         self.labelOfMode = {}
 
@@ -231,11 +233,15 @@ class Res_file_parser (object):
         fig = plt.subplots(figsize =(12, 8))
 
         for missp in missp_vals:
-            x_positions = np.arange(len(traces))
+            x_positions = np.array(range(len(traces)+1))#np.arange(len(traces))
+            print (x_positions) #$$$
+            exit ()
             for mode in modes:
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 for traceIdx in range(len(traces)):
+                    print (x_positions)
+                    x_positions += BAR_WIDTH
                     trace = traces[traceIdx]
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
@@ -250,11 +256,13 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] 
                     mode_bwCost     [traceIdx] = point[0]['bwCost'] 
 
-                    # Make the plot
-                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=self.barWidth,
-                            edgecolor ='grey', label =trace)
-                    plt.show()
-                    exit () #$$$
+                # Make the plot
+                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
+                        edgecolor ='grey', label=('F2' if trace=='umass' else trace))
+                plt.ylabel('Service Cost', fontsize = FONT_SIZE)
+                plt.legend()
+            plt.show()
+            exit () #$$$
                     
          
         # set height of bar

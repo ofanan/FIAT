@@ -227,7 +227,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [10]: #30, 100, 300 
-        for mode in ['salsa']:
+        for mode in ['opt']:
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 

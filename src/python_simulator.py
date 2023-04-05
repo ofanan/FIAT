@@ -75,6 +75,12 @@ class Simulator(object):
             initial_mr0 = 0.85
         else:
             initial_mr0 = 0.95
+            
+        if self.mode in ['opt', 'fnaa']: 
+            collect_mr_stat = False
+        else: 
+            collect_mr_stat = self.calc_mr_by_hist and (not (self.use_perfect_hist))
+            
         self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_ewma_window_size = self.ewma_window_size, 
                         max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, 
                         min_uInterval = self.min_uInterval,
@@ -83,7 +89,7 @@ class Simulator(object):
                         DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
                         hit_ratio_based_uInterval = self.hit_ratio_based_uInterval,
                         mr_output_file      = self.mr_output_file[i], 
-                        collect_mr_stat     = self.calc_mr_by_hist and (not (self.use_perfect_hist)), # if mr collection is perfect, the mr stat is collected for all the DSs by the simulator.  
+                        collect_mr_stat     = collect_mr_stat,  
                         analyse_ind_deltas  = not (self.calc_mr_by_hist),
                         EWMA_alpha          = self.EWMA_alpha,
                         designed_mr1        = self.designed_mr1,

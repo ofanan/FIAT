@@ -61,6 +61,7 @@ class DataStore (object):
             self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             self.q_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
+        self.collect_mr_stat         = collect_mr_stat
         self.use_indicator           = use_indicator # used e.g. for Opt, that merely checks whether the requested item is indeed cached
         if not(self.use_indicator): # if no indicator is used, no need for all the further fields
             return
@@ -109,7 +110,6 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.max_uInterval           = max_uInterval
         self.use_only_updated_ind    = True if (self.max_uInterval == 1) else False
-        self.collect_mr_stat         = collect_mr_stat
         if (self.DS_send_fpr_fnr_updates):
             self.fnr                 = 0 # Initially, there are no false indications
             self.fpr                 = 0 # Initially, there are no false indications

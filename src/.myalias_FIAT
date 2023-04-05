@@ -12,6 +12,6 @@ alias h=history
 alias commit='c; git add -A; git commit'
 alias na='nano'
 alias qs='qsub ofanan_PBS.sh'
-alias qq='qstat -1'
+alias qq='qstat -a'
 source ../../.alias_pusher_FIAT.txt
 alias compush='c; commit; pusher'

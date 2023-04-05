@@ -157,15 +157,50 @@ class Res_file_parser (object):
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         modes = ['FNAA', 'SALSA', 'SALSA2']
-        missp_vals = [10, 30, 100, 300]
+        missp_vals = [30, 100, 300]
         for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
             printf (output_file, 'input \t ')
             for missp_val in missp_vals:
                 for mode in modes:
                     printf (output_file, '{}{}\t\t' .format (mode, missp_val))
-                # printf (output_file, 'FNAA{}\t\tSALSA{}\t FNAA{}\tSALSA{}\t FNAA{}\tSALSA{}\n' 
-                #         .format (missp_vals[0], missp_vals[0], missp_vals[1], missp_vals[1], missp_vals[2], missp_vals[2]))
             printf (output_file, '\n')
+        
+        for trace in traces:
+            trace_to_print = 'F2\t' if trace == 'umass' else trace 
+            for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
+                printf (output_file, '{}\t' .format (trace_to_print))
+            for missp in missp_vals:
+                for alg_mode in modes:
+                    point = self.gen_filtered_list(self.list_of_dicts, 
+                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
+                    if (point==[]):
+                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace_to_print, missp))
+                    opt_serviceCost = point[0]['serviceCost']
+                    uInterval = 1000
+                    point = self.gen_filtered_list(self.list_of_dicts, 
+                            trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval=uInterval, 
+                            alg_mode = alg_mode)
+                    if (point==[]): # no results for this settings 
+                        printf (serviceCost_by_missp_output_file, 'N/A\t\t\t')
+                        printf (bwCost_by_missp_output_file,      'N/A\t\t\t')
+                        continue
+                    alg_serviceCost = point[0]['serviceCost']
+                    alg_bwCost      = point[0]['bwCost']
+                    # alg_hitRatio    = point[0]['hitRatio']
+                    printf (serviceCost_by_missp_output_file, ' {:.2f}\t\t' .format(alg_serviceCost / opt_serviceCost))
+                    printf (bwCost_by_missp_output_file,      ' {:.2f}\t\t' .format(alg_bwCost))
+                    # printf (bwCost_by_missp_output_file, ' {:.4f} \t' .format(alg_bwCost / opt_bwCost))
+            for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
+                printf (output_file, ' \n')
+
+    def plot_bars_by_missp_python (self):
+        """
+        Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
+        """
+        traces = ['gradle', 'wiki', 'scarab', 'umass']
+
+        modes = ['FNAA', 'SALSA', 'SALSA2']
+        missp_vals = [10, 30, 100, 300]
         
         self.gen_filtered_list(self.list_of_dicts, num_of_req = 1000) 
         for trace in traces:

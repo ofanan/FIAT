@@ -342,7 +342,10 @@ class Simulator(object):
         self.high_cost_mp_cnt   = np.sum( [client.high_cost_mp_cnt for client in self.client_list ] )
         self.total_cost         = self.total_access_cost + self.missp * (self.comp_miss_cnt + self.non_comp_miss_cnt + self.high_cost_mp_cnt)
         self.mean_service_cost  = self.total_cost / self.req_cnt 
-        bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
+        if (self.mode in ['opt', 'measure fp fn']):
+            bw = 0
+        else:
+            bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
         printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
         #Each update is a full indicator, sent to n-1 DSs)
@@ -351,11 +354,11 @@ class Simulator(object):
         #     printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
         printf (res_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
-        num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         if (self.mode=='Opt'):
             printf (res_file, '\n')
             return
         printf (res_file, '// estimation window = {}, ' .format (self.ewma_window_size))
+        num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
             printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
             printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 

@@ -223,11 +223,11 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    res_file_name       = 'salsa'
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [10]: #30, 100, 300 
         for mode in ['opt']:
+            res_file_name = 'salsa' if mode in ['salsa', 'salsa2'] else 'opt_n_fnaa'
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 

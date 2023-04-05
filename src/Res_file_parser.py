@@ -157,7 +157,7 @@ class Res_file_parser (object):
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         modes = ['FNAA', 'SALSA', 'SALSA2']
-        missp_vals = [30, 100, 300]
+        missp_vals = [10, 30, 100, 300]
         for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
             printf (output_file, 'input \t ')
             for missp_val in missp_vals:

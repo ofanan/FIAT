@@ -202,11 +202,7 @@ class Res_file_parser (object):
         modes = ['FNAA', 'SALSA', 'SALSA2']
         missp_vals = [10, 30, 100, 300]
         
-        self.gen_filtered_list(self.list_of_dicts, num_of_req = 1000) 
         for trace in traces:
-            trace_to_print = 'F2\t' if trace == 'umass' else trace 
-            for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
-                printf (output_file, '{}\t' .format (trace_to_print))
             for missp in missp_vals:
                 for alg_mode in modes:
                     point = self.gen_filtered_list(self.list_of_dicts, 
@@ -218,18 +214,12 @@ class Res_file_parser (object):
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval=uInterval, 
                             alg_mode = alg_mode)
-                    if (point==[]): # no results for this settings 
-                        printf (serviceCost_by_missp_output_file, 'N/A\t\t\t')
-                        printf (bwCost_by_missp_output_file,      'N/A\t\t\t')
+                    if (point==[]): # no results for this settings --> default values for generating partial plots, before all experiments are done 
+                        alg_serviceCost = 0 
+                        alg_bwCost      = 0
                         continue
                     alg_serviceCost = point[0]['serviceCost']
                     alg_bwCost      = point[0]['bwCost']
-                    # alg_hitRatio    = point[0]['bwCost']
-                    printf (serviceCost_by_missp_output_file, ' {:.2f}\t\t' .format(alg_serviceCost / opt_serviceCost))
-                    printf (bwCost_by_missp_output_file,      ' {:.2f}\t\t' .format(alg_bwCost))
-                    # printf (bwCost_by_missp_output_file, ' {:.4f} \t' .format(alg_bwCost / opt_bwCost))
-            for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
-                printf (output_file, ' \n')
 
     def gen_filtered_list (self, list_to_filter, trace = None, cache_size = 0, bpe = 0, num_of_DSs = 0, Kloc = 0, missp = 0, uInterval = 0, 
                            num_of_req = 0, alg_mode = None):

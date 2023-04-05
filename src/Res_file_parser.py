@@ -230,6 +230,11 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] 
                     mode_bwCost     [traceIdx] = point[0]['bwCost'] 
 
+                    # Make the plot
+                    plt.bar(x_positions, mode_serviceCost, color ='r', width = barWidth,
+                            edgecolor ='grey', label =trace)
+                    plt.show()
+                    
          
         # set height of bar
         IT = [12, 30, 1, 8, 22]

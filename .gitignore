@@ -12,4 +12,6 @@
 /res/q*.txt
 /res/old*
 /res/old*/*
-
+/res/bkp/*
+/res/*PC*
+ 

@@ -1,5 +1,5 @@
-input 	 FNAA30		FNAH30	 FNAA100	FNAH100	 FNAA300	FNAH300
-gradle	 2.3103	 1.6481	 2.0922	 1.3201	 1.5413	 1.1077	 
-wiki	 1.8793	 1.4213	 1.5347	 1.1401	 1.1785	 1.0541	 
-scarab	 1.2760	 1.2425	 1.1316	 1.0804	 1.0600	 1.0296	 
-F2		 1.1962	 1.2135	 1.0894	 1.0753	 1.0403	 1.0272	 
+input 	 FNAA30		SALSA30		SALSA230		FNAA100		SALSA100		SALSA2100		FNAA300		SALSA300		SALSA2300		
+gradle	 2.31		N/A			N/A			 2.09		N/A			N/A			 1.54		N/A			N/A			 
+wiki	 1.88		N/A			N/A			 1.53		N/A			N/A			 1.18		N/A			N/A			 
+scarab	 1.28		N/A			N/A			 1.13		N/A			N/A			 1.06		N/A			N/A			 
+F2		 1.20		N/A			 1.22		 1.09		N/A			 1.08		 1.04		N/A			 1.03		 

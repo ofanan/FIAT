@@ -183,62 +183,45 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.FNA.HEewma.ad_histNhitRatio_mu
 // avg update interval = 18518.5 req
 // non_comp_miss_th=0.1, non_comp_accs_th=0.01
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.Um1000.UM1000.FNAA.Eewma | service_cost = 12.38 | bw = 83.44
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000-2000.FNAA.Eewma | service_cost = 12.38 | bw = 83.44
 // tot_access_cost = 3364949, hit_ratio = 0.7, non_comp_miss_cnt = 6675, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[97, 98, 103]
 // avg update interval = 10067.104026845638 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.Um1000.UM2000.SALSA2.Eewma_m0_0.1_m1_0.01 | service_cost = 12.52 | bw = 43.12
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA2.Eewma_m0_0.1_m1_0.01 | service_cost = 12.52 | bw = 43.12
 // tot_access_cost = 3215461, hit_ratio = 0.69, non_comp_miss_cnt = 16390, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[49, 51, 54]
 // avg update interval = 19480.5 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.Um1000.UM1000.SALSA.Eewma | service_cost = 12.38 | bw = 83.44
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA2.Eewma | service_cost = 12.38 | bw = 83.44
 // tot_access_cost = 3364949, hit_ratio = 0.7, non_comp_miss_cnt = 6675, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[97, 98, 103]
 // avg update interval = 10067.104026845638 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.Um1000.UM2000.SALSA2.Eewma_m0_0.1_m1_0.01 | service_cost = 33.11 | bw = 40.88
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000-2000.SALSA2.Eewma_m0_0.1_m1_0.01 | service_cost = 33.11 | bw = 40.88
 // tot_access_cost = 3639855, hit_ratio = 0.71, non_comp_miss_cnt = 1069, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[48, 49, 49]
 // avg update interval = 20547.924657534248 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.Um1000.UM1000.SALSA.Eewma | service_cost = 33.05 | bw = 82.04
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M100.B0.U1000-2000.SALSA2.Eewma | service_cost = 33.05 | bw = 82.04
 // tot_access_cost = 3604841, hit_ratio = 0.71, non_comp_miss_cnt = 822, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[97, 98, 98]
 // avg update interval = 10238.897610921502 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.Um1000.UM2000.SALSA2.Eewma_m0_0.1_m1_0.01 | service_cost = 91.92 | bw = 40.88
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000-2000.SALSA2.Eewma_m0_0.1_m1_0.01 | service_cost = 91.92 | bw = 40.88
 // tot_access_cost = 3649872, hit_ratio = 0.71, non_comp_miss_cnt = 566, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[48, 49, 49]
 // avg update interval = 20547.924657534248 req
 
-umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.Um1000.UM1000.SALSA.Eewma | service_cost = 91.93 | bw = 82.04
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000-2000.SALSA2.Eewma | service_cost = 91.93 | bw = 82.04
 // tot_access_cost = 3610954, hit_ratio = 0.71, non_comp_miss_cnt = 723, comp_miss_cnt = 293673
 // estimation window = 1000, 
 // num of ads per DS=[97, 98, 98]
 // avg update interval = 10238.897610921502 req
 
-umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost = 16.58 | bw = 56.00
-// tot_access_cost = 305199, hit_ratio = 0.55, non_comp_miss_cnt = 3262, comp_miss_cnt = 41823
-// estimation window = 1000, 
-// num of ads per DS=[6, 7, 7]
-// avg update interval = 14999.849999999999 req
-
-umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost = 25.23 | bw = 0.00
-// tot_access_cost = 115000, hit_ratio = 0.2, non_comp_miss_cnt = 38448, comp_miss_cnt = 41823
-// estimation window = 1000, 
-// num of ads per DS=[0, 0, 0]
-// avg update interval = inf req
-
-umass.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost = 19.60 | bw = 64.40
-// tot_access_cost = 488573, hit_ratio = 0.51, non_comp_miss_cnt = 7230, comp_miss_cnt = 41823
-// estimation window = 1000, 
-// num of ads per DS=[6, 7, 10]
-// avg update interval = 13043.347826086956 req

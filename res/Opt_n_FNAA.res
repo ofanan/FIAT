@@ -160,7 +160,6 @@ wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M300.B0.U1000.Opt | service_cost = 39.049528
 // estimation window = 1000, 
 
 
-
 umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 4.35 | bw = 0.00
 // tot_access_cost = 1414918, hit_ratio = 0.71, non_comp_miss_cnt = 0, comp_miss_cnt = 293673
 

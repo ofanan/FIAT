@@ -354,7 +354,7 @@ class Simulator(object):
         #     printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
         printf (res_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
-        if (self.mode=='Opt'):
+        if (self.mode=='opt'):
             printf (res_file, '\n')
             return
         printf (res_file, '// estimation window = {}, ' .format (self.ewma_window_size))

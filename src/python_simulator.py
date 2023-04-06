@@ -57,7 +57,7 @@ class Simulator(object):
         settings_str = '{}.{}' .format (settings_str, self.mode.upper()) 
 
         # Now we know that the mode isn't 'Opt'
-        if self.calc_mr_by_hist and self.mode not in ['salsa,' 'salsa2']:
+        if self.calc_mr_by_hist and (not (self.mode.startswith('salsa'))):
             settings_str = '{}.{}{}' .format (
                 settings_str,   
                 'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
@@ -265,7 +265,7 @@ class Simulator(object):
             self.speculate_hit_cnt          = 0 # num of hits among speculative accss
             self.indications                = np.array (range (self.num_of_DSs), dtype = 'bool')
         
-        elif (self.mode == 'fnaa'):
+        if (self.mode == 'fnaa'):
             self.min_uInterval              = self.max_uInterval
             self.calc_mr_by_hist            = False
             self.hist_based_uInterval       = False

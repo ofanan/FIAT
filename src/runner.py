@@ -225,8 +225,8 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [10]: #30, 100, 300 
-        for mode in ['fnaa', 'salsa', 'salsa2']:
+    for missp in [30, 100, 300]: #
+        for mode in ['salsa', 'salsa2']:
             res_file_name = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 

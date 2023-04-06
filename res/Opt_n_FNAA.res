@@ -168,3 +168,11 @@ umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 4.35
 wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 2.94 | bw = 0.00
 // tot_access_cost = 1696189, hit_ratio = 0.88, non_comp_miss_cnt = 0, comp_miss_cnt = 124511
 
+
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 4.38 | bw = 0.00
+// tot_access_cost = 1378486, hit_ratio = 0.7, non_comp_miss_cnt = 0, comp_miss_cnt = 299686
+
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 2.53 | bw = 0.00
+// tot_access_cost = 1881137, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
+

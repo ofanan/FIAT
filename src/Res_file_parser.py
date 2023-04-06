@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import MyConfig
 from printf import printf 
@@ -21,10 +22,30 @@ alg_details_idx     = 10 # More details about the alg, e.g.: flat, ewma.
 min_num_of_fields   = alg_idx + 1
 
 BAR_WIDTH = 0.25
-FONT_SIZE = 15
+MARKER_SIZE             = 16
+MARKER_SIZE_SMALL       = 1
+LINE_WIDTH              = 3 
+LINE_WIDTH_SMALL        = 1 
+FONT_SIZE               = 20
+FONT_SIZE_SMALL         = 5
+LEGEND_FONT_SIZE        = 12
+LEGEND_FONT_SIZE_SMALL  = 5 
 
 class Res_file_parser (object):  
 
+    set_plt_params = lambda self, size='large' : matplotlib.rcParams.update({'font.size': FONT_SIZE, 
+                                                                             'legend.fontsize': LEGEND_FONT_SIZE,
+                                                                             'xtick.labelsize':FONT_SIZE,
+                                                                             'ytick.labelsize':FONT_SIZE,
+                                                                             'axes.labelsize': FONT_SIZE,
+                                                                             'axes.titlesize':FONT_SIZE,}) if (size=='large') else matplotlib.rcParams.update({
+                                                                             'font.size': FONT_SIZE_SMALL, 
+                                                                             'legend.fontsize': LEGEND_FONT_SIZE_SMALL,
+                                                                             'xtick.labelsize':FONT_SIZE_SMALL,
+                                                                             'ytick.labelsize':FONT_SIZE_SMALL,
+                                                                             'axes.labelsize': FONT_SIZE_SMALL,
+                                                                             'axes.titlesize':FONT_SIZE_SMALL,
+                                                                             })
     def __init__ (self):
         """
         """
@@ -64,6 +85,8 @@ class Res_file_parser (object):
                                   'FNAA' : '\\pgmfna', 
                                   'FNOA' : '\\pgmfno',
                                   'FNOA' : '\\pgmfno'}
+
+
 
     def parse_line (self, line):
         splitted_line = line.split ("|")
@@ -224,6 +247,7 @@ class Res_file_parser (object):
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
         """
 
+        self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         modes = ['FNAA', 'SALSA', 'SALSA2']
@@ -232,17 +256,18 @@ class Res_file_parser (object):
         # set width of bar
         fig = plt.subplots(figsize =(12, 8))
 
-        for missp in missp_vals:
-            x_positions = np.array(range(len(traces)+1))#np.arange(len(traces))
-            print (x_positions) #$$$
-            exit ()
+        x_positions = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
+        print (x_positions)
+        for missp_idx in range(len(missp_vals)):
+            missp = missp_vals [missp_idx]
+            # x_positions = np.array(range(len(traces)+1))#np.arange(len(traces))
             for mode in modes:
+                x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 for traceIdx in range(len(traces)):
-                    print (x_positions)
-                    x_positions += BAR_WIDTH
                     trace = traces[traceIdx]
+                    print ('trace={}' .format (trace))
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
@@ -257,14 +282,16 @@ class Res_file_parser (object):
                     mode_bwCost     [traceIdx] = point[0]['bwCost'] 
 
                 # Make the plot
+                print ('x_positions={}, mode_serviceCost={}' .format (x_positions, mode_serviceCost))
+                # exit () #$$$
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
-                        edgecolor ='grey', label=('F2' if trace=='umass' else trace))
+                        edgecolor ='grey', label=mode) #'F2' if trace=='umass' else trace
                 plt.ylabel('Service Cost', fontsize = FONT_SIZE)
                 plt.legend()
             plt.show()
-            exit () #$$$
+ #           exit () #$$$
                     
-         
+        exit () #$$$       
         # set height of bar
         IT = [12, 30, 1, 8, 22]
         ECE = [28, 6, 16, 5, 10]

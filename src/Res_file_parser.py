@@ -263,8 +263,10 @@ class Res_file_parser (object):
             for mode in modes:
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
+                traces_to_print = []
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
+                    traces_to_print.append('F2' if (trace=='umass') else trace)
                     opt_point = [item for item in self.list_of_dicts if
                                  item['trace']      == trace and 
                                  item['uInterval']  == 1000  and
@@ -292,14 +294,11 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point[0]['bwCost']       
 
-                # Make the plot
-                # print ('x_positions={}, mode_serviceCost={}' .format (x_positions, mode_serviceCost))
-                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
-                        edgecolor ='grey', label=mode) #'F2' if trace=='umass' else trace
+                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
                 plt.ylabel('Norm. Service Cost', fontsize = FONT_SIZE)
                 plt.legend()
                 x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-            plt.xticks (mid_x_positions, traces)
+            plt.xticks (mid_x_positions, traces_to_print)
             plt.show()
                     
 

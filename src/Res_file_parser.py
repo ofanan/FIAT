@@ -113,7 +113,7 @@ class Res_file_parser (object):
             "trace"         : splitted_line        [trace_idx],
             "cache_size"    : int (splitted_line   [cache_size_idx].split("C")[1].split("K")[0]),   
             "bpe"           : int (splitted_line   [bpe_idx]       .split("bpe")[1]),
-            "num_of_req"    : splitted_line        [num_of_req_idx].split("req")[0],
+            "num_of_req"    : int (splitted_line   [num_of_req_idx].split("Kreq")[0]),
             "num_of_DSs"    : int (splitted_line   [num_of_DSs_idx].split("DSs")[0]), 
             "Kloc"          : int (splitted_line   [kloc_idx]      .split("Kloc")[1]),
             "missp"         : int (splitted_line   [missp_idx]     .split("M")[1]),
@@ -258,30 +258,40 @@ class Res_file_parser (object):
 
         x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
         mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
-        for missp_idx in range(len(missp_vals)):
-            missp = missp_vals [missp_idx]
-            # x_positions = np.array(range(len(traces)+1))#np.arange(len(traces))
+        for missp in missp_vals: #range(len(missp_vals)):
             for mode in modes:
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
                     opt_point = self.gen_filtered_list(self.list_of_dicts, 
-                            trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
+                            trace      = trace, 
+                            uInterval  = 1000,
+                            cache_size = 10, 
+                            num_of_DSs = 3, 
+                            missp      = missp,
+                            num_of_req = 1000,
+                            bpe        = 14,  
+                            alg_mode   = 'Opt')
                     if (opt_point==[]):
                         MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
                     opt_serviceCost = opt_point[0]['serviceCost']
                     uInterval = 1000
                     point = self.gen_filtered_list(self.list_of_dicts, 
-                            trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval=uInterval, alg_mode = mode)
+                            trace      = trace, 
+                            cache_size = 10, 
+                            num_of_DSs = 3, 
+                            missp      = missp,
+                            num_of_req = 1000,
+                            bpe        = 14,  
+                            alg_mode   = mode)
                     if (point==[]): # no results for this settings  
                         continue
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point[0]['bwCost']       
 
                 # Make the plot
-                print ('x_positions={}, mode_serviceCost={}' .format (x_positions, mode_serviceCost))
-                # exit () #$$$
+                # print ('x_positions={}, mode_serviceCost={}' .format (x_positions, mode_serviceCost))
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
                         edgecolor ='grey', label=mode) #'F2' if trace=='umass' else trace
                 plt.ylabel('Norm. Service Cost', fontsize = FONT_SIZE)
@@ -289,40 +299,9 @@ class Res_file_parser (object):
                 x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
             plt.xticks (mid_x_positions, traces)
             plt.show()
- #           exit () #$$$
                     
-        exit () #$$$       
-        # set height of bar
-        IT = [12, 30, 1, 8, 22]
-        ECE = [28, 6, 16, 5, 10]
-        CSE = [29, 3, 24, 25, 17]
-         
-        # Set position of bar on X axis
-        barWidth = 0.25
-        br1 = np.arange(len(IT))
-        br2 = [x + barWidth for x in br1]
-        br3 = [x + barWidth for x in br2]
-        print (br2) #$$$
-        exit ()
-         
-        # Make the plot
-        plt.bar(br1, IT, color ='r', width = barWidth,
-                edgecolor ='grey', label ='IT')
-        plt.bar(br2, ECE, color ='g', width = barWidth,
-                edgecolor ='grey', label ='ECE')
-        plt.bar(br3, CSE, color ='b', width = barWidth,
-                edgecolor ='grey', label ='CSE')
-         
-        # Adding Xticks
-        plt.xlabel('Branch', fontweight ='bold', fontsize = 15)
-        plt.ylabel('Students passed', fontweight ='bold', fontsize = 15)
-        plt.xticks([r + barWidth for r in range(len(IT))],
-                ['2015', '2016', '2017', '2018', '2019'])
-         
-        plt.legend()
-        plt.show()
 
-    def gen_filtered_list (self, list_to_filter, trace = None, cache_size = 0, bpe = 0, num_of_DSs = 0, Kloc = 0, missp = 0, uInterval = 0, 
+    def gen_filtered_list (self, list_to_filter, trace = None, cache_size=None, bpe=None, num_of_DSs=None, Kloc=1, missp=None, uInterval=None, 
                            num_of_req = 0, alg_mode = None):
         """
         filters and takes from all the items in a given list (that was read from the res file) only those with the desired parameters value
@@ -331,23 +310,23 @@ class Res_file_parser (object):
         If bpe == 0, the function discards bpe values, and doesn't filter out entries by their bpe values.
         If bpe == 5, the function returns only entries in which bpe == 5.      
         """
-        if (not (trace == None)):
+        if (trace!=None):
             list_to_filter = list (filter (lambda item : item['trace'] == trace, list_to_filter))
-        if (cache_size > 0):
+        if (cache_size!=None):
             list_to_filter = list (filter (lambda item : item['cache_size'] == cache_size, list_to_filter))
-        if (bpe > 0):
+        if (bpe!=None):
             list_to_filter = list (filter (lambda item : item['bpe'] == bpe, list_to_filter))
-        if (num_of_DSs > 0):
+        if (num_of_DSs!=None):
             list_to_filter = list (filter (lambda item : item['num_of_DSs'] == num_of_DSs, list_to_filter))
-        if (Kloc > 0):
+        if (Kloc!=1):
             list_to_filter = list (filter (lambda item : item['Kloc'] == Kloc, list_to_filter))
-        if (missp > 0):
+        if (missp!=None):
             list_to_filter = list (filter (lambda item : item['missp'] == missp, list_to_filter))
-        if (uInterval > 0):
+        if (uInterval!=None):
             list_to_filter = list (filter (lambda item : item['uInterval'] == uInterval, list_to_filter))
-        if (num_of_req > 0):
+        if (num_of_req!=None):
             list_to_filter = list (filter (lambda item : item['num_of_req'] == num_of_req, list_to_filter))
-        if (not (alg_mode == None)):
+        if (alg_mode!=None):
             list_to_filter = list (filter (lambda item : item['alg_mode'] == alg_mode, list_to_filter))    
         return list_to_filter
 
@@ -569,7 +548,7 @@ class Res_file_parser (object):
 
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_file ('Opt_n_FNAA.res')
+my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
 my_Res_file_parser.parse_file ('salsa.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

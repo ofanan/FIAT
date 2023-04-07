@@ -256,18 +256,16 @@ class Res_file_parser (object):
         # set width of bar
         fig = plt.subplots(figsize =(12, 8))
 
-        x_positions = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
-        print (x_positions)
+        x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
+        mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
         for missp_idx in range(len(missp_vals)):
             missp = missp_vals [missp_idx]
             # x_positions = np.array(range(len(traces)+1))#np.arange(len(traces))
             for mode in modes:
-                x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
-                    print ('trace={}' .format (trace))
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
@@ -286,9 +284,10 @@ class Res_file_parser (object):
                 # exit () #$$$
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
                         edgecolor ='grey', label=mode) #'F2' if trace=='umass' else trace
-                plt.xticks (x_positions, traces)
                 plt.ylabel('Service Cost', fontsize = FONT_SIZE)
                 plt.legend()
+                x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
+            plt.xticks (mid_x_positions, traces)
             plt.show()
  #           exit () #$$$
                     

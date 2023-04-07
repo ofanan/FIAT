@@ -19,6 +19,7 @@ class DataStore (object):
                  ID, # datastore ID
                  size                   = 1000, # number of elements that can be stored in the datastore
                  bpe                    = 14, # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
+                 scale_ind              = False # When True, the indicator and the uInterval are dynamically scalable
                  EWMA_alpha             = 0.85, # sliding window parameter for miss-rate estimation
                  mr1_ewma_window_size   = 100, # Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
                  max_fnr = 0.03,max_fpr = 0.03, # maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
@@ -69,6 +70,7 @@ class DataStore (object):
         # inializations related to the indicator, statistics, and advertising mechanism
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
+        self.scale_ind               = scale_ind # When True, scale the indicator
         self.BF_size                 = self.bpe * self.cache_size
         self.lg_BF_size              = np.log2 (self.BF_size) 
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)

@@ -550,6 +550,6 @@ class Res_file_parser (object):
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-#my_Res_file_parser.parse_file ('salsa.res')
+my_Res_file_parser.parse_file ('salsa.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

@@ -5434,3 +5434,11 @@ umass.C10K.bpe14.90Kreq.3DSs.Kloc1.M30.B0.U1000-2000.SALSA.Eewma | service_cost 
 // estimation window = 1000, 
 // num of ads per DS=[6, 6, 8]
 // avg update interval = 13500.0 req
+
+wiki.C10K.bpe14.100Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_hist_ins_cnt | service_cost = 8.56 | bw = 25.20
+// tot_access_cost = 386178, hit_ratio = 0.84, non_comp_miss_cnt = 1249, comp_miss_cnt = 14424
+// estimation window = 1000, // spec accs cost = 290523, num of spec hits = 33895
+// num of ads per DS=[3, 3, 3]
+// avg update interval = 33333.333333333336 req
+// mr0_ad_th=0.7
+

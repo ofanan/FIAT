@@ -225,20 +225,20 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [30]: #[30, 100, 300]: #
-        for mode in ['salsa', 'salsa2']:
+    for missp in [30]: #, 100, 300]: #
+        for mode in ['salsa']:
             res_file_name = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
             sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
                                mode, requests, DS_cost, 
                                missp            = missp,
                                DS_size          = 10000,  
-                               min_uInterval    = 1000, 
-                               max_uInterval    = 2000 if mode in ['salsa2'] else 1000, 
+                               min_uInterval    = 2000, 
+                               max_uInterval    = 2000, # if mode in ['salsa2'] else 2000, 
                                calc_mr_by_hist  = True,
                                use_perfect_hist = False,
                                use_EWMA         = True,
-                               verbose          = [MyConfig.VERBOSE_RES],
+                               verbose          = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
@@ -256,7 +256,7 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
-run_var_missp_sim(trace_file_name=F2_trace_file_name,       max_num_of_req=1000000) 
-run_var_missp_sim(trace_file_name=wiki_trace_file_name,     max_num_of_req=1000000)
 run_var_missp_sim(trace_file_name=scarab_trace_file_name,   max_num_of_req=1000000)
-run_var_missp_sim(trace_file_name=gradle_trace_file_name,   max_num_of_req=1000000)
+# run_var_missp_sim(trace_file_name=F2_trace_file_name,       max_num_of_req=1000000) 
+# run_var_missp_sim(trace_file_name=wiki_trace_file_name,     max_num_of_req=1000000)
+# run_var_missp_sim(trace_file_name=gradle_trace_file_name,   max_num_of_req=1000000)

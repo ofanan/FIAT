@@ -81,29 +81,35 @@ class Simulator(object):
         else: 
             collect_mr_stat = self.calc_mr_by_hist and (not (self.use_perfect_hist))
             
-        self.DS_list = [DataStore.DataStore(ID = i, size = self.DS_size, bpe = self.bpe, mr1_ewma_window_size = self.ewma_window_size, 
-                        max_fpr = self.max_fpr, max_fnr = self.max_fnr, verbose = self.verbose, 
-                        min_uInterval = self.min_uInterval,
-                        max_uInterval = self.max_uInterval,
-                        num_of_insertions_between_estimations = self.num_of_insertions_between_estimations,
-                        DS_send_fpr_fnr_updates   = not (self.calc_mr_by_hist),
-                        hit_ratio_based_uInterval = self.hit_ratio_based_uInterval,
-                        mr_output_file      = self.mr_output_file[i], 
-                        collect_mr_stat     = collect_mr_stat,  
-                        analyse_ind_deltas  = not (self.calc_mr_by_hist),
-                        EWMA_alpha          = self.EWMA_alpha,
-                        designed_mr1        = self.designed_mr1,
-                        use_EWMA            = self.use_EWMA,
-                        use_indicator       = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
-                        use_CountingBloomFilter = (self.mode in ['fno', 'fnaa']),
-                        hist_based_uInterval = self.hist_based_uInterval,
-                        non_comp_miss_th     = self.non_comp_miss_th,
-                        non_comp_accs_th     = self.non_comp_accs_th,
-                        initial_mr0          = initial_mr0,
-                        mr0_ad_th            = self.mr0_ad_th,
-                        settings_str         = self.gen_settings_string (num_of_req=self.trace_len) 
-                        ) 
-                        for i in range(self.num_of_DSs)]
+        self.DS_list = [DataStore.DataStore(
+            ID                      = i, 
+            size                    = self.DS_size, 
+            bpe                     = self.bpe,
+            scale_ind               = (self.mode=='salsa3') 
+            min_uInterval           = self.min_uInterval,
+            max_uInterval           = self.max_uInterval,
+            mr_output_file          = self.mr_output_file[i], 
+            collect_mr_stat         = collect_mr_stat,  
+            analyse_ind_deltas      = not (self.calc_mr_by_hist),
+            EWMA_alpha              = self.EWMA_alpha,
+            designed_mr1            = self.designed_mr1,
+            use_EWMA                = self.use_EWMA,
+            use_indicator           = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
+            hist_based_uInterval    = self.hist_based_uInterval,
+            non_comp_miss_th        = self.non_comp_miss_th,
+            non_comp_accs_th        = self.non_comp_accs_th,
+            initial_mr0             = initial_mr0,
+            mr0_ad_th               = self.mr0_ad_th,
+            settings_str            = self.gen_settings_string (num_of_req=self.trace_len) 
+            mr1_ewma_window_size    = self.ewma_window_size,
+            max_fpr                 = self.max_fpr, 
+            max_fnr                 = self.max_fnr, 
+            verbose                 = self.verbose, 
+            num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
+            DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
+            hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
+            use_CountingBloomFilter                 = (self.mode in ['fno', 'fnaa']),
+        )for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
         """
@@ -276,6 +282,10 @@ class Simulator(object):
             self.hist_based_uInterval       = False
             self.hit_ratio_based_uInterval  = False
         elif (self.mode == 'salsa2'):
+            self.calc_mr_by_hist            = True
+            self.hist_based_uInterval       = True
+            self.hit_ratio_based_uInterval  = True
+        elif (self.mode == 'salsa3'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True

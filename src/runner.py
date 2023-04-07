@@ -256,7 +256,7 @@ def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
-run_var_missp_sim(trace_file_name=F2_trace_file_name,       max_num_of_req=1000) 
-# run_var_missp_sim(trace_file_name=wiki_trace_file_name,     max_num_of_req=1000000)
-# run_var_missp_sim(trace_file_name=scarab_trace_file_name,   max_num_of_req=1000000)
-# run_var_missp_sim(trace_file_name=gradle_trace_file_name,   max_num_of_req=1000000)
+run_var_missp_sim(trace_file_name=F2_trace_file_name,       max_num_of_req=1000000) 
+run_var_missp_sim(trace_file_name=wiki_trace_file_name,     max_num_of_req=1000000)
+run_var_missp_sim(trace_file_name=scarab_trace_file_name,   max_num_of_req=1000000)
+run_var_missp_sim(trace_file_name=gradle_trace_file_name,   max_num_of_req=1000000)

@@ -63,8 +63,8 @@ class Simulator(object):
                 'P' if self.use_perfect_hist else 'E', # 'E' for 'Estimated' 
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
-        if (self.mode=='salsa2'):
-            settings_str = '{}.mult{}-{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) # consider some statistics of the hit ratio (actually, the "q" - namely, ratio of pos' ind')
+        if (self.mode.startswith('salsa')):
+            settings_str = '{}.m0_{}_m1_{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) 
         return settings_str
     
     def init_DS_list(self):
@@ -367,7 +367,11 @@ class Simulator(object):
         if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
             printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-        printf (res_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / np.average([DS.num_of_advertisements for DS in self.DS_list])))
+        avg_num_of_ads = np.average([DS.num_of_advertisements for DS in self.DS_list])
+        if (avg_num_of_ads==0): # deter division by 0
+            printf (res_file, '\n// avg update interval = INF')
+        else:
+            printf (res_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / avg_num_of_ads))
         if self.hist_based_uInterval:
             if self.hit_ratio_based_uInterval:
                 printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))

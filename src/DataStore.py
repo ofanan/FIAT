@@ -250,7 +250,7 @@ class DataStore (object):
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
         if self.hist_based_uInterval:
-            if (self.ins_since_last_ad >= self.minuInterval):
+            if (self.ins_since_last_ad >= self.min_uInterval):
                 if (self.hit_ratio_based_uInterval):
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                         printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 

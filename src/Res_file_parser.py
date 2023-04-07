@@ -286,6 +286,7 @@ class Res_file_parser (object):
                 # exit () #$$$
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
                         edgecolor ='grey', label=mode) #'F2' if trace=='umass' else trace
+                plt.xticks (x_positions, traces)
                 plt.ylabel('Service Cost', fontsize = FONT_SIZE)
                 plt.legend()
             plt.show()

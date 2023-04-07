@@ -266,25 +266,25 @@ class Res_file_parser (object):
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
-                    point = self.gen_filtered_list(self.list_of_dicts, 
+                    opt_point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
-                    if (point==[]):
+                    if (opt_point==[]):
                         MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
-                    opt_serviceCost = point[0]['serviceCost']
+                    opt_serviceCost = opt_point[0]['serviceCost']
                     uInterval = 1000
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, bpe = 14, num_of_DSs = 3, Kloc = 1, missp = missp, uInterval=uInterval, alg_mode = mode)
                     if (point==[]): # no results for this settings  
                         continue
-                    mode_serviceCost[traceIdx] = point[0]['serviceCost'] 
-                    mode_bwCost     [traceIdx] = point[0]['bwCost'] 
+                    mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
+                    mode_bwCost     [traceIdx] = point[0]['bwCost']       
 
                 # Make the plot
                 print ('x_positions={}, mode_serviceCost={}' .format (x_positions, mode_serviceCost))
                 # exit () #$$$
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH,
                         edgecolor ='grey', label=mode) #'F2' if trace=='umass' else trace
-                plt.ylabel('Service Cost', fontsize = FONT_SIZE)
+                plt.ylabel('Norm. Service Cost', fontsize = FONT_SIZE)
                 plt.legend()
                 x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
             plt.xticks (mid_x_positions, traces)

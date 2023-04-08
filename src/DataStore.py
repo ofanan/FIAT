@@ -46,7 +46,8 @@ class DataStore (object):
          use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale). 
          hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
          hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
-         settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.  
+         settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
+         ind_size_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').  
          ):
         """
         Return a DataStore object. 
@@ -68,6 +69,7 @@ class DataStore (object):
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
+        self.ind_size_factor         = ind_size_factor
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
         self.scale_ind               = scale_ind # When True, scale the indicator

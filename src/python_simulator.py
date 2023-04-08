@@ -105,11 +105,12 @@ class Simulator(object):
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
+            ind_size_factor         = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = (self.mode in ['fno', 'fnaa']),
-        )for i in range(self.num_of_DSs)]
+            use_CountingBloomFilter                 = True, #(self.mode in ['fno', 'fnaa'],
+        )) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
         """
@@ -265,7 +266,7 @@ class Simulator(object):
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
 
-        if self.mode in ['fnaa', 'salsa', 'salsa2']:
+        if self.mode in ['fnaa', 'salsa', 'salsa2', 'salsa3']:
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
             self.speculate_hit_cnt          = 0 # num of hits among speculative accss
@@ -276,19 +277,25 @@ class Simulator(object):
             self.calc_mr_by_hist            = False
             self.hist_based_uInterval       = False
             self.hit_ratio_based_uInterval  = False
+        
         elif (self.mode == 'salsa'):
             self.min_uInterval              = self.max_uInterval
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = False
             self.hit_ratio_based_uInterval  = False
+            self.ind_size_factor            = 1
+            
         elif (self.mode == 'salsa2'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
+            self.ind_size_factor            = 1
+            
         elif (self.mode == 'salsa3'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
+            self.ind_size_factor            = 1.1
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):
@@ -622,7 +629,7 @@ class Simulator(object):
             self.run_trace_pgm_fno_hetro ()
             self.gather_statistics ()
         
-        elif self.mode in ['fnaa', 'salsa', 'salsa2']:
+        elif self.mode in ['fnaa', 'salsa', 'salsa2', 'salsa3']:
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
         else: 

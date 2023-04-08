@@ -155,8 +155,8 @@ class Simulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
-        self.non_comp_miss_th   = 0.13
-        self.non_comp_accs_th   = 0.02
+        self.non_comp_miss_th   = 0.1
+        self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.7 
         self.mr1_ad_th          = 0.01 
         self.res_file_name      = res_file_name

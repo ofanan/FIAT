@@ -3927,7 +3927,6 @@ scarab.C10K.bpe14.200Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatio | 
 // num of ads per DS=[2, 2, 2]
 // avg update interval = 100000.0 req
 // mr0_ad_th=0.7
-
 // non_comp_miss_th=0.13
 
 gradle.C10K.bpe14.300Kreq.3DSs.Kloc1.M30.B0.U2000.FNA.HEewma.ad_histNhitRatio | service_cost = 7.34 | bw = 74.67

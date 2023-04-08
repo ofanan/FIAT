@@ -16,38 +16,38 @@ from printf import printf
 class DataStore (object):
 
     def __init__(self, 
-                 ID, # datastore ID
-                 size                   = 1000, # number of elements that can be stored in the datastore
-                 bpe                    = 14, # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
-                 scale_ind              = False # When True, the indicator and the uInterval are dynamically scalable
-                 EWMA_alpha             = 0.85, # sliding window parameter for miss-rate estimation
-                 mr1_ewma_window_size   = 100, # Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
-                 max_fnr = 0.03,max_fpr = 0.03, # maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
-                                                 # fpr: False Positive Ratio, fnr: False Negative Ratio).
-                                                 # currently max_fnr, max_fpr are usually unused, 
-                 num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.
-                                                                        # Each time a new indicator is published, the updated indicator contains a fresh estimation, and a counter is reset. 
-                                                                        # Then, each time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
-                 verbose                    = [], # what output will be written. See macros in MyConfig.py 
-                 min_uInterval              = 1, # min num of insertions of new items into the cache before advertising again 
-                 max_uInterval              = 1, # max num of insertions of new items into the cache before advertising again
-                 DS_send_fpr_fnr_updates    = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
-                 collect_mr_stat            = True,  
-                 analyse_ind_deltas         = True, # analyze the differences between the stale (last advertised) and the current, updated, indicator
-                 designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
-                 use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
-                 initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
-                 non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
-                 non_comp_accs_th           = 0.02, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
-                 mr0_ad_th                  = 0.7,
-                 mr1_ad_th                  = 0.01,
-                 mr_output_file             = None, # When this input isn't known, log data about the mr to this file
-                 use_indicator              = True, # when True, generate and maintain an indicator (BF).
-                 use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale). 
-                 hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
-                 hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
-                 settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.  
-                 ):
+         ID, # datastore ID
+         size                   = 1000,  # number of elements that can be stored in the datastore
+         bpe                    = 14,    # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
+         scale_ind              = False, # When True, the indicator and the uInterval are dynamically scalable
+         EWMA_alpha             = 0.85,  # sliding window parameter for miss-rate estimation
+         mr1_ewma_window_size   = 100,   # Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
+         max_fnr = 0.03,max_fpr = 0.03,  # maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
+                                         # fpr: False Positive Ratio, fnr: False Negative Ratio).
+                                         # currently max_fnr, max_fpr are usually unused, 
+         num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.
+                                                                # Each time a new indicator is published, the updated indicator contains a fresh estimation, and a counter is reset. 
+                                                                # Then, each time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
+         verbose                    = [],# what output will be written. See macros in MyConfig.py 
+         min_uInterval              = 1, # min num of insertions of new items into the cache before advertising again 
+         max_uInterval              = 1, # max num of insertions of new items into the cache before advertising again
+         DS_send_fpr_fnr_updates    = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
+         collect_mr_stat            = True,  
+         analyse_ind_deltas         = True, # analyze the differences between the stale (last advertised) and the current, updated, indicator
+         designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
+         use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
+         initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
+         non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
+         non_comp_accs_th           = 0.02, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
+         mr0_ad_th                  = 0.7,
+         mr1_ad_th                  = 0.01,
+         mr_output_file             = None, # When this input isn't known, log data about the mr to this file
+         use_indicator              = True, # when True, generate and maintain an indicator (BF).
+         use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale). 
+         hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
+         hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
+         settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.  
+         ):
         """
         Return a DataStore object. 
             For the DataStore's see documentation within the __init__ function.
@@ -196,8 +196,12 @@ class DataStore (object):
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
+                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                        printf (self.q_file, 'calling from max_uInterval\n')                     
                     return self.advertise_ind ()
             if self.ins_since_last_ad == self.max_uInterval:
+                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                        printf (self.q_file, 'calling from max_uInterval\n')                     
                     self.advertise_ind ()
                 
     def get_indication (self, key):

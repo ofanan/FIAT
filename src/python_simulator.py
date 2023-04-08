@@ -85,7 +85,7 @@ class Simulator(object):
             ID                      = i, 
             size                    = self.DS_size, 
             bpe                     = self.bpe,
-            scale_ind               = (self.mode=='salsa3') 
+            scale_ind               = (self.mode=='salsa3'), 
             min_uInterval           = self.min_uInterval,
             max_uInterval           = self.max_uInterval,
             mr_output_file          = self.mr_output_file[i], 
@@ -100,7 +100,7 @@ class Simulator(object):
             non_comp_accs_th        = self.non_comp_accs_th,
             initial_mr0             = initial_mr0,
             mr0_ad_th               = self.mr0_ad_th,
-            settings_str            = self.gen_settings_string (num_of_req=self.trace_len) 
+            settings_str            = self.gen_settings_string (num_of_req=self.trace_len), 
             mr1_ewma_window_size    = self.ewma_window_size,
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
@@ -155,8 +155,8 @@ class Simulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
-        self.non_comp_miss_th   = 0.1
-        self.non_comp_accs_th   = 0.01
+        self.non_comp_miss_th   = 0.13
+        self.non_comp_accs_th   = 0.02
         self.mr0_ad_th          = 0.7 
         self.mr1_ad_th          = 0.01 
         self.res_file_name      = res_file_name

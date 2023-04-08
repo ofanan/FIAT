@@ -22,6 +22,9 @@ class SimpleBloomFilter(object):
         adds all the keys to the Bloom filter
         Set all the hashes corresponding to the new key
         """
+        for key in keys:
+            for seed in range(self.num_of_hashes):
+                self.array[mmh3.hash(key, seed) % self.size] = True
 
     def add(self, key):
         """

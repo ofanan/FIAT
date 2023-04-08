@@ -81,8 +81,6 @@ class DataStore (object):
         if use_CountingBloomFilter: 
             self.updated_indicator   = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
-        else: # instead of keeping also an "updated" CBF, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale).
-            self.stale_indicator     = SBF.SimpleBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
@@ -234,6 +232,7 @@ class DataStore (object):
         if self.use_CountingBloomFilter: 
             self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
         else:
+            self.stale_indicator = SBF.SimpleBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator.add_all (keys=[key for key in self.cache])
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator

@@ -93,6 +93,10 @@ class Res_file_parser (object):
         splitted_line = line.split ("|")
          
         settings      = splitted_line[0]
+        if len (splitted_line)<2:
+            MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
+        if len (splitted_line[1].split(" = "))<2:
+            MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
         serviceCost   = float(splitted_line[1].split(" = ")[1])
         bwCost        = None # default value, to be checked later
         if (len(splitted_line)>2):
@@ -252,7 +256,7 @@ class Res_file_parser (object):
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         modes = ['FNAA', 'SALSA', 'SALSA2']
-        missp_vals = [100] #, 100, 300]
+        missp_vals = [30] #, 100, 300]
         
         # set width of bar
         fig = plt.subplots(figsize =(12, 8))

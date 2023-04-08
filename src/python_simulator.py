@@ -109,7 +109,7 @@ class Simulator(object):
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = True, #(self.mode in ['fno', 'fnaa'],
+            use_CountingBloomFilter                 = (self.mode in ['fno', 'fnaa'],
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):

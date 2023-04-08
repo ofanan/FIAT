@@ -367,14 +367,14 @@ class Simulator(object):
         if (self.mode=='opt'):
             printf (res_file, '\n')
             return
-        printf (res_file, '// estimation window = {}, ' .format (self.ewma_window_size))
+        printf (res_file, '// estimation window = {}\n, ' .format (self.ewma_window_size))
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
             printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
             printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
 
-        if (MyConfig.VERBOSE_RES in self.verbose and self.mode=='fna'):
+        if (self.mode!='opt'):
             printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
         avg_num_of_ads = np.average([DS.num_of_advertisements for DS in self.DS_list])

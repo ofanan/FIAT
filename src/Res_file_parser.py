@@ -252,7 +252,7 @@ class Res_file_parser (object):
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         modes = ['FNAA', 'SALSA', 'SALSA2']
-        missp_vals = [30] #, 100, 300]
+        missp_vals = [100] #, 100, 300]
         
         # set width of bar
         fig = plt.subplots(figsize =(12, 8))

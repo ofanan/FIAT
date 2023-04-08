@@ -195,7 +195,7 @@ class DataStore (object):
                     self.num_of_fpr_fnr_updates           += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
-                if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
+                if (self.num_of_advertisements==0 and self.ins_since_last_ad==1000): #$$$ self.max_uInterval): # force a "warmup" advertisement
                     if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                         printf (self.q_file, 'calling from max_uInterval\n')                     
                     return self.advertise_ind ()

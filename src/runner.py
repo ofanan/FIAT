@@ -243,7 +243,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-def calc_opt_service_cost (accs_cost, comp_miss08_cnt, missp, num_of_req):
+def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
     Opt's behavior is not depended upon parameters such as the indicaror's size, and miss penalty.
     Hence, it suffices to run Opt only once per trace and network, and then calculate its service cost for other 

@@ -47,7 +47,8 @@ class DataStore (object):
          hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
          hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
-         ind_size_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').  
+         ind_size_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+         check_delta_th             = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
          ):
         """
         Return a DataStore object. 
@@ -72,6 +73,7 @@ class DataStore (object):
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
+        self.check_delta_th          = check_delta_th
         self.ind_size_factor         = ind_size_factor
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
@@ -200,9 +202,9 @@ class DataStore (object):
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==1000): #$$$ self.max_uInterval): # force a "warmup" advertisement
-                    return self.advertise_ind (called_by=self.MAX_UINTERVAL_STR)
+                    return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
             if self.ins_since_last_ad == self.max_uInterval:
-                    self.advertise_ind (called_by=self.MAX_UINTERVAL_STR)
+                    self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
                 
     def scale_ind_n_uInterval (self, factor):
         """
@@ -221,19 +223,18 @@ class DataStore (object):
         return (key in self.stale_indicator)
 
     def advertise_ind (self, 
-                       check_delta_th = False, # when True, calculate the "deltas", namely, number of bits set / reset since the last update has been advertised. 
-                       called_by      = 'Unknown'      
+                       called_by_str = 'Unknown' # an optional string, identifying the caller.     
                        ):
         """
         Advertise an updated indicator.
         In practice, this means merely generate a new indicator (simple Bloom filter).
-        If input check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
+        If self.check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_file, 'advertising. called by {}\n' .format (called_by))                     
+            printf (self.q_file, 'advertising. called by {}\n' .format (called_by_str))                     
         self.num_of_advertisements += 1
-        if (check_delta_th):
+        if (self.check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
             Delta = [sum (np.bitwise_and (~updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (updated_sbf.array, ~self.stale_indicator.array))]
             if (MyConfig.VERBOSE_DEBUG in self.verbose and sum (Delta) < self.delta_th):
@@ -275,10 +276,10 @@ class DataStore (object):
                                 .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
                     if ((self.num_of_advertisements>0) and 
                         (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
-                        self.advertise_ind (called_by=self.MR0_STR)
+                        self.advertise_ind (called_by_str=self.MR0_STR)
                 else:
                     if self.mr0_cur < self.mr0_ad_th: 
-                        self.advertise_ind (called_by=self.MR0_STR)
+                        self.advertise_ind (called_by_str=self.MR0_STR)
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -296,10 +297,10 @@ class DataStore (object):
                 if (self.hit_ratio_based_uInterval):
                     if ((self.num_of_advertisements>0) and 
                          self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                        self.advertise_ind (called_by=self.MR1_STR)
+                        self.advertise_ind (called_by_str=self.MR1_STR)
                 else:           
                     if self.mr1_cur > self.mr1_ad_th: 
-                        self.advertise_ind (called_by=self.MR1_STR)
+                        self.advertise_ind (called_by_str=self.MR1_STR)
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

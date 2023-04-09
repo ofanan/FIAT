@@ -53,15 +53,19 @@ class Res_file_parser (object):
         # List of algorithms' names, used in the plots' legend, for the dist' case
         self.labelOfMode = {}
 
+        self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
+                          'SALSA' : 'SALSA',
+                          'SALSA2' : 'SALSA2',
+                          'SALSA3' : 'SALSA3'
+                           }
+        
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
-                            'FNAA'      : 'purple',
-                            'SALSA'     : 'brown',
-                            'SALSA2'    : 'yellow',
-                            'Tetra'     : 'blue',
-                            'Tetra dyn' : 'black',
-                            'CEDAR'     : 'magenta',
-                            'Morris'    : 'red'}
+                            'FNAA'      : 'blue',
+                            'SALSA'     : 'cyan',
+                            'SALSA2'    : 'magenta',
+                            # 'others'    : 'blue', purple, 'black','magenta','red', 'brown', yellow
+                            }
 
         # The markers used for each alg', in the dist' case
         self.markerOfMode = {'Opt'      : 'o',
@@ -255,11 +259,11 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA', 'SALSA2']
-        missp_vals = [30] #, 100, 300]
+        modes = ['FNAA', 'SALSA'] #, 'SALSA2']
+        missp_vals = [10] #10, 30, 100, 300]
         
         # set width of bar
-        fig = plt.subplots(figsize =(12, 8))
+        fig = plt.subplots(figsize =(12, 8)) 
 
         x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
         mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
@@ -298,8 +302,10 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point[0]['bwCost']       
 
-                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
-                plt.ylabel('Norm. Service Cost', fontsize = FONT_SIZE)
+                # plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
+                # plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
+                plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                 plt.legend()
                 x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
             plt.xticks (mid_x_positions, traces_to_print)

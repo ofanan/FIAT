@@ -1,7 +1,7 @@
 import pandas as pd
 import sys, pickle, random
 import numpy as np
-# from numpy.core._multiarray_umath import dtype
+from   pathlib import Path
 
 import DataStore, Client, candidate, node, MyConfig 
 from   printf import printf
@@ -121,6 +121,35 @@ class Simulator(object):
         verbose_file = self.res_file) 
         for i in range(self.num_of_clients)]
     
+    def init_res_file (self, res_file_name):
+        """
+        Open the res file for writing, as follows:
+        If a res file with the relevant name already exists - open it for appending.
+        Else, open a new res file, and write to it comment header lines, explaining the file's format  
+        """
+        
+        full_path_res_file_name = '../res/{}.res' .format(res_file_name)
+        
+        if Path(full_path_res_file_name).is_file(): # does this res file already exist?
+            return ( open (full_path_res_file_name,  "a"))
+        else:
+            res_file =  open (full_path_res_file_name,  "w")
+            printf (res_file, '// format: e.g., scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.SALSA.m0_0.1_m1_0.01, where:\n' )
+            printf (res_file, '// scarab=trace file. 10K=the capacity of each cache. 14=num of Bits Per Element in the indicator.\n' )
+            printf (res_file, '// 1000Kreq - num of requests in the trace is 1000K.\n')
+            printf (res_file, '// 3DSs- num of datastores (Caches) is 3. \n')
+            printf (res_file, '// Kloc1- each element is mapped to a single location (cache).\n')
+            printf (res_file, '// M30 - missp is 30\n')
+            printf (res_file, '// B0 - desired BW - for simulation with bandwidth const currently unused.\n')
+            printf (res_file, '// U1000 - used fixed uInterval of 1000 insertions.\n')
+            printf (res_file, '//     alternatively, the "U" field can say:\n')
+            printf (res_file, '//     Ux-Uy, where x,y are min_u_uInterlva, max_num_uInterval.\n')
+            printf (res_file, '// SALSA is the algorithm (aka "mode") used.\n')
+            printf (res_file, '// m0_0.1_m1_0.01 informs the values of "mult0", "mult1" that are now 0.1 and 0.01, resp.\n') 
+            
+            return res_file
+
+
     def __init__(self, res_file_name, trace_file_name, 
                  mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
@@ -159,8 +188,13 @@ class Simulator(object):
         self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.7 
         self.mr1_ad_th          = 0.01 
-        self.res_file_name      = res_file_name
-        self.res_file           = open ('../res/{}.res' .format(self.res_file_name), "a")
+        self.verbose            = verbose # Defines the log/res data printed out to files       
+        
+        if (MyConfig.VERBOSE_RES in self.verbose):
+            self.res_file = self.init_res_file (res_file_name)
+        if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+            self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
+        
         self.trace_file_name    = trace_file_name
         self.missp              = missp
         self.DS_size            = DS_size
@@ -191,7 +225,6 @@ class Simulator(object):
         self.ewma_window_size   = int (self.DS_size/10) # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
-        self.verbose            = verbose # Defines the log/res data printed out to files       
                 
         self.mr_of_DS           = np.zeros(self.num_of_DSs) # mr_of_DS[i] will hold the estimated miss rate of DS i 
         self.req_df             = req_df
@@ -213,8 +246,6 @@ class Simulator(object):
         self.FN_miss_cnt          = 0 # num of misses happened due to FN event
         self.tot_num_of_updates   = 0
         self.bw                   = bw
-        if (MyConfig.VERBOSE_FULL_RES in self.verbose):
-            self.full_res_file           = open ('../res/{}_full.res' .format(self.res_file_name), "a")
         if (self.calc_mr_by_hist):
             self.hist_based_uInterval        = hist_based_uInterval
             self.hit_ratio_based_uInterval   = hit_ratio_based_uInterval
@@ -363,17 +394,18 @@ class Simulator(object):
         else:
             bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
-        printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f}\n'  .format (settings_str, self.mean_service_cost, bw))
+        printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
+
         #Each update is a full indicator, sent to n-1 DSs)
         # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
         # if (self.bw != bw_in_practice):
         #     printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
-        printf (res_file, '// tot_access_cost = {:.0f}, hit_ratio = {:.2}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
-           (self.total_access_cost, self.hit_ratio, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
+        printf (res_file, '// tot_access_cost = {:.0f}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
+           (self.total_access_cost, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         if (self.mode=='opt'):
             printf (res_file, '\n')
             return
-        printf (res_file, '// estimation window = {}\n, ' .format (self.ewma_window_size))
+        printf (res_file, '// estimation window = {}\n' .format (self.ewma_window_size))
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
             printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
@@ -381,13 +413,13 @@ class Simulator(object):
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
 
         if (self.mode!='opt'):
-            printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
-        printf (res_file, '\n// num of ads per DS={}' .format ([DS.num_of_advertisements for DS in self.DS_list]))
+            printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}\n' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
+        printf (res_file, '// num of ads per DS={}. ' .format ([DS.num_of_advertisements for DS in self.DS_list]))
         avg_num_of_ads = np.average([DS.num_of_advertisements for DS in self.DS_list])
         if (avg_num_of_ads==0): # deter division by 0
-            printf (res_file, '\n// avg update interval = INF')
+            printf (res_file, ' avg update interval = INF')
         else:
-            printf (res_file, '\n// avg update interval = {} req' .format (float(self.req_cnt) / avg_num_of_ads))
+            printf (res_file, ' avg update interval = {:.1f} req' .format (float(self.req_cnt) / avg_num_of_ads))
         if self.hist_based_uInterval:
             if self.hit_ratio_based_uInterval:
                 printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))

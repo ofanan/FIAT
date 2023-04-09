@@ -71,7 +71,9 @@ class Simulator(object):
         """
         Init a list of empty DSs (Data Stores == caches)
         """
-        if (self.missp < 50):
+        if (self.missp < 20):
+            initial_mr0 = 0.7
+        elif (self.missp < 50):
             initial_mr0 = 0.85
         else:
             initial_mr0 = 0.95
@@ -91,7 +93,6 @@ class Simulator(object):
             collect_mr_stat         = collect_mr_stat,  
             analyse_ind_deltas      = not (self.calc_mr_by_hist),
             EWMA_alpha              = self.EWMA_alpha,
-            designed_mr1            = self.designed_mr1,
             use_EWMA                = self.use_EWMA,
             use_indicator           = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
             hist_based_uInterval    = self.hist_based_uInterval,
@@ -281,13 +282,13 @@ class Simulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
-        self.designed_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+        self.initial_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.mr1_cur        = self.designed_mr1 * np.ones (self.num_of_DSs)
+            self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
         self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
@@ -571,8 +572,6 @@ class Simulator(object):
             if all([DS.num_of_advertisements>0 for DS in self.DS_list]): # all the DSs have already advertised at least one indicator
                 for client in self.client_list:
                     client.update_q (self.indications)
-        
-        self.pr_of_pos_ind_estimation
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
@@ -592,7 +591,7 @@ class Simulator(object):
             # The lines below reset the estimators and counters when the DS advertises a new indicator. 
             if (self.DS_list[ds].ins_since_last_ad==0): # This DS has just sent an indicator --> reset all counters and estimations
                 self.mr0_cur[ds] = 1
-                self.mr1_cur[ds] = self.designed_mr1
+                self.mr1_cur[ds] = self.initial_mr1
                 self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
             
             self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
@@ -629,7 +628,7 @@ class Simulator(object):
         else: # not using exp weighted moving avg --> use a simple flat history estimation
             for ds in range (self.num_of_DSs):
                 self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
-                self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.designed_mr1
+                self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.initial_mr1
 
 
     def print_est_mr_func (self):

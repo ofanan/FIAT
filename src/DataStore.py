@@ -73,6 +73,8 @@ class DataStore (object):
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
+        self.is_first_mr0_update_after_ind = True 
+        self.is_first_mr1_update_after_ind = True 
         self.check_delta_th          = check_delta_th
         self.ind_size_factor         = ind_size_factor
         self.mr_output_file          = mr_output_file
@@ -80,7 +82,6 @@ class DataStore (object):
         self.BF_size                 = self.bpe * self.cache_size
         self.lg_BF_size              = np.log2 (self.BF_size) 
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
-        self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
         self.use_CountingBloomFilter = use_CountingBloomFilter
         if use_CountingBloomFilter: 
             self.updated_indicator   = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
@@ -107,7 +108,8 @@ class DataStore (object):
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
-        self.designed_mr1            = designed_mr1
+        self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
+        self.initial_mr1            = self.designed_fpr
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
@@ -257,14 +259,20 @@ class DataStore (object):
         if (self.collect_mr_stat):
             self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
             self.mr0_cur = self.initial_mr0
-            self.mr1_cur = self.designed_mr1 
+            self.mr1_cur = self.initial_mr1 
+            self.is_first_mr0_update_after_ind = True
+            self.is_first_mr1_update_after_ind = True
 
     def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
-        #if (self.spec_accs_cnt==self.tn_events_cnt): # this is the first 
-        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
+        
+        if self.is_first_mr0_update_after_ind:
+            self.mr0_cur = float(self.tn_events_cnt) / float (self.mr0_ewma_window_size)
+            self.is_first_mr1_update_after_ind = False
+        else:
+            self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
 
@@ -286,6 +294,11 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
+        if self.is_first_mr1_update_after_ind:
+            self.mr1_cur = float(self.fp_events_cnt) / float (self.mr1_ewma_window_size)
+            self.is_first_mr1_update_after_ind = False
+        else:
+            self.mr1_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))

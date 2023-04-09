@@ -265,7 +265,7 @@ class Res_file_parser (object):
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
         modes = ['FNAA', 'SALSA'] #, 'SALSA2']
-        missp_vals = [10] #10, 30, 100, 300]
+        missp_vals = [30] #10, 30, 100, 300]
         
         # set width of bar
         fig = plt.subplots(figsize =(12, 8)) 
@@ -565,6 +565,6 @@ class Res_file_parser (object):
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa.res')
+my_Res_file_parser.parse_file ('salsa_initial_mr0_9.85.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

@@ -13,9 +13,9 @@ class SimpleBloomFilter(object):
         """
         Returns a SimpleBloomFilter object with the requested size and number of hash funcs
         """
-        self.size       = size
+        self.size          = size
         self.num_of_hashes = num_of_hashes
-        self.array      = np.zeros(size, dtype='bool')
+        self.array         = np.zeros(size, dtype='bool')
  
     def add_all (self, keys):
         """

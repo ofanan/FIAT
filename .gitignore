@@ -6,12 +6,7 @@
 /src/__pycache*
 *real*vs*
 /traces/*
-/res/*.mr*
 /tmp*
 /tmp/*
-/res/q*.txt
-/res/old*
-/res/old*/*
-/res/bkp/*
-/res/*PC*
- 
+/res/*
+!/res/res2publish/

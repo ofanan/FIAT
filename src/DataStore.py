@@ -53,6 +53,9 @@ class DataStore (object):
         Return a DataStore object. 
             For the DataStore's see documentation within the __init__ function.
         """
+        self.MAX_UINTERVAL_STR       = 'max_uInterval'
+        self.MR0_STR                 = 'mr0'
+        self.MR1_STR                 = 'mr0'
         self.ID                      = ID
         self.verbose                 = verbose 
         self.cache_size              = size
@@ -72,7 +75,6 @@ class DataStore (object):
         self.ind_size_factor         = ind_size_factor
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
-        self.scale_ind               = scale_ind # When True, scale the indicator
         self.BF_size                 = self.bpe * self.cache_size
         self.lg_BF_size              = np.log2 (self.BF_size) 
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
@@ -81,6 +83,8 @@ class DataStore (object):
         if use_CountingBloomFilter: 
             self.updated_indicator   = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
+        else:
+            self.stale_indicator     = SBF.SimpleBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
@@ -196,14 +200,18 @@ class DataStore (object):
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==1000): #$$$ self.max_uInterval): # force a "warmup" advertisement
-                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                        printf (self.q_file, 'calling from max_uInterval\n')                     
-                    return self.advertise_ind ()
+                    return self.advertise_ind (self.MAX_UINTERVAL_STR)
             if self.ins_since_last_ad == self.max_uInterval:
-                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                        printf (self.q_file, 'calling from max_uInterval\n')                     
-                    self.advertise_ind ()
+                    self.advertise_ind (self.MAX_UINTERVAL_STR)
                 
+    def scale_ind_n_uInterval (self, factor):
+        """
+        scale the indicator and the update interval by a given factor.
+        """
+        self.bpe            *= factor
+        self.min_uInterval  *= factor
+        self.max_uInterval  *= factor
+    
     def get_indication (self, key):
         """
         Query the (stale) indicator of this DS
@@ -212,7 +220,10 @@ class DataStore (object):
             return (key in self.updated_indicator)
         return (key in self.stale_indicator)
 
-    def advertise_ind (self, check_delta_th = False):
+    def advertise_ind (self, 
+                       check_delta_th = False, # when True, calculate the "deltas", namely, number of bits set / reset since the last update has been advertised. 
+                       called_by      = 'Unknown'      
+                       ):
         """
         Advertise an updated indicator.
         In practice, this means merely generate a new indicator (simple Bloom filter).
@@ -220,7 +231,7 @@ class DataStore (object):
         """
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_file, 'advertising\n') 
+            printf (self.q_file, 'advertising. called by {}\n' .format (called_by))                     
         self.num_of_advertisements += 1
         if (check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -264,12 +275,10 @@ class DataStore (object):
                                 .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
                     if ((self.num_of_advertisements>0) and 
                         (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
-                        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                            printf (self.q_file, 'calling from mr0\n')                     
-                        self.advertise_ind()
+                        self.advertise_ind (self.MR0_STR)
                 else:
                     if self.mr0_cur < self.mr0_ad_th: 
-                        self.advertise_ind()
+                        self.advertise_ind (self.MR0_STR)
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -287,12 +296,10 @@ class DataStore (object):
                 if (self.hit_ratio_based_uInterval):
                     if ((self.num_of_advertisements>0) and 
                          self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                            printf (self.q_file, 'calling from mr1\n')                     
-                        self.advertise_ind()
+                        self.advertise_ind (self.MR1_STR)
                 else:           
                     if self.mr1_cur > self.mr1_ad_th: 
-                        self.advertise_ind()
+                        self.advertise_ind (self.MR1_STR)
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

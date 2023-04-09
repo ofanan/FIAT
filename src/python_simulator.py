@@ -85,7 +85,6 @@ class Simulator(object):
             ID                      = i, 
             size                    = self.DS_size, 
             bpe                     = self.bpe,
-            scale_ind               = (self.mode=='salsa3'), 
             min_uInterval           = self.min_uInterval,
             max_uInterval           = self.max_uInterval,
             mr_output_file          = self.mr_output_file[i], 
@@ -105,11 +104,11 @@ class Simulator(object):
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
-            ind_size_factor         = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+            ind_size_factor         = 1.1 if (self.mode=='salsa3') else 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = (self.mode in ['fno', 'fnaa'],
+            use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa'],
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):

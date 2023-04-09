@@ -59,6 +59,11 @@ class Res_file_parser (object):
                           'SALSA3' : 'SALSA3'
                            }
         
+        self.strOfTrace = {'umass'  : 'F2',
+                          'gradle'  : 'Gradle',
+                          'wiki'    : 'Wiki',
+                          'scarab'  : 'Scarab'
+                           }
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : 'blue',
@@ -274,7 +279,7 @@ class Res_file_parser (object):
                 traces_to_print = []
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
-                    traces_to_print.append('F2' if (trace=='umass') else trace)
+                    traces_to_print.append(self.strOfTrace[trace])
                     opt_point = [item for item in self.list_of_dicts if
                                  item['trace']      == trace and 
                                  item['uInterval']  == 1000  and

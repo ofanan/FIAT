@@ -200,9 +200,9 @@ class DataStore (object):
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==1000): #$$$ self.max_uInterval): # force a "warmup" advertisement
-                    return self.advertise_ind (self.MAX_UINTERVAL_STR)
+                    return self.advertise_ind (called_by=self.MAX_UINTERVAL_STR)
             if self.ins_since_last_ad == self.max_uInterval:
-                    self.advertise_ind (self.MAX_UINTERVAL_STR)
+                    self.advertise_ind (called_by=self.MAX_UINTERVAL_STR)
                 
     def scale_ind_n_uInterval (self, factor):
         """
@@ -275,10 +275,10 @@ class DataStore (object):
                                 .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
                     if ((self.num_of_advertisements>0) and 
                         (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
-                        self.advertise_ind (self.MR0_STR)
+                        self.advertise_ind (called_by=self.MR0_STR)
                 else:
                     if self.mr0_cur < self.mr0_ad_th: 
-                        self.advertise_ind (self.MR0_STR)
+                        self.advertise_ind (called_by=self.MR0_STR)
         self.tn_events_cnt = int(0)
         
     def update_mr1(self):
@@ -296,10 +296,10 @@ class DataStore (object):
                 if (self.hit_ratio_based_uInterval):
                     if ((self.num_of_advertisements>0) and 
                          self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                        self.advertise_ind (self.MR1_STR)
+                        self.advertise_ind (called_by=self.MR1_STR)
                 else:           
                     if self.mr1_cur > self.mr1_ad_th: 
-                        self.advertise_ind (self.MR1_STR)
+                        self.advertise_ind (called_by=self.MR1_STR)
         self.fp_events_cnt = int(0)
         
     def print_cache(self, head = 5):

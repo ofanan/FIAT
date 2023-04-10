@@ -271,6 +271,7 @@ class Res_file_parser (object):
 
         x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
         mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+        plt.subplots_adjust(wspace=0.4)
         for missp in missp_vals: #range(len(missp_vals)):
             for mode in modes:
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
@@ -306,13 +307,19 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point[0]['bwCost']       
 
-                # plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
-                # plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
+                # curFig = plt.figure()
+                # accuracyFig = curFig.add_subplot(221)
+                plt.title (r'$M$={}' .format (missp))
+                plt.subplot (1, 2, 1)
+                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
+                plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
+                plt.xticks (mid_x_positions, traces_to_print)
+                plt.subplot (1, 2, 2)
                 plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                 plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
-                plt.legend()
                 x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-            plt.xticks (mid_x_positions, traces_to_print)
+                plt.xticks (mid_x_positions, traces_to_print)
+            plt.legend()
             plt.show()
                     
 
@@ -564,6 +571,6 @@ class Res_file_parser (object):
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85.res')
+my_Res_file_parser.parse_file ('salsa.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

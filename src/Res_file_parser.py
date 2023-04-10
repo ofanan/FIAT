@@ -490,8 +490,8 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA'] #, 'SALSA'] #, 'SALSA2']
-        missp_vals = [100]# [10, 30, 100, 300]
+        modes = ['FNAA', 'SALSA', 'SALSA2']
+        missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
 
@@ -547,6 +547,7 @@ class Res_file_parser (object):
             # plt.suptitle (r'$M$={}' .format (missp))
             # plt.show()
             plt.savefig ('../res/M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+            plt.clf ()
                     
 
 # my_Res_file_parser.print_cache_size_plot_abs()

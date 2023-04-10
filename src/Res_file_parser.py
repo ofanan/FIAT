@@ -495,10 +495,13 @@ class Res_file_parser (object):
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
 
-        x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
-        mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+        if len(traces)==2:
+            mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+        else:
+            mid_x_positions = [((len(modes)+1)*x+2)*BAR_WIDTH for x in range(len(traces))]
         plt.subplots_adjust(wspace=0.4)
         for missp in missp_vals: #range(len(missp_vals)):
+            x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
             for mode in modes:
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done

@@ -105,7 +105,7 @@ class Simulator(object):
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
-            ind_size_factor         = 1.1 if (self.mode=='salsa3') else 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+            scale_ind_factor        = self.scale_ind_factor if (self.mode=='salsa3') else 1, # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
@@ -316,19 +316,19 @@ class Simulator(object):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = False
             self.hit_ratio_based_uInterval  = False
-            self.ind_size_factor            = 1
+            self.scale_ind_factor            = 1
             
         elif (self.mode == 'salsa2'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
-            self.ind_size_factor            = 1
+            self.scale_ind_factor            = 1
             
         elif (self.mode == 'salsa3'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
-            self.ind_size_factor            = 1.1
+            self.scale_ind_factor           = 1.1
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):

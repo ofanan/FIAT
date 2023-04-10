@@ -19,7 +19,6 @@ class DataStore (object):
          ID, # datastore ID
          size                   = 1000,  # number of elements that can be stored in the datastore
          bpe                    = 14,    # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
-         scale_ind              = False, # When True, the indicator and the uInterval are dynamically scalable
          EWMA_alpha             = 0.85,  # sliding window parameter for miss-rate estimation
          mr1_ewma_window_size   = 100,   # Number of regular accesses between new performing new estimation of mr1 (prob' of a miss given a pos' ind'). 
          max_fnr = 0.03,max_fpr = 0.03,  # maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
@@ -47,7 +46,7 @@ class DataStore (object):
          hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
          hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
-         ind_size_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+         scale_ind_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
          check_delta_th             = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
          ):
         """
@@ -74,7 +73,9 @@ class DataStore (object):
 
         # inializations related to the indicator, statistics, and advertising mechanism
         self.check_delta_th          = check_delta_th
-        self.ind_size_factor         = ind_size_factor
+        self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+        self.min_bpe                 = 5
+        self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
         self.BF_size                 = self.bpe * self.cache_size
@@ -213,6 +214,9 @@ class DataStore (object):
         self.bpe            *= factor
         self.min_uInterval  *= factor
         self.max_uInterval  *= factor
+        self.BF_size        *= factor
+        self.num_of_hashes   = MyConfig.get_optimal_num_of_hashes (self.bpe)
+
     
     def get_indication (self, key):
         """
@@ -258,7 +262,16 @@ class DataStore (object):
             self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
             self.mr0_cur = self.initial_mr0
             self.mr1_cur = self.initial_mr1 
-
+        
+        if (self.scale_ind_factor!=1): # and called_by_str!=self.MAX_UINTERVAL_STR): # consider scaling the indicator and the uInterval
+            if (called_by_str==self.MR0_STR):
+                factor = min () 
+                self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
+            elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
+                self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
+            if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
+                printf (self.mr_output_file, 'After scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
+            
     def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.

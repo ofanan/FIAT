@@ -92,17 +92,38 @@ class parSeqAccsStrat (object):
         # print ('greedySol={}, greedyCost={}' .format (self.greedySol, self.greedyCost))
         return [self.greedySol, self.greedySolCost]
 
-q       = 0.1 # prob' of failure
-missp   = 2000
-maxNumRsrc = 10 # num of balls
-T = 4  # number of bins
+# p1 = 1/2
+# q1 = 1 - p1
+# c1 = 4
+# p2 = 0.2
+# q2 = 1 - p2
+# c2 = 1
+#
+# missp  = 1000
+# reward = 1000
+#
+# sol0 = [0]
+# sol1 = [c1]
+# sol2 = [c2]
+# sol1reward = reward*(1-q1) - c1
+# print ('sol1Cost={}, sol1reward={}' .format (sol1Cost, sol1reward))  
+# exit ()
 
-my_parSeqAccsStrat = parSeqAccsStrat () 
+q       = 0.5 # prob' of failure
+missp   = 100
+
+my_parSeqAccsStrat = parSeqAccsStrat ()
+sol = [1,2] 
+print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
+sol = [2,1] 
+print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
+exit ()
+
 
 resFile = open ('../res/parSeqAccsHomo.txt', 'w')
 printf (resFile, '// gSol, oSol are the greedy solution, and optimal solution, resp.\n\n')
 for q in [0.1*i for i in range (11)]:
-    for missp in [5, 5, 10, 100, 500]:
+    for missp in [5, 10, 100, 500]:
         for maxNumRsrc in range (1, 10):
           for T in range (1, maxNumRsrc+1):
             [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()

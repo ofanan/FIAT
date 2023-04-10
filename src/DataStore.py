@@ -73,8 +73,6 @@ class DataStore (object):
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
-        self.is_first_mr0_update_after_ind = True 
-        self.is_first_mr1_update_after_ind = True 
         self.check_delta_th          = check_delta_th
         self.ind_size_factor         = ind_size_factor
         self.mr_output_file          = mr_output_file
@@ -260,19 +258,13 @@ class DataStore (object):
             self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
             self.mr0_cur = self.initial_mr0
             self.mr1_cur = self.initial_mr1 
-            self.is_first_mr0_update_after_ind = True
-            self.is_first_mr1_update_after_ind = True
 
     def update_mr0(self):
         """
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
         
-        if self.is_first_mr0_update_after_ind:
-            self.mr0_cur = float(self.tn_events_cnt) / float (self.mr0_ewma_window_size)
-            self.is_first_mr0_update_after_ind = False
-        else:
-            self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
+        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
@@ -297,11 +289,7 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
-        if self.is_first_mr1_update_after_ind:
-            self.mr1_cur = float(self.fp_events_cnt) / float (self.mr1_ewma_window_size)
-            self.is_first_mr1_update_after_ind = False
-        else:
-            self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
+        self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):

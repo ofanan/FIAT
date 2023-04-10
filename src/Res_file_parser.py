@@ -580,3 +580,4 @@ my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
 my_Res_file_parser.parse_file ('salsa.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()
+

@@ -256,79 +256,6 @@ class Res_file_parser (object):
             for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
                 printf (output_file, ' \n')
 
-    def plot_bars_by_missp_python (self):
-        """
-        Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
-        """
-
-        self.set_plt_params ()
-        traces = ['gradle', 'wiki', 'scarab', 'umass']
-
-        modes = ['FNAA', 'SALSA'] #, 'SALSA2']
-        missp_vals = [30] #10, 30, 100, 300]
-        
-        # fig = plt.subplots(figsize =(12, 8)) # set width of bar 
-
-        x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
-        mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
-        plt.subplots_adjust(wspace=0.4)
-        for missp in missp_vals: #range(len(missp_vals)):
-            # curFig = plt.figure()
-            # serviceCost_plt = curFig.add_subplot(121)
-            # bwCost_plt      = curFig.add_subplot(122)
-            for mode in modes:
-                mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
-                mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
-                traces_to_print = []
-                for traceIdx in range(len(traces)):
-                    trace = traces[traceIdx]
-                    traces_to_print.append(self.strOfTrace[trace])
-                    opt_point = [item for item in self.list_of_dicts if
-                                 item['trace']      == trace and 
-                                 item['uInterval']  == 1000  and
-                                 item['cache_size'] == 10    and
-                                 item['num_of_DSs'] == 3     and
-                                 item['missp']      == missp and
-                                 item['num_of_req'] == 1000  and
-                                 item['bpe']        == 14    and
-                                 item['alg_mode']   == 'Opt'] 
-                    if (opt_point==[]):
-                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
-                    opt_serviceCost = opt_point[0]['serviceCost']
-                    uInterval = 1000
-                    point = [item for item in self.list_of_dicts if
-                             item['trace']          == trace and 
-                             item['min_uInterval']  == 1000  and
-                             item['cache_size']     == 10    and
-                             item['num_of_DSs']     == 3     and
-                             item['missp']          == missp and
-                             item['num_of_req']     == 1000  and
-                             item['bpe']            == 14    and
-                             item['alg_mode']       == mode] 
-                    if (point==[]): # no results for this settings  
-                        continue
-                    mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
-                    mode_bwCost     [traceIdx] = point[0]['bwCost']       
-
-                plt.subplot (1, 2, 1)
-                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
-                plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                plt.xticks (mid_x_positions, traces_to_print)
-                plt.legend ()
-                plt.subplot (1, 2, 2)
-                plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
-                plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
-                x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                plt.xticks (mid_x_positions, traces_to_print)
-                plt.legend ()
-                # serviceCost_plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
-                # bwCost_plt.     bar(x_positions, mode_bwCost,      color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
-                # serviceCost_plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=mode) 
-            # plt.legend(loc = 'lower center',bbox_to_anchor = (0,-0.3,1,1),bbox_transform = plt.gcf().transFigure)
-            plt.suptitle (r'$M$={}' .format (missp))
-            plt.show()
-                    
-
     def gen_filtered_list (self, list_to_filter, trace = None, cache_size=None, bpe=None, num_of_DSs=None, Kloc=1, missp=None, uInterval=None, 
                            num_of_req = 0, alg_mode = None):
         """
@@ -555,24 +482,72 @@ class Res_file_parser (object):
        
         
     
-#     my_Res_file_parser.parse_file ('wiki_k_loc.res')
-#     my_Res_file_parser.print_bar_k_loc()          
-                 
-#     my_Res_file_parser.parse_file ('wiki_uInterval.res')
-#     my_Res_file_parser.print_normalized_plot('uInterval', print_add_legend = True)
-#     my_Res_file_parser.parse_file ('gradle_uInterval.res')
-#     my_Res_file_parser.print_normalized_plot('uInterval', print_add_legend = True)
-   
-#     my_Res_file_parser.parse_file('wiki_num_of_caches.res')
-#     my_Res_file_parser.print_num_of_caches_plot_abs()
+    def plot_bars_by_missp_python (self):
+        """
+        Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
+        """
 
+        self.set_plt_params ()
+        traces = ['gradle', 'wiki', 'scarab', 'umass']
+
+        modes = ['FNAA', 'SALSA'] #, 'SALSA2']
+        missp_vals = [30] #10, 30, 100, 300]
         
-#     my_Res_file_parser.parse_file ('wiki_bpe.res') 
-#     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 256, print_add_legend = False)
-#     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 1024, print_add_legend = False)
-#     my_Res_file_parser.parse_file ('gradle_bpe.res') 
-#     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 256, print_add_legend = False)
-#     my_Res_file_parser.print_normalized_plot('bpe', uInterval = 1024, print_add_legend = True)
+        fig = plt.subplots(figsize =(12, 8)) # set width of bar 
+
+        x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
+        mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+        plt.subplots_adjust(wspace=0.4)
+        for missp in missp_vals: #range(len(missp_vals)):
+            for mode in modes:
+                mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
+                mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
+                traces_to_print = []
+                for traceIdx in range(len(traces)):
+                    trace = traces[traceIdx]
+                    traces_to_print.append(self.strOfTrace[trace])
+                    opt_point = [item for item in self.list_of_dicts if
+                                 item['trace']      == trace and 
+                                 item['uInterval']  == 1000  and
+                                 item['cache_size'] == 10    and
+                                 item['num_of_DSs'] == 3     and
+                                 item['missp']      == missp and
+                                 item['num_of_req'] == 1000  and
+                                 item['bpe']        == 14    and
+                                 item['alg_mode']   == 'Opt'] 
+                    if (opt_point==[]):
+                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
+                    opt_serviceCost = opt_point[0]['serviceCost']
+                    uInterval = 1000
+                    point = [item for item in self.list_of_dicts if
+                             item['trace']          == trace and 
+                             item['min_uInterval']  == 1000  and
+                             item['cache_size']     == 10    and
+                             item['num_of_DSs']     == 3     and
+                             item['missp']          == missp and
+                             item['num_of_req']     == 1000  and
+                             item['bpe']            == 14    and
+                             item['alg_mode']       == mode] 
+                    if (point==[]): # no results for this settings  
+                        continue
+                    mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
+                    mode_bwCost     [traceIdx] = point[0]['bwCost']       
+
+                plt.subplot (1, 2, 1)
+                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
+                plt.xticks (mid_x_positions, traces_to_print)
+                plt.legend ()
+                plt.subplot (1, 2, 2)
+                plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
+                x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
+                plt.xticks (mid_x_positions, traces_to_print)
+                plt.legend ()
+            # plt.suptitle (r'$M$={}' .format (missp))
+            # plt.show()
+            plt.savefig ('../res/M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+                    
 
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()

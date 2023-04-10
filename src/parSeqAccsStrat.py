@@ -19,10 +19,12 @@ class parSeqAccsStrat (object):
         """
         Finds an optimal solution using an exhaustive search over all feasible solutions.
         A feasible solution is a vector where all entries are strictly positive integers.
-        Returns [greedySol, greedySolCost], where greedySol is the solution vector, and greedySolCost is its (expected) cost.  
+        Returns [optSol, optSolCost], where optSol is the solution vector, and optSolCost is its (expected) cost.  
         """
-        greedySolCost = float ('inf')
-        greedySol  = None
+        if T==0:
+            return [[], missp]
+        optSolCost = float ('inf')
+        optSol     = None
         for numRsrc in range (maxNumRsrc+1):
             for numUsedTimeSlots in range(1, numRsrc+1): # iterate over all possible combinations
                 if (numUsedTimeSlots > T):
@@ -32,12 +34,12 @@ class parSeqAccsStrat (object):
                     if not (all(x > 0 for x in sol)): # illegal sol --> skip
                         continue
                     solCost = self.calcSolCost(sol)
-                    if (solCost < greedySolCost):
-                        greedySol  = sol.copy ()
-                        greedySolCost = solCost 
-                        # print ('greedySol={}, greedySolCost={}' .format (greedySol, greedySolCost))
-        # print ('greedySol={}, greedySolCost={}' .format (greedySol, greedySolCost))
-        return [greedySol, greedySolCost]
+                    if (solCost < optSolCost):
+                        optSol     = sol.copy ()
+                        optSolCost = solCost 
+                        # print ('optSol={}, optSolCost={}' .format (optSol, optSolCost))
+        # print ('greedySol={}, greedySolCost={}' .format (optSol, optSolCost))
+        return [optSol, optSolCost]
 
     def updateGreedySol (self, sol):
         """
@@ -48,9 +50,6 @@ class parSeqAccsStrat (object):
             self.greedySolCost  = solCost
             self.greedySol         = sol.copy ()
             self.updatedGreedySol     = True
-            # self.localOptCost   = sol.copy () # will hold the opt for a concrete sol-size
-            # print ('greedySol={}, minCost={}' .format (self.greedySol, self.greedySolCost))
-        
     
     def greedyAlg (self):
         """
@@ -60,7 +59,10 @@ class parSeqAccsStrat (object):
         The alg' assumes that once it's not beneficial to add a rsrc, we've reached an optimal sol. 
         Returns [greedySol, greedyCost], where greedySol is the solution vector, and greedyCost is its (expected) cost.  
         """
-        curSol              = [0]
+        if T==0:
+            return [[], missp]
+        
+        curSol             = [0]
         self.greedySol     = curSol.copy () # default local opt sol 
         self.greedySolCost = self.calcSolCost(curSol)
     
@@ -91,8 +93,16 @@ maxNumRsrc = 10 # num of balls
 T = 4  # number of bins
 
 my_parSeqAccsStrat = parSeqAccsStrat () 
-[greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()
-[optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol ()
-if greedySolCost!=optSolCost:
-    print ('greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
-           (greedySol, greedySolCost, optSol, optSolCost))
+
+for q in [0.1*i for i in range (11)]:
+    for missp in [5, 5, 10, 100, 500]:
+        for maxNumRsrc in range (1, 10):
+          for T in range (1, maxNumRsrc+1):
+            # print ('q={:.1f}, missp={}, maxNumRsrc={}, T={}' .format(q, missp, maxNumRsrc, T))
+            [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()
+            [optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol ()
+            if greedySolCost!=optSolCost:
+                print ('greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
+                       (greedySol, greedySolCost, optSol, optSolCost))
+            # print ('greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
+            #        (greedySol, greedySolCost, optSol, optSolCost))

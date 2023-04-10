@@ -1,6 +1,7 @@
 import itertools
 from itertools import combinations
 from numpy import infty
+from printf import printf
 
 class parSeqAccsStrat (object):
 
@@ -39,6 +40,10 @@ class parSeqAccsStrat (object):
                         optSolCost = solCost 
                         # print ('optSol={}, optSolCost={}' .format (optSol, optSolCost))
         # print ('greedySol={}, greedySolCost={}' .format (optSol, optSolCost))
+        # Consider the special case of accessing none rsrc
+        accsNoneCost = self.calcSolCost ([0])
+        if accsNoneCost < optSolCost:
+            return [[0], accsNoneCost]
         return [optSol, optSolCost]
 
     def updateGreedySol (self, sol):
@@ -94,6 +99,7 @@ T = 4  # number of bins
 
 my_parSeqAccsStrat = parSeqAccsStrat () 
 
+resFile = open ('../res/parSeqAccsHomo.txt', 'w')
 for q in [0.1*i for i in range (11)]:
     for missp in [5, 5, 10, 100, 500]:
         for maxNumRsrc in range (1, 10):
@@ -102,7 +108,6 @@ for q in [0.1*i for i in range (11)]:
             [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()
             [optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol ()
             if greedySolCost!=optSolCost:
-                print ('greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
-                       (greedySol, greedySolCost, optSol, optSolCost))
-            # print ('greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
-            #        (greedySol, greedySolCost, optSol, optSolCost))
+                print ('q={}, missp={}, R={}, T={}, greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
+                       (q, missp, maxNumRsrc, T, greedySol, greedySolCost, optSol, optSolCost))
+            printf (resFile, 'greedySol={}, greedyCost={}, optSol={}, optCost={}' .format (greedySol, greedySolCost, optSol, optSolCost))

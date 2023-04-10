@@ -570,10 +570,9 @@ class Simulator(object):
         for ds in range (self.num_of_DSs):            
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
-        if (self.hit_ratio_based_uInterval):
-            if all([DS.num_of_advertisements>0 for DS in self.DS_list]): # all the DSs have already advertised at least one indicator
-                for client in self.client_list:
-                    client.update_q (self.indications)
+        if all([DS.num_of_advertisements>0 for DS in self.DS_list]): # all the DSs have already advertised at least one indicator
+            for client in self.client_list:
+                client.update_q (self.indications)
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """

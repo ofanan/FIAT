@@ -188,7 +188,7 @@ class DataStore (object):
         """
             # check to see if the insertion will cause the LRU key to be removed
             # if so, remove it from the updated indicator
-			# Removal from the cache is implemented automatically by the cache object
+            # Removal from the cache is implemented automatically by the cache object
         self.cache[key] = key
         if self.use_indicator:
             if self.use_CountingBloomFilter:

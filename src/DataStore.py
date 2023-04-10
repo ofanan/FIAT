@@ -268,11 +268,11 @@ class DataStore (object):
         update the miss-probability in case of a negative indication, using an exponential moving average.
         """
         
-        # if self.is_first_mr0_update_after_ind:
-        #     self.mr0_cur = float(self.tn_events_cnt) / float (self.mr0_ewma_window_size)
-        #     self.is_first_mr0_update_after_ind = False
-        # else:
-        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
+        if self.is_first_mr0_update_after_ind:
+            self.mr0_cur = float(self.tn_events_cnt) / float (self.mr0_ewma_window_size)
+            self.is_first_mr0_update_after_ind = False
+        else:
+            self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
@@ -297,11 +297,11 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
-        # if self.is_first_mr1_update_after_ind:
-        #     self.mr1_cur = float(self.fp_events_cnt) / float (self.mr1_ewma_window_size)
-        #     self.is_first_mr1_update_after_ind = False
-        # else:
-        self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
+        if self.is_first_mr1_update_after_ind:
+            self.mr1_cur = float(self.fp_events_cnt) / float (self.mr1_ewma_window_size)
+            self.is_first_mr1_update_after_ind = False
+        else:
+            self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):

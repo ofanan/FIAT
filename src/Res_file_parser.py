@@ -114,11 +114,11 @@ class Res_file_parser (object):
         mode          = splitted_line[alg_idx].split(" ")[0]
         uInterval_str = splitted_line [uInterval_idx].split('U')[1] 
         uInterval_val = uInterval_str.split('-')
-        uInterval_min = int(uInterval_val[0])
+        min_uInterval = int(uInterval_val[0])
         if (len(uInterval_val)==1): # a single uInterval val is given
-            uInterval_max = uInterval_min
+            max_uInterval = min_uInterval
         else:  
-            uInterval_max = int(uInterval_val[1])
+            max_uInterval = int(uInterval_val[1])
         
         if len (splitted_line) < min_num_of_fields:
             print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
@@ -132,9 +132,9 @@ class Res_file_parser (object):
             "Kloc"          : int (splitted_line   [kloc_idx]      .split("Kloc")[1]),
             "missp"         : int (splitted_line   [missp_idx]     .split("M")[1]),
             'designed_bw'   : int(splitted_line    [bw_idx]        .split('B')[1]), 
-            "uInterval"     : uInterval_min, # for backward compatibility, keep also this field  
-            "uInterval_min" : uInterval_min, 
-            "uInterval_max" : uInterval_max, 
+            "uInterval"     : min_uInterval, # for backward compatibility, keep also this field  
+            "min_uInterval" : min_uInterval, 
+            "max_uInterval" : max_uInterval, 
             "alg_mode"      : mode,
             'serviceCost'   : serviceCost
             }
@@ -267,8 +267,7 @@ class Res_file_parser (object):
         modes = ['FNAA', 'SALSA'] #, 'SALSA2']
         missp_vals = [30] #10, 30, 100, 300]
         
-        # set width of bar
-        fig = plt.subplots(figsize =(12, 8)) 
+        fig = plt.subplots(figsize =(12, 8)) # set width of bar 
 
         x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
         mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
@@ -294,14 +293,14 @@ class Res_file_parser (object):
                     opt_serviceCost = opt_point[0]['serviceCost']
                     uInterval = 1000
                     point = [item for item in self.list_of_dicts if
-                             item['trace']      == trace and 
-                             item['uInterval']  == 1000  and
-                             item['cache_size'] == 10    and
-                             item['num_of_DSs'] == 3     and
-                             item['missp']      == missp and
-                             item['num_of_req'] == 1000  and
-                             item['bpe']        == 14    and
-                             item['alg_mode']   == mode] 
+                             item['trace']          == trace and 
+                             item['min_uInterval']  == 1000  and
+                             item['cache_size']     == 10    and
+                             item['num_of_DSs']     == 3     and
+                             item['missp']          == missp and
+                             item['num_of_req']     == 1000  and
+                             item['bpe']            == 14    and
+                             item['alg_mode']       == mode] 
                     if (point==[]): # no results for this settings  
                         continue
                     mode_serviceCost[traceIdx] = point[0]['serviceCost'] / opt_serviceCost 
@@ -565,6 +564,6 @@ class Res_file_parser (object):
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa_initial_mr0_9.85.res')
+my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

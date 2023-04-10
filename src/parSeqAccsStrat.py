@@ -100,6 +100,7 @@ T = 4  # number of bins
 my_parSeqAccsStrat = parSeqAccsStrat () 
 
 resFile = open ('../res/parSeqAccsHomo.txt', 'w')
+printf (resFile, '// gSol, oSol are the greedy solution, and optimal solution, resp.\n\n')
 for q in [0.1*i for i in range (11)]:
     for missp in [5, 5, 10, 100, 500]:
         for maxNumRsrc in range (1, 10):
@@ -110,4 +111,5 @@ for q in [0.1*i for i in range (11)]:
             if greedySolCost!=optSolCost:
                 print ('q={}, missp={}, R={}, T={}, greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
                        (q, missp, maxNumRsrc, T, greedySol, greedySolCost, optSol, optSolCost))
-            printf (resFile, 'greedySol={}, greedyCost={}, optSol={}, optCost={}' .format (greedySol, greedySolCost, optSol, optSolCost))
+            # printf (resFile, 'optSol={}, optCost={}\n' .format (optSol, optSolCost))
+            printf (resFile, '{}\n' .format (optSol))

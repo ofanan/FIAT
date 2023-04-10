@@ -490,8 +490,8 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA'] #, 'SALSA2']
-        missp_vals = [10, 30, 100, 300]
+        modes = ['FNAA'] #, 'SALSA'] #, 'SALSA2']
+        missp_vals = [100]# [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
 

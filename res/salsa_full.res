@@ -11,9 +11,3 @@
 // SALSA is the algorithm (aka "mode") used.
 // m0_0.1_m1_0.01 informs the values of "mult0", "mult1" that are now 0.1 and 0.01, resp.
 
-scarab.C10K.bpe14.100Kreq.3DSs.Kloc1.M100.B0.U1000.SALSA.m0_0.1_m1_0.01 | service_cost = 41.17 | bw = 103.60 | hit_ratio = 0.63, 
-// tot_access_cost = 398704, non_comp_miss_cnt = 1253, comp_miss_cnt = 35931
-// estimation window = 1000
-// spec accs cost = 296020, num of spec hits = 10398
-// num of ads per DS=[12, 12, 13].  avg update interval = 8108.1 req
-

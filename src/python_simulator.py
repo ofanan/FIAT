@@ -117,9 +117,11 @@ class Simulator(object):
         Init a list of clients
         """
         
+        verbose_file = self.res_file if (MyConfig.VERBOSE_RES in self.verbose) else None
+        
         self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, window_size = self.DS_size/10, verbose = self.verbose, 
         use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
-        verbose_file = self.res_file) 
+        verbose_file = verbose_file) 
         for i in range(self.num_of_clients)]
     
     def init_res_file (self, res_file_name):

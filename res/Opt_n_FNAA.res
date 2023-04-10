@@ -175,3 +175,10 @@ scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 4.3
 gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000-2000.Opt | service_cost = 2.53 | bw = 0.00
 // tot_access_cost = 1881137, hit_ratio = 0.94, non_comp_miss_cnt = 0, comp_miss_cnt = 64717
 
+
+scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000.FNAA | service_cost = 5.56 | bw = 115.36 | hit_ratio = 0.59, 
+// tot_access_cost = 1434400, non_comp_miss_cnt = 113299, comp_miss_cnt = 299686
+// estimation window = 1000
+// spec accs cost = 242161, num of spec hits = 4891
+// num of ads per DS=[133, 139, 140].  avg update interval = 7281.5 req
+

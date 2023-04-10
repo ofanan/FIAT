@@ -237,6 +237,8 @@ class DataStore (object):
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_file, 'advertising. called by {}\n' .format (called_by_str))                     
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+            printf (self.q_file, 'advertising. called by {}\n' .format (called_by_str))                     
         self.num_of_advertisements += 1
         if (self.check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -255,8 +257,6 @@ class DataStore (object):
             self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.mr_output_file, 'Advertising\n')
         
         if (self.collect_mr_stat):
             self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
@@ -265,7 +265,6 @@ class DataStore (object):
         
         if (self.scale_ind_factor!=1): # and called_by_str!=self.MAX_UINTERVAL_STR): # consider scaling the indicator and the uInterval
             if (called_by_str==self.MR0_STR):
-                factor = min () 
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
             elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))

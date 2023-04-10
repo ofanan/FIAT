@@ -275,6 +275,9 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
 
         if self.hist_based_uInterval:
             if (self.ins_since_last_ad >= self.min_uInterval):
@@ -314,6 +317,12 @@ class DataStore (object):
                     if self.mr1_cur > self.mr1_ad_th: 
                         self.advertise_ind (called_by_str=self.MR1_STR)
         self.fp_events_cnt = int(0)
+        
+    def log_mr_and_q (self, mr_num):
+        """
+        print data about the mr (exclusion probability) and q (prob' of positive indication) to log files. 
+        """
+        
         
     def print_cache(self, head = 5):
         """

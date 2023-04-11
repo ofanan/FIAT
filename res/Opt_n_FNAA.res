@@ -196,3 +196,10 @@ wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000.FNAA | service_cost = 4.84 | bw
 // spec accs cost = 216873, num of spec hits = 12402
 // num of ads per DS=[104, 115, 113].  avg update interval = 9036.1 req
 
+
+umass.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000.FNAA | service_cost = 5.24 | bw = 101.36 | hit_ratio = 0.64, 
+// tot_access_cost = 1601458, non_comp_miss_cnt = 69887, comp_miss_cnt = 293673
+// estimation window = 1000
+// spec accs cost = 279979, num of spec hits = 5952
+// num of ads per DS=[117, 122, 123].  avg update interval = 8287.3 req
+

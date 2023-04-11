@@ -215,6 +215,7 @@ class DataStore (object):
         self.min_uInterval  *= factor
         self.max_uInterval  *= factor
         self.BF_size        *= factor
+        self.BF_size         = int(self.BF_size)
         self.num_of_hashes   = MyConfig.get_optimal_num_of_hashes (self.bpe)
 
     
@@ -265,8 +266,13 @@ class DataStore (object):
         
         if (self.scale_ind_factor!=1): # and called_by_str!=self.MAX_UINTERVAL_STR): # consider scaling the indicator and the uInterval
             if (called_by_str==self.MR0_STR):
+                if MyConfig.VERBOSE_LOG_Q in self.verbose: 
+                    factor = max(1/self.scale_ind_factor, self.min_bpe/self.bpe)
+                    printf (self.q_output_file, 'b4 scaling ind: scale_ind_factor={}, factor={}, bpe={}, min_uInterval={}\n' .format (self.scale_ind_factor, factor, self.bpe, self.min_uInterval))
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
             elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
+                if MyConfig.VERBOSE_LOG_Q in self.verbose: 
+                    printf (self.q_output_file, 'b4 scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 printf (self.q_output_file, 'After scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
@@ -281,7 +287,7 @@ class DataStore (object):
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt)) 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_since_last_ad)) 
 
         if self.hist_based_uInterval:
             if (self.ins_since_last_ad >= self.min_uInterval):

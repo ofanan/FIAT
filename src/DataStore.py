@@ -65,7 +65,7 @@ class DataStore (object):
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            self.q_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
+            self.q_output_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
         self.collect_mr_stat         = collect_mr_stat
         self.use_indicator           = use_indicator # used e.g. for Opt, that merely checks whether the requested item is indeed cached
         if not(self.use_indicator): # if no indicator is used, no need for all the further fields
@@ -202,10 +202,10 @@ class DataStore (object):
                     self.num_of_fpr_fnr_updates           += 1
                     self.ins_since_last_fpr_fnr_estimation = 0
             if self.hist_based_uInterval:
-                if (self.num_of_advertisements==0 and self.ins_since_last_ad==1000): #$$$ self.max_uInterval): # force a "warmup" advertisement
+                if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                     return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
             if self.ins_since_last_ad == self.max_uInterval:
-                    self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
+                    return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
                 
     def scale_ind_n_uInterval (self, factor):
         """
@@ -236,9 +236,9 @@ class DataStore (object):
         """
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_file, 'advertising. called by {}\n' .format (called_by_str))                     
+            printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.q_file, 'advertising. called by {}\n' .format (called_by_str))                     
+            printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
         self.num_of_advertisements += 1
         if (self.check_delta_th):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -268,8 +268,8 @@ class DataStore (object):
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
             elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
-            if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
-                printf (self.mr_output_file, 'After scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
+            if MyConfig.VERBOSE_LOG_Q in self.verbose: 
+                printf (self.q_output_file, 'After scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
             
     def update_mr0(self):
         """
@@ -280,15 +280,12 @@ class DataStore (object):
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
+            printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt)) 
 
         if self.hist_based_uInterval:
             if (self.ins_since_last_ad >= self.min_uInterval):
                 if (self.hit_ratio_based_uInterval):
-                    if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                        printf (self.q_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
-                                .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
                     if ((self.num_of_advertisements>0) and 
                         (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
                         self.advertise_ind (called_by_str=self.MR0_STR)
@@ -305,8 +302,8 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt)) 
+            printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_since_last_ad)) 
         if self.hist_based_uInterval and (self.num_of_advertisements>0):
             if (self.ins_since_last_ad >= self.min_uInterval):
                 if (self.hit_ratio_based_uInterval):

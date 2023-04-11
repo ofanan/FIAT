@@ -182,3 +182,17 @@ scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000.FNAA | service_cost = 5.56 | 
 // spec accs cost = 242161, num of spec hits = 4891
 // num of ads per DS=[133, 139, 140].  avg update interval = 7281.5 req
 
+
+gradle.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000.FNAA | service_cost = 4.28 | bw = 70.56 | hit_ratio = 0.75, 
+// tot_access_cost = 1752591, non_comp_miss_cnt = 188185, comp_miss_cnt = 64717
+// estimation window = 1000
+// spec accs cost = 278570, num of spec hits = 22510
+// num of ads per DS=[78, 89, 85].  avg update interval = 11904.8 req
+
+
+wiki.C10K.bpe14.1000Kreq.3DSs.Kloc1.M10.B0.U1000.FNAA | service_cost = 4.84 | bw = 92.96 | hit_ratio = 0.67, 
+// tot_access_cost = 1497082, non_comp_miss_cnt = 209427, comp_miss_cnt = 124511
+// estimation window = 1000
+// spec accs cost = 216873, num of spec hits = 12402
+// num of ads per DS=[104, 115, 113].  avg update interval = 9036.1 req
+

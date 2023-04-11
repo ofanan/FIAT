@@ -430,7 +430,7 @@ class Simulator(object):
                 printf (res_file, '\n// mr0_ad_th={}, mr1_ad_th={}' .format (self.mr0_ad_th, self.mr1_ad_th)) 
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
-        printf (res_file, '\n\n')
+        printf (res_file, '\n')
         
     def run_trace_measure_fp_fn (self):
         """

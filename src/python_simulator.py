@@ -328,7 +328,7 @@ class Simulator(object):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
-            self.scale_ind_factor           = 1.5
+            self.scale_ind_factor           = 1.1
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):

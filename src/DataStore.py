@@ -204,7 +204,7 @@ class DataStore (object):
             if self.hist_based_uInterval:
                 if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                     return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
-            if self.ins_since_last_ad == self.max_uInterval:
+            if self.ins_since_last_ad >= self.max_uInterval:
                     return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
                 
     def scale_ind_n_uInterval (self, factor):
@@ -265,17 +265,15 @@ class DataStore (object):
             self.mr1_cur = self.initial_mr1 
         
         if (self.scale_ind_factor!=1): # and called_by_str!=self.MAX_UINTERVAL_STR): # consider scaling the indicator and the uInterval
+            # print ('called_by_str={}' .format (called_by_str)) #$$$
             if (called_by_str==self.MR0_STR):
-                if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                    factor = max(1/self.scale_ind_factor, self.min_bpe/self.bpe)
-                    printf (self.q_output_file, 'b4 scaling ind: scale_ind_factor={}, factor={}, bpe={}, min_uInterval={}\n' .format (self.scale_ind_factor, factor, self.bpe, self.min_uInterval))
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
-            elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                    printf (self.q_output_file, 'b4 scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
+                    printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
+            elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
-            if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                printf (self.q_output_file, 'After scaling ind: bpe={}, min_uInterval={}\n' .format (self.bpe, self.min_uInterval))
+                if MyConfig.VERBOSE_LOG_Q in self.verbose: 
+                    printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
             
     def update_mr0(self):
         """

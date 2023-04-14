@@ -72,11 +72,11 @@ class Simulator(object):
         Init a list of empty DSs (Data Stores == caches)
         """
         if (self.missp < 20):
-            initial_mr0 = 0.9
+            initial_mr0 = 0.85
         elif (self.missp < 50):
-            initial_mr0 = 0.9
+            initial_mr0 = 0.85
         else:
-            initial_mr0 = 0.9
+            initial_mr0 = 0.85
             
         if self.mode in ['opt', 'fnaa']: 
             collect_mr_stat = False

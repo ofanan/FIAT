@@ -226,8 +226,8 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in [10]: #10, 30, 100, 300]: #
-        for mode in ['salsa']:
-            res_file_name = 'salsa_initial_mr0_0.9' if mode.startswith('salsa') else 'opt_n_fnaa'
+        for mode in ['salsa', 'salsa2']:
+            res_file_name = 'salsa_initial_mr0_0.85_no_init_mr0_at_ad' if mode.startswith('salsa') else 'opt_n_fnaa'
             # res_file_name = 'salsa_initial_mr0_0.9' if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
             DS_size = 10000
@@ -240,7 +240,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                calc_mr_by_hist  = True,
                                use_perfect_hist = False,
                                use_EWMA         = True,
-                               verbose          = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] #[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
+                               verbose          = [MyConfig.VERBOSE_RES] #[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES],
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()

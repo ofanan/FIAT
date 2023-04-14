@@ -48,6 +48,7 @@ class DataStore (object):
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
          scale_ind_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
          check_delta_th             = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
+         init_mr_after_each_ad      = False,
          ):
         """
         Return a DataStore object. 
@@ -72,6 +73,7 @@ class DataStore (object):
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
+        self.init_mr_after_each_ad   = init_mr_after_each_ad
         self.check_delta_th          = check_delta_th
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.min_bpe                 = 5
@@ -108,7 +110,7 @@ class DataStore (object):
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
-        self.initial_mr1            = self.designed_fpr
+        self.initial_mr1             = self.designed_fpr
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
@@ -260,9 +262,10 @@ class DataStore (object):
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
         
         if (self.collect_mr_stat):
-            self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
-            self.mr0_cur = self.initial_mr0
-            self.mr1_cur = self.initial_mr1 
+            if self.init_mr_after_each_ad:
+                self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
+                self.mr0_cur = self.initial_mr0
+                self.mr1_cur = self.initial_mr1 
         
         if (self.scale_ind_factor!=1): # and called_by_str!=self.MAX_UINTERVAL_STR): # consider scaling the indicator and the uInterval
             # print ('called_by_str={}' .format (called_by_str)) #$$$

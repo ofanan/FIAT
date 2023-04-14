@@ -56,6 +56,8 @@ class Res_file_parser (object):
         self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
                           'SALSA' : 'SALSA',
                           'SALSA2' : 'SALSA2',
+                          'SALSA09' : 'SALSA_0.9',
+                          'SALSA29' : 'SALSA_2.9',
                           'SALSA3' : 'SALSA3'
                            }
         
@@ -69,7 +71,10 @@ class Res_file_parser (object):
                             'FNAA'      : 'blue',
                             'SALSA'     : 'cyan',
                             'SALSA2'    : 'magenta',
-                            # 'others'    : 'blue', purple, 'black','magenta','red', 'brown', yellow
+                            'SALSA09'   : 'purple',
+                            'SALSA29'   : 'red',
+                            'SALSA3'    : 'brown',
+                            # 'others'    : , 'black','magenta','red', 'brown', yellow
                             }
 
         # The markers used for each alg', in the dist' case
@@ -490,7 +495,7 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA', 'SALSA2']
+        modes = ['FNAA', 'SALSA', 'SALSA09', 'SALSA2', 'SALSA29']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
@@ -557,6 +562,7 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
 my_Res_file_parser.parse_file ('salsa.res')
+my_Res_file_parser.parse_file ('salsa_initial_mr0_0.9.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()
 

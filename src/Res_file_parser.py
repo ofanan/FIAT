@@ -56,8 +56,10 @@ class Res_file_parser (object):
         self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
                           'SALSA' : 'SALSA',
                           'SALSA2' : 'SALSA2',
-                          'SALSA09' : 'SALSA_0.9',
-                          'SALSA29' : 'SALSA_2.9',
+                          'SALSA085' : 'SALSA_0.85',
+                          'SALSA285' : 'SALSA_2.85',
+                          # 'SALSA09' : 'SALSA_0.9',
+                          # 'SALSA29' : 'SALSA_2.9',
                           'SALSA3' : 'SALSA3'
                            }
         
@@ -70,10 +72,12 @@ class Res_file_parser (object):
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : 'blue',
                             'SALSA'     : 'cyan',
-                            'SALSA2'    : 'magenta',
-                            'SALSA09'   : 'purple',
-                            'SALSA29'   : 'red',
-                            'SALSA3'    : 'brown',
+                            'SALSA2'    : 'black',
+                            'SALSA285'  : 'magenta',
+                            'SALSA085'  : 'purple',
+                            # 'SALSA29'   : 'red',
+                            # 'SALSA09'   : 'purple',
+                            'SALSA29'   : 'red',                            'SALSA3'    : 'brown',
                             # 'others'    : , 'black','magenta','red', 'brown', yellow
                             }
 
@@ -495,7 +499,7 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA', 'SALSA09', 'SALSA2', 'SALSA29']
+        modes = ['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
@@ -562,7 +566,7 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
 my_Res_file_parser.parse_file ('salsa.res')
-my_Res_file_parser.parse_file ('salsa_initial_mr0_0.9.res')
+my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85_no_init_mr0_at_ad.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()
 

@@ -100,6 +100,7 @@ class Simulator(object):
             non_comp_accs_th        = self.non_comp_accs_th,
             initial_mr0             = initial_mr0,
             mr0_ad_th               = self.mr0_ad_th,
+            mr1_ad_th               = self.mr1_ad_th,
             settings_str            = self.gen_settings_string (num_of_req=self.trace_len), 
             mr1_ewma_window_size    = self.ewma_window_size,
             max_fpr                 = self.max_fpr, 
@@ -189,7 +190,7 @@ class Simulator(object):
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
-        self.mr0_ad_th          = 0.7 
+        self.mr0_ad_th          = 0.9 
         self.mr1_ad_th          = 0.01 
         self.verbose            = verbose # Defines the log/res data printed out to files       
         
@@ -324,10 +325,22 @@ class Simulator(object):
             self.hit_ratio_based_uInterval  = True
             self.scale_ind_factor            = 1
             
+        elif (self.mode == 'salsa2_mr_only'):
+            self.calc_mr_by_hist            = True
+            self.hist_based_uInterval       = True
+            self.hit_ratio_based_uInterval  = False
+            self.scale_ind_factor            = 1
+            
         elif (self.mode == 'salsa3'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
+            self.scale_ind_factor           = 1.1
+
+        elif (self.mode == 'salsa3_mr_only'):
+            self.calc_mr_by_hist            = True
+            self.hist_based_uInterval       = True
+            self.hit_ratio_based_uInterval  = False
             self.scale_ind_factor           = 1.1
         self.init_DS_list() #DS_list is the list of DSs
 

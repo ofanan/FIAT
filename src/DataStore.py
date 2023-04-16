@@ -38,7 +38,7 @@ class DataStore (object):
          initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
          non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
          non_comp_accs_th           = 0.02, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
-         mr0_ad_th                  = 0.7,
+         mr0_ad_th                  = 0.9,
          mr1_ad_th                  = 0.01,
          mr_output_file             = None, # When this input isn't known, log data about the mr to this file
          use_indicator              = True, # when True, generate and maintain an indicator (BF).
@@ -213,8 +213,6 @@ class DataStore (object):
                 self.consider_advertise_by_mr1 ()
         if self.ins_since_last_ad >= self.max_uInterval:
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
-        
-        
         
     def scale_ind_n_uInterval (self, factor):
         """

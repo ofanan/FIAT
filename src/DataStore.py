@@ -208,7 +208,7 @@ class DataStore (object):
         if self.hist_based_uInterval:
             if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
-            if (self.ins_since_last_ad>=self.min_uInterval): 
+            if (self.ins_since_last_ad==self.min_uInterval): 
                 self.consider_advertise_by_mr0 ()
                 self.consider_advertise_by_mr1 ()
         if self.ins_since_last_ad >= self.max_uInterval:
@@ -220,12 +220,11 @@ class DataStore (object):
         """
         scale the indicator and the update interval by a given factor.
         """
-        self.bpe            *= factor
-        self.min_uInterval  *= factor
-        self.max_uInterval  *= factor
-        self.BF_size        *= factor
-        self.BF_size         = int(self.BF_size)
-        self.num_of_hashes   = MyConfig.get_optimal_num_of_hashes (self.bpe)
+        self.bpe           *= factor
+        self.min_uInterval  = int (self.min_uInterval * factor)
+        self.max_uInterval  = int (self.max_uInterval * factor)
+        self.BF_size        = int (self.BF_size       * factor) 
+        self.num_of_hashes  = MyConfig.get_optimal_num_of_hashes (self.bpe)
 
     
     def get_indication (self, key):

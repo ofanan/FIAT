@@ -191,24 +191,31 @@ class DataStore (object):
             # if so, remove it from the updated indicator
             # Removal from the cache is implemented automatically by the cache object
         self.cache[key] = key
-        if self.use_indicator:
-            if self.use_CountingBloomFilter:
-                if (self.cache.currSize() == self.cache.size()):
-                    self.updated_indicator.remove(self.cache.get_tail())
-                self.updated_indicator.add(key)
-            self.ins_since_last_ad += 1
-            if (self.DS_send_fpr_fnr_updates):
-                self.ins_since_last_fpr_fnr_estimation += 1
-                if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
-                    self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
-                    self.num_of_fpr_fnr_updates           += 1
-                    self.ins_since_last_fpr_fnr_estimation = 0
-            if self.hist_based_uInterval:
-                if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
-                    return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
-            if self.ins_since_last_ad >= self.max_uInterval:
-                    return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
-                
+        if not (self.use_indicator):
+            return
+        
+        if self.use_CountingBloomFilter:
+            if (self.cache.currSize() == self.cache.size()):
+                self.updated_indicator.remove(self.cache.get_tail())
+            self.updated_indicator.add(key)
+        self.ins_since_last_ad += 1
+        if (self.DS_send_fpr_fnr_updates):
+            self.ins_since_last_fpr_fnr_estimation += 1
+            if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
+                self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
+                self.num_of_fpr_fnr_updates           += 1
+                self.ins_since_last_fpr_fnr_estimation = 0
+        if self.hist_based_uInterval:
+            if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
+                return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
+            if (self.ins_since_last_ad>=self.min_uInterval): 
+                self.consider_advertise_by_mr0 ()
+                self.consider_advertise_by_mr1 ()
+        if self.ins_since_last_ad >= self.max_uInterval:
+                return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
+        
+        
+        
     def scale_ind_n_uInterval (self, factor):
         """
         scale the indicator and the update interval by a given factor.
@@ -280,7 +287,8 @@ class DataStore (object):
             
     def update_mr0(self):
         """
-        update the miss-probability in case of a negative indication, using an exponential moving average.
+        update mr0 (the miss-probability in case of a negative indication), using an exponential moving average.
+        If the updated value of mr0 justifies it, advertising an indicator. 
         """
         
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
@@ -289,18 +297,25 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_since_last_ad)) 
-
         if self.hist_based_uInterval:
-            if (self.ins_since_last_ad >= self.min_uInterval):
-                if (self.hit_ratio_based_uInterval):
-                    if ((self.num_of_advertisements>0) and 
-                        (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
-                        self.advertise_ind (called_by_str=self.MR0_STR)
-                else:
-                    if self.mr0_cur < self.mr0_ad_th: 
-                        self.advertise_ind (called_by_str=self.MR0_STR)
+            self.consider_advertise_by_mr0 ()
         self.tn_events_cnt = int(0)
         
+    def consider_advertise_by_mr0 (self):
+        """
+        Check whether it's required to advertise, based on:
+        - the level of mr0 (the miss-probability in case of a negative indication), and 
+        - the level of mult0 (mr0, times the prob' of a negative indication).
+        """
+        if (self.ins_since_last_ad >= self.min_uInterval):
+            if (self.hit_ratio_based_uInterval):
+                if ((self.num_of_advertisements>0) and 
+                    (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
+                    self.advertise_ind (called_by_str=self.MR0_STR)
+            else:
+                if self.mr0_cur < self.mr0_ad_th: 
+                    self.advertise_ind (called_by_str=self.MR0_STR)
+     
     def update_mr1(self):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
@@ -312,21 +327,23 @@ class DataStore (object):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_since_last_ad)) 
         if self.hist_based_uInterval and (self.num_of_advertisements>0):
-            if (self.ins_since_last_ad >= self.min_uInterval):
-                if (self.hit_ratio_based_uInterval):
-                    if ((self.num_of_advertisements>0) and 
-                         self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                        self.advertise_ind (called_by_str=self.MR1_STR)
-                else:           
-                    if self.mr1_cur > self.mr1_ad_th: 
-                        self.advertise_ind (called_by_str=self.MR1_STR)
+            self.consider_advertise_by_mr1 ()
         self.fp_events_cnt = int(0)
         
-    def log_mr_and_q (self, mr_num):
+    def consider_advertise_by_mr1 (self):
         """
-        print data about the mr (exclusion probability) and q (prob' of positive indication) to log files. 
+        Check whether it's required to advertise, based on:
+        - the level of mr1 (the miss-probability in case of a positive indication), and 
+        - the level of mult0 (mr1, times the prob' of a positive indication).
         """
-        
+        if (self.ins_since_last_ad >= self.min_uInterval):
+            if (self.hit_ratio_based_uInterval):
+                if ((self.num_of_advertisements>0) and 
+                     self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
+                    self.advertise_ind (called_by_str=self.MR1_STR)
+            else:           
+                if self.mr1_cur > self.mr1_ad_th: 
+                    self.advertise_ind (called_by_str=self.MR1_STR)
         
     def print_cache(self, head = 5):
         """

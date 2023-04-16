@@ -215,7 +215,7 @@ def run_FN_by_max_uInterval_sim (trace_file_name):
             toc()
 
 
-def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000):
+def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000, missp_vals=[], modes=[], verbose=[]):
     """
     Run a simulation with different miss penalties for the initial table
     """
@@ -225,8 +225,8 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in [10, 30, 100, 300]: #10, 30, 100, 300]: #
-        for mode in ['salsa3']:
+    for missp in missp_vals: #
+        for mode in modes:
             res_file_name = 'salsa_initial_mr0_0.85_no_init_mr0_at_ad' if mode.startswith('salsa') else 'opt_n_fnaa'
             # res_file_name = 'salsa_initial_mr0_0.9' if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
@@ -240,7 +240,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                calc_mr_by_hist  = True,
                                use_perfect_hist = False,
                                use_EWMA         = True,
-                               verbose          = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] #[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_Q],
+                               verbose          = verbose,
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
@@ -258,7 +258,7 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
-run_var_missp_sim(trace_file_name=scarab_trace_file_name,   max_num_of_req=1000000)
-run_var_missp_sim(trace_file_name=gradle_trace_file_name,   max_num_of_req=1000000)
-run_var_missp_sim(trace_file_name=F2_trace_file_name,       max_num_of_req=1000000) 
-run_var_missp_sim(trace_file_name=wiki_trace_file_name,     max_num_of_req=1000000)
+# run_var_missp_sim(trace_file_name=scarab_trace_file_name,   max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10])
+run_var_missp_sim(trace_file_name=gradle_trace_file_name,   max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_LOG_Q])
+# run_var_missp_sim(trace_file_name=F2_trace_file_name,       max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10])
+# run_var_missp_sim(trace_file_name=wiki_trace_file_name,     max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10])

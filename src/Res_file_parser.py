@@ -56,11 +56,11 @@ class Res_file_parser (object):
         self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
                           'SALSA' : 'SALSA',
                           'SALSA2' : 'SALSA2',
-                          'SALSA085' : 'SALSA_0.85',
-                          'SALSA285' : 'SALSA_2.85',
+                          'SALSA085' : 'SALSA_.85',
+                          'SALSA285' : 'SALSA2_.85',
                           # 'SALSA09' : 'SALSA_0.9',
                           # 'SALSA29' : 'SALSA_2.9',
-                          'SALSA3' : 'SALSA3'
+                          'SALSA385' : 'SALSA3_.85'
                            }
         
         self.strOfTrace = {'umass'  : 'F2',
@@ -77,7 +77,8 @@ class Res_file_parser (object):
                             'SALSA085'  : 'purple',
                             # 'SALSA29'   : 'red',
                             # 'SALSA09'   : 'purple',
-                            'SALSA29'   : 'red',                            'SALSA3'    : 'brown',
+                            'SALSA29'   : 'red',   
+                            'SALSA385'  : 'brown',
                             # 'others'    : , 'black','magenta','red', 'brown', yellow
                             }
 
@@ -121,7 +122,11 @@ class Res_file_parser (object):
             bwCost    = float(splitted_line[2].split(" = ")[1])
         splitted_line = settings.split (".")
         mode          = splitted_line[alg_idx].split(" ")[0]
-        uInterval_str = splitted_line [uInterval_idx].split('U')[1] 
+        uInterval_fld = splitted_line [uInterval_idx].split('U')
+        if len(uInterval_fld)<2:
+            print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
+            return False
+        uInterval_str = uInterval_fld[1] 
         uInterval_val = uInterval_str.split('-')
         min_uInterval = int(uInterval_val[0])
         if (len(uInterval_val)==1): # a single uInterval val is given
@@ -499,7 +504,7 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285']
+        modes = ['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 

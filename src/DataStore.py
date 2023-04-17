@@ -75,8 +75,10 @@ class DataStore (object):
         # inializations related to the indicator, statistics, and advertising mechanism
         self.init_mr_after_each_ad   = init_mr_after_each_ad
         self.consider_delta_updates  = consider_delta_updates
+        if self.consider_delta_updates:
+            self.in_delta_mode       = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
-        self.overall_ad_size        = int (0) # the ind' may be scaled, so need to measure the overall ind' size
+        self.overall_ad_size         = int (0) # the ind' may be scaled, so need to measure the overall ind' size
         self.min_bpe                 = 5
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
@@ -121,6 +123,7 @@ class DataStore (object):
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
         self.max_uInterval           = max_uInterval
+        self.bw_budget               = self.BF_size / self.min_uInterval # [bits / insertion] 
         self.use_only_updated_ind    = True if (self.max_uInterval == 1) else False
         if (self.DS_send_fpr_fnr_updates):
             self.fnr                 = 0 # Initially, there are no false indications
@@ -250,17 +253,22 @@ class DataStore (object):
 
         # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
         if self.use_CountingBloomFilter: 
-            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()            
+            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
             if (self.consider_delta_updates):
-                delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
-                if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.bpe_size)) 
-                if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
-                    self.overall_ad_size += delta_ad_size
+                if self.in_delta_mode:
+                    self.advertise_ind_delta_mode ()
+                else:            
+                    delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                        printf (self.q_output_file, 'advertising delta\n') 
-                else:
-                    self.overall_ad_size += self.BF_size
+                        printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.bpe_size)) 
+                    if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
+                        self.overall_ad_size += delta_ad_size
+                        self.in_delta_mode          = True
+                        self.in_delta_mode_ins_cnt  = int(0)
+                        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                            printf (self.q_output_file, 'advertising delta\n') 
+                    else:
+                        self.overall_ad_size += self.BF_size
             else:
                 self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
                 self.overall_ad_size += self.BF_size
@@ -290,6 +298,12 @@ class DataStore (object):
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
+            
+    def advertise_ind_delta_mode (self):
+        """
+        Advertise a "delta" update for the indicator while being in delta mode.
+        Update stat, and consider reverting to full_indicator mode, if needed.
+        """
             
     def update_mr0(self):
         """

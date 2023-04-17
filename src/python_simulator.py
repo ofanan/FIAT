@@ -315,6 +315,7 @@ class Simulator(object):
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
             self.scale_ind_factor           = 1.1
+            self.consider_delta_updates     = True
         self.initial_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)

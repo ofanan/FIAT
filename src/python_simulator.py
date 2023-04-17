@@ -322,12 +322,6 @@ class Simulator(object):
         elif (self.mode == 'salsa2'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
-            self.hit_ratio_based_uInterval  = True
-            self.scale_ind_factor            = 1
-            
-        elif (self.mode == 'salsa2_mr_only'):
-            self.calc_mr_by_hist            = True
-            self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = False
             self.scale_ind_factor            = 1
             
@@ -337,11 +331,6 @@ class Simulator(object):
             self.hit_ratio_based_uInterval  = True
             self.scale_ind_factor           = 1.1
 
-        elif (self.mode == 'salsa3_mr_only'):
-            self.calc_mr_by_hist            = True
-            self.hist_based_uInterval       = True
-            self.hit_ratio_based_uInterval  = False
-            self.scale_ind_factor           = 1.1
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):
@@ -408,7 +397,7 @@ class Simulator(object):
         if (self.mode in ['opt', 'measure fp fn']):
             bw = 0
         else:
-            bw = (np.sum([DS.num_of_advertisements for DS in self.DS_list]) * self.DS_size * self.bpe * (self.num_of_DSs-1)) / float (self.req_cnt)
+            bw = (np.sum([DS.overall_ad_size for DS in self.DS_list])) * (self.num_of_DSs-1) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
         printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
 
@@ -500,7 +489,7 @@ class Simulator(object):
         remainder = self.req_cnt % self.max_uInterval
         for ds_id in range (self.num_of_DSs):
             if (remainder == self.advertise_cycle_of_DS[ds_id]):
-                self.DS_list[ds_id].advertise_ind (check_delta_th=False)
+                self.DS_list[ds_id].advertise_ind ()
                 self.tot_num_of_updates += 1
 
 

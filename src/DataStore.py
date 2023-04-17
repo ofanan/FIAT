@@ -46,8 +46,8 @@ class DataStore (object):
          hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
          hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
-         scale_ind_factor            = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
-         check_delta_th             = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
+         scale_ind_factor           = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+         consider_delta_updates     = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
          init_mr_after_each_ad      = False,
          ):
         """
@@ -74,8 +74,9 @@ class DataStore (object):
 
         # inializations related to the indicator, statistics, and advertising mechanism
         self.init_mr_after_each_ad   = init_mr_after_each_ad
-        self.check_delta_th          = check_delta_th
+        self.consider_delta_updates  = consider_delta_updates
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+        self.overall_ad_size        = int (0) # the ind' may be scaled, so need to measure the overall ind' size
         self.min_bpe                 = 5
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
@@ -239,26 +240,31 @@ class DataStore (object):
         """
         Advertise an updated indicator.
         In practice, this means merely generate a new indicator (simple Bloom filter).
-        If self.check_delta_th==True then calculate the "deltas", namely, number of bits set / reset since the last update has been advertised.
         """
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
-        self.num_of_advertisements += 1
-        if (self.check_delta_th):
-            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
-            Delta = [sum (np.bitwise_and (~updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (updated_sbf.array, ~self.stale_indicator.array))]
-            if (MyConfig.VERBOSE_DEBUG in self.verbose and sum (Delta) < self.delta_th):
-                MyConfig.error ('sum_Delta = ', sum (Delta), 'delta_th = ', self.delta_th, 'Sending delta updates is cheaper\n')
+        self.num_of_advertisements  += 1
+        self.overall_ad_size       += self.BF_size 
 
         # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
         if self.use_CountingBloomFilter: 
-            self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()            
+            if (self.consider_delta_updates):
+                delta_ad_size = np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)])
+                if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
+                    self.overall_ad_size += delta_ad_size 
+                else:
+                    self.overall_ad_size += self.BF_size
+            else:
+                self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
+                self.overall_ad_size += self.BF_size
+            self.stale_indicator = updated_sbf 
         else:
-            self.stale_indicator = SBF.SimpleBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator.add_all (keys=[key for key in self.cache])
+            self.overall_ad_size += self.BF_size
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)

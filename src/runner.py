@@ -258,7 +258,7 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
-run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-run_var_missp_sim(trace_file_name=F2_trace_file_name,     max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-run_var_missp_sim(trace_file_name=wiki_trace_file_name,   max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+# run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_Q])
+# run_var_missp_sim(trace_file_name=F2_trace_file_name,     max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+# run_var_missp_sim(trace_file_name=wiki_trace_file_name,   max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

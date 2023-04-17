@@ -247,15 +247,18 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
         self.num_of_advertisements  += 1
-        self.overall_ad_size       += self.BF_size 
 
         # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()            
             if (self.consider_delta_updates):
-                delta_ad_size = np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)])
+                delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+                if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.bpe_size)) 
                 if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
-                    self.overall_ad_size += delta_ad_size 
+                    self.overall_ad_size += delta_ad_size
+                    if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                        printf (self.q_output_file, 'advertising delta\n') 
                 else:
                     self.overall_ad_size += self.BF_size
             else:

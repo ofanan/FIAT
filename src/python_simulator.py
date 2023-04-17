@@ -110,7 +110,7 @@ class Simulator(object):
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa'],
+            use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa', 'salsa3'],
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -211,7 +211,6 @@ class Simulator(object):
             self.calc_mr_by_hist = False
         else: 
             self.calc_mr_by_hist = calc_mr_by_hist
-        self.use_perfect_hist   = use_perfect_hist
         self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
         self.num_of_clients     = client_DS_cost.shape[0]
         self.num_of_DSs         = client_DS_cost.shape[1]
@@ -285,26 +284,12 @@ class Simulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
-        self.initial_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
-        if (self.calc_mr_by_hist and self.use_perfect_hist):
-            self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
-            self.fp_cnt         = np.zeros  (self.num_of_DSs)
-            self.tn_cnt         = np.zeros  (self.num_of_DSs)
-            self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
-        
-        self.init_client_list ()
-        self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose):
-            self.init_mr_output_files()
-            self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
-            self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
-
         if self.mode in ['fnaa', 'salsa', 'salsa2', 'salsa3']:
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
             self.speculate_hit_cnt          = 0 # num of hits among speculative accss
             self.indications                = np.array (range (self.num_of_DSs), dtype = 'bool')
+            self.use_perfect_hist           = False
         
         if (self.mode == 'fnaa'):
             self.min_uInterval              = self.max_uInterval
@@ -330,6 +315,21 @@ class Simulator(object):
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = True
             self.scale_ind_factor           = 1.1
+        self.initial_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+        if (self.calc_mr_by_hist and self.use_perfect_hist):
+            self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
+            self.fp_cnt         = np.zeros  (self.num_of_DSs)
+            self.tn_cnt         = np.zeros  (self.num_of_DSs)
+            self.mr0_cur        = np.ones  (self.num_of_DSs)
+            self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
+        
+        self.init_client_list ()
+        self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose):
+            self.init_mr_output_files()
+            self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
+            self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
+
 
         self.init_DS_list() #DS_list is the list of DSs
 

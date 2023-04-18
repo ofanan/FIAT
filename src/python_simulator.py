@@ -82,6 +82,7 @@ class Simulator(object):
             bpe                     = self.bpe,
             min_uInterval           = self.min_uInterval,
             max_uInterval           = self.max_uInterval,
+            consider_delta_updates  = self.consider_delta_updates,
             mr_output_file          = self.mr_output_file[i], 
             collect_mr_stat         = collect_mr_stat,  
             analyse_ind_deltas      = not (self.calc_mr_by_hist),
@@ -104,6 +105,7 @@ class Simulator(object):
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
             use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa', 'salsa3'],
+            
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):

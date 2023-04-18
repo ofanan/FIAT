@@ -75,8 +75,8 @@ class DataStore (object):
         # inializations related to the indicator, statistics, and advertising mechanism
         self.init_mr_after_each_ad   = init_mr_after_each_ad
         self.consider_delta_updates  = consider_delta_updates
-        if self.consider_delta_updates:
-            self.in_delta_mode       = False
+        # if self.consider_delta_updates:
+        #     self.in_delta_mode       = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = int (0) # the ind' may be scaled, so need to measure the overall ind' size
         self.min_bpe                 = 5

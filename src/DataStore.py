@@ -215,10 +215,10 @@ class DataStore (object):
             if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
             if (self.ins_since_last_ad==self.min_uInterval):
-                if self.updated_mr0: 
+                if True: #self.updated_mr0: 
                     if self.consider_advertise_by_mr0 (): # advertised
                         return
-                if self.updated_mr1: 
+                if True: #self.updated_mr1: 
                     if self.consider_advertise_by_mr1 ():
                         return 
         if self.ins_since_last_ad >= self.max_uInterval:

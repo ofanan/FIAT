@@ -213,8 +213,10 @@ class DataStore (object):
             if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
             if (self.ins_since_last_ad==self.min_uInterval): 
-                self.consider_advertise_by_mr0 ()
-                self.consider_advertise_by_mr1 ()
+                if self.consider_advertise_by_mr0 (): # advertised
+                    return
+                if self.consider_advertise_by_mr1 ():
+                    return 
         if self.ins_since_last_ad >= self.max_uInterval:
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
         
@@ -246,9 +248,9 @@ class DataStore (object):
         """
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_since_last_ad, called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.q_output_file, 'advertising. called by {}\n' .format (called_by_str))                     
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_since_last_ad, called_by_str))                     
         self.num_of_advertisements  += 1
 
         # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
@@ -330,15 +332,19 @@ class DataStore (object):
         Check whether it's required to advertise, based on:
         - the level of mr0 (the miss-probability in case of a negative indication), and 
         - the level of mult0 (mr0, times the prob' of a negative indication).
+        Returns True if advertised.
         """
         if (self.ins_since_last_ad >= self.min_uInterval):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                     (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
                     self.advertise_ind (called_by_str=self.MR0_STR)
+                    return True
             else:
                 if self.mr0_cur < self.mr0_ad_th: 
                     self.advertise_ind (called_by_str=self.MR0_STR)
+                    return True
+        return False
      
     def update_mr1(self):
         """
@@ -359,15 +365,19 @@ class DataStore (object):
         Check whether it's required to advertise, based on:
         - the level of mr1 (the miss-probability in case of a positive indication), and 
         - the level of mult0 (mr1, times the prob' of a positive indication).
+        Returns True if advertised.
         """
         if (self.ins_since_last_ad >= self.min_uInterval):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                      self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
                     self.advertise_ind (called_by_str=self.MR1_STR)
+                    return True
             else:           
                 if self.mr1_cur > self.mr1_ad_th: 
                     self.advertise_ind (called_by_str=self.MR1_STR)
+                    return True
+        return False
         
     def print_cache(self, head = 5):
         """

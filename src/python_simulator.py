@@ -387,7 +387,7 @@ class Simulator(object):
         if (self.mode in ['opt', 'measure fp fn']):
             bw = 0
         else:
-            bw = (np.sum([DS.overall_ad_size for DS in self.DS_list])) * (self.num_of_DSs-1) / float (self.req_cnt)
+            bw = np.sum([DS.overall_ad_size for DS in self.DS_list]) / float (self.req_cnt)
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
         printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
 

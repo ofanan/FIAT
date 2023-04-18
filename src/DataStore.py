@@ -56,7 +56,7 @@ class DataStore (object):
         """
         self.MAX_UINTERVAL_STR       = 'max_uInterval'
         self.MR0_STR                 = 'mr0'
-        self.MR1_STR                 = 'mr0'
+        self.MR1_STR                 = 'mr1'
         self.ID                      = ID
         self.verbose                 = verbose 
         self.cache_size              = size
@@ -263,14 +263,14 @@ class DataStore (object):
                     printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.BF_size)) 
                 if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
                     self.overall_ad_size += delta_ad_size
-                    self.in_delta_mode          = True
-                    self.in_delta_mode_ins_cnt  = int(0)
+                    # self.in_delta_mode          = True
+                    # self.in_delta_mode_ins_cnt  = int(0)
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                        printf (self.q_output_file, 'advertising delta\n') 
+                        printf (self.q_output_file, 'advertising delta. overall_ad_size={:.0f}\n' .format (self.overall_ad_size)) 
                 else:
                     self.overall_ad_size += self.BF_size
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                        printf (self.q_output_file, 'advertising full ind\n') 
+                        printf (self.q_output_file, 'advertising full ind. overall_ad_size={:.0f}\n' .format (self.overall_ad_size)) 
             else:
                 self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
                 self.overall_ad_size += self.BF_size

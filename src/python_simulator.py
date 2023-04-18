@@ -100,7 +100,7 @@ class Simulator(object):
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
-            scale_ind_factor        = self.scale_ind_factor if (self.mode=='salsa3') else 1, # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+            scale_ind_factor        = self.scale_ind_factor,
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
@@ -298,7 +298,11 @@ class Simulator(object):
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = False
 
-        if (self.mode == 'salsa2'):
+        if (self.mode == 'salsa'):
+            self.scale_ind_factor           = 1
+            self.consider_delta_updates     = False
+                        
+        elif (self.mode == 'salsa2'):
             self.scale_ind_factor           = 1.1
             self.consider_delta_updates     = False
                         

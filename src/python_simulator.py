@@ -321,7 +321,6 @@ class Simulator(object):
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
 
-
         self.init_DS_list() #DS_list is the list of DSs
 
     def init_mr_output_files (self):

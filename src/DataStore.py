@@ -258,7 +258,7 @@ class DataStore (object):
                 # if self.in_delta_mode:
                 #     self.advertise_ind_delta_mode ()
                 # else:            
-                delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+                delta_ad_size = int (np.log2 (self.BF_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose:
                     printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.BF_size)) 
                 if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
@@ -269,6 +269,8 @@ class DataStore (object):
                         printf (self.q_output_file, 'advertising delta\n') 
                 else:
                     self.overall_ad_size += self.BF_size
+                    if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                        printf (self.q_output_file, 'advertising full ind\n') 
             else:
                 self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
                 self.overall_ad_size += self.BF_size

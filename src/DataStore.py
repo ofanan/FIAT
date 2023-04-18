@@ -260,7 +260,7 @@ class DataStore (object):
                 # else:            
                 delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.bpe_size)) 
+                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.BF_size)) 
                 if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
                     self.overall_ad_size += delta_ad_size
                     self.in_delta_mode          = True

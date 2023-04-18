@@ -75,6 +75,8 @@ class DataStore (object):
         # inializations related to the indicator, statistics, and advertising mechanism
         self.init_mr_after_each_ad   = init_mr_after_each_ad
         self.consider_delta_updates  = consider_delta_updates
+        self.updated_mr0 = False # indicates whether mr0 wasn't updated since the last advertisement 
+        self.updated_mr1 = False # indicates whether mr1 wasn't updated since the last advertisement
         # if self.consider_delta_updates:
         #     self.in_delta_mode       = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
@@ -212,11 +214,13 @@ class DataStore (object):
         if self.hist_based_uInterval:
             if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
-            if (self.ins_since_last_ad==self.min_uInterval): 
-                if self.consider_advertise_by_mr0 (): # advertised
-                    return
-                if self.consider_advertise_by_mr1 ():
-                    return 
+            if (self.ins_since_last_ad==self.min_uInterval):
+                if self.updated_mr0: 
+                    if self.consider_advertise_by_mr0 (): # advertised
+                        return
+                if self.updated_mr1: 
+                    if self.consider_advertise_by_mr1 ():
+                        return 
         if self.ins_since_last_ad >= self.max_uInterval:
                 return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
         
@@ -252,7 +256,7 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_since_last_ad, called_by_str))                     
         self.num_of_advertisements  += 1
-
+        self.updated_mr0, self.updated_mr1 = False, False
         # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -316,8 +320,8 @@ class DataStore (object):
         update mr0 (the miss-probability in case of a negative indication), using an exponential moving average.
         If the updated value of mr0 justifies it, advertising an indicator. 
         """
-        
-        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur 
+        self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur
+        self.updated_mr0 = True 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
@@ -351,6 +355,7 @@ class DataStore (object):
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
         self.mr1_cur = self.EWMA_alpha * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur 
+        self.updated_mr1 = True 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):

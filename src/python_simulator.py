@@ -64,20 +64,13 @@ class Simulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = '{}.m0_{}_m1_{}' .format (settings_str, self.non_comp_miss_th, self.non_comp_accs_th) 
+            settings_str = '{}.mr0th_{}_mr1th_{}_uIntFact{}' .format (settings_str, self.mr0_ad_th, self.mr1_ad_th, self.uInterval_factor) 
         return settings_str
     
     def init_DS_list(self):
         """
         Init a list of empty DSs (Data Stores == caches)
         """
-        if (self.missp < 20):
-            initial_mr0 = 0.85
-        elif (self.missp < 50):
-            initial_mr0 = 0.85
-        else:
-            initial_mr0 = 0.85
-            
         if self.mode in ['opt', 'fnaa']: 
             collect_mr_stat = False
         else: 
@@ -98,7 +91,7 @@ class Simulator(object):
             hist_based_uInterval    = self.hist_based_uInterval,
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
-            initial_mr0             = initial_mr0,
+            initial_mr0             = 0.85,
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,
             settings_str            = self.gen_settings_string (num_of_req=self.trace_len), 
@@ -164,7 +157,7 @@ class Simulator(object):
                  use_global_uInerval         = False, 
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
                  min_uInterval      = 0,  
-                 max_uInterval      = float('inf'),  
+                 uInterval_factor   = float('inf'),  
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
@@ -264,11 +257,12 @@ class Simulator(object):
         # Else, calculate uInterval by the given bw parameter.
         self.use_global_uInerval = use_global_uInerval
         self.min_uInterval       = min_uInterval
+        self.uInterval_factor    = uInterval_factor 
         if self.use_global_uInerval:
             self.max_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
             self.advertise_cycle_of_DS = np.array ( [ds_id * self.max_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         else:
-            self.max_uInterval = max_uInterval
+            self.max_uInterval = self.min_uInterval * self.uInterval_factor
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.max_uInterval == 1) else False
         self.num_of_insertions_between_estimations = np.uint8 (150)
@@ -297,25 +291,19 @@ class Simulator(object):
             self.hist_based_uInterval       = False
             self.hit_ratio_based_uInterval  = False
         
-        elif (self.mode == 'salsa'):
-            self.min_uInterval              = self.max_uInterval
-            self.calc_mr_by_hist            = True
-            self.hist_based_uInterval       = False
-            self.hit_ratio_based_uInterval  = False
-            self.scale_ind_factor            = 1
-            
-        elif (self.mode == 'salsa2'):
+        if self.mode.startswith('salsa'):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = False
-            self.scale_ind_factor            = 1
-            
+
+        if (self.mode == 'salsa2'):
+            self.scale_ind_factor           = 1.1
+            self.consider_delta_updates     = False
+                        
         elif (self.mode == 'salsa3'):
-            self.calc_mr_by_hist            = True
-            self.hist_based_uInterval       = True
-            self.hit_ratio_based_uInterval  = True
             self.scale_ind_factor           = 1.1
             self.consider_delta_updates     = True
+
         self.initial_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)

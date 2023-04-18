@@ -255,20 +255,20 @@ class DataStore (object):
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
             if (self.consider_delta_updates):
-                if self.in_delta_mode:
-                    self.advertise_ind_delta_mode ()
-                else:            
-                    delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+                # if self.in_delta_mode:
+                #     self.advertise_ind_delta_mode ()
+                # else:            
+                delta_ad_size = int (np.log2 (self.BF_size) * len ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+                if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.bpe_size)) 
+                if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
+                    self.overall_ad_size += delta_ad_size
+                    self.in_delta_mode          = True
+                    self.in_delta_mode_ins_cnt  = int(0)
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                        printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.bpe_size)) 
-                    if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
-                        self.overall_ad_size += delta_ad_size
-                        self.in_delta_mode          = True
-                        self.in_delta_mode_ins_cnt  = int(0)
-                        if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                            printf (self.q_output_file, 'advertising delta\n') 
-                    else:
-                        self.overall_ad_size += self.BF_size
+                        printf (self.q_output_file, 'advertising delta\n') 
+                else:
+                    self.overall_ad_size += self.BF_size
             else:
                 self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
                 self.overall_ad_size += self.BF_size
@@ -303,7 +303,9 @@ class DataStore (object):
         """
         Advertise a "delta" update for the indicator while being in delta mode.
         Update stat, and consider reverting to full_indicator mode, if needed.
+        Currently unused
         """
+        return
             
     def update_mr0(self):
         """

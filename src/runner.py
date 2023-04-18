@@ -215,36 +215,6 @@ def run_FN_by_max_uInterval_sim (trace_file_name):
             toc()
 
 
-def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000, missp_vals=[], modes=[], verbose=[]):
-    """
-    Run a simulation with different miss penalties for the initial table
-    """
-    num_of_DSs          = 3
-    requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
-    num_of_req          = requests.shape[0]
-    DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    
-    print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in missp_vals: #
-        for mode in modes:
-            res_file_name = 'salsa_initial_mr0_0.85_no_init_mr0_at_ad' if mode.startswith('salsa') else 'opt_n_fnaa'
-            # res_file_name = 'salsa_initial_mr0_0.9' if mode.startswith('salsa') else 'opt_n_fnaa'
-            tic()
-            DS_size = 10000
-            sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
-                               mode, requests, DS_cost, 
-                               missp            = missp,
-                               DS_size          = DS_size,   
-                               min_uInterval    = DS_size/10, 
-                               max_uInterval    = DS_size/5 if mode in ['salsa2', 'salsa3'] else DS_size/10, 
-                               calc_mr_by_hist  = True,
-                               use_perfect_hist = False,
-                               use_EWMA         = True,
-                               verbose          = verbose,
-                               )
-            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
-            toc()
-
 def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
     Opt's behavior is not depended upon parameters such as the indicaror's size, and miss penalty.
@@ -257,6 +227,37 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     print ("Opt's service cost is ", MyConfig.calc_service_cost_of_opt (tot_access_cost, comp_miss_cnt, missp, num_of_req))
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
+
+def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000, missp_vals=[], modes=[], verbose=[]):
+    """
+    Run a simulation with different miss penalties for the initial table
+    """
+    num_of_DSs          = 3
+    requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
+    num_of_req          = requests.shape[0]
+    DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
+    
+    print("now = ", datetime.now(), 'running var_missp sim')
+    for missp in missp_vals: #
+        for mode in modes:
+            res_file_name = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa'
+            tic()
+            DS_size          = 10000
+            min_uInterval    = DS_size/10
+            uInterval_factor = 2 if mode in ['salsa2', 'salsa3'] else 1
+            sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
+                               mode, requests, DS_cost, 
+                               missp            = missp,
+                               DS_size          = DS_size,   
+                               min_uInterval    = min_uInterval, 
+                               uInterval_factor = uInterval_factor,
+                               calc_mr_by_hist  = True,
+                               use_perfect_hist = False,
+                               use_EWMA         = True,
+                               verbose          = verbose,
+                               )
+            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+            toc()
 
 # run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_Q])

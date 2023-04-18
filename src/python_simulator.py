@@ -159,7 +159,7 @@ class Simulator(object):
                  min_uInterval      = 0,  
                  uInterval_factor   = float('inf'),  
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
-                 use_perfect_hist   = True, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
+                 use_perfect_hist   = False, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
                  ):
         """

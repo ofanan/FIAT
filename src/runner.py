@@ -251,9 +251,6 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
                                DS_size          = DS_size,   
                                min_uInterval    = min_uInterval, 
                                uInterval_factor = uInterval_factor,
-                               calc_mr_by_hist  = True,
-                               use_perfect_hist = False,
-                               use_EWMA         = True,
                                verbose          = verbose,
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)

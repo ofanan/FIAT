@@ -283,7 +283,7 @@ class Simulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
-        if self.mode in ['fnaa', 'salsa', 'salsa2', 'salsa3']:
+        if self.mode in ['opt', 'fnaa', 'salsa', 'salsa2', 'salsa3']:
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
             self.speculate_hit_cnt          = 0 # num of hits among speculative accss

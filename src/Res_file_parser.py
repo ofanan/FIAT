@@ -60,7 +60,7 @@ class Res_file_parser (object):
                           'SALSA285' : 'SALSA2_.85',
                           # 'SALSA09' : 'SALSA_0.9',
                           # 'SALSA29' : 'SALSA_2.9',
-                          'SALSA385' : 'SALSA3_.85'
+                          'SALSA3'    : 'SALSA3'
                            }
         
         self.strOfTrace = {'umass'  : 'F2',
@@ -78,7 +78,7 @@ class Res_file_parser (object):
                             # 'SALSA29'   : 'red',
                             # 'SALSA09'   : 'purple',
                             'SALSA29'   : 'red',   
-                            'SALSA385'  : 'brown',
+                            'SALSA3'    : 'brown',
                             # 'others'    : , 'black','magenta','red', 'brown', yellow
                             }
 
@@ -86,7 +86,7 @@ class Res_file_parser (object):
         self.markerOfMode = {'Opt'      : 'o',
                             'FNAA'      : 'v',
                             'SALSA'     : '^',
-                            'SALSA2'    : 's',
+                            'SALSA3'    : 's',
                             'Tetra'     : 'p',
                             'Tetra dyn' : 'X',
                             'CEDAR'     : '<',
@@ -504,7 +504,7 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
+        modes = ['FNAA', 'SALSA2', 'SALSA3'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
@@ -571,7 +571,7 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
 my_Res_file_parser.parse_file ('salsa.res')
-my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85_no_init_mr0_at_ad.res')
+# my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85_no_init_mr0_at_ad.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()
 

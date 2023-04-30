@@ -92,7 +92,8 @@ class Simulator(object):
             hist_based_uInterval    = self.hist_based_uInterval,
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
-            initial_mr0             = 0.85,
+            initial_mr0             = 0.88,
+            # initial_mr1 is set by the DS to its designed fpr.
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,
             settings_str            = self.gen_settings_string (num_of_req=self.trace_len), 
@@ -101,6 +102,8 @@ class Simulator(object):
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
             scale_ind_factor        = self.scale_ind_factor,
+            init_mr0_after_each_ad  = True,               
+            init_mr1_after_each_ad  = False,               
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
@@ -185,7 +188,7 @@ class Simulator(object):
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
-        self.mr0_ad_th          = 0.9 
+        self.mr0_ad_th          = 0.85 
         self.mr1_ad_th          = 0.01 
         self.verbose            = verbose # Defines the log/res data printed out to files       
         
@@ -310,12 +313,15 @@ class Simulator(object):
             self.scale_ind_factor           = 1.1
             self.consider_delta_updates     = True
 
-        self.initial_mr1   = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
+            if (self.bpe==14):
+                self.initial_mr1    = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
+            else:
+                self.initial_mr1 = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
             self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()

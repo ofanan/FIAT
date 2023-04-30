@@ -238,7 +238,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
     print("now = ", datetime.now(), 'running var_missp sim')
-    for missp in missp_vals: #
+    for missp in missp_vals: 
         for mode in modes:
             res_file_name = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
@@ -261,7 +261,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
 # run_var_missp_sim(trace_file_name=F2_trace_file_name,     max_num_of_req=1000000, modes=['salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name,   max_num_of_req=1000000, modes=['salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
-run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-run_var_missp_sim(trace_file_name=F2_trace_file_name,     max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-run_var_missp_sim(trace_file_name=wiki_trace_file_name,   max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+# run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+# run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+run_var_missp_sim(trace_file_name=F2_trace_file_name,     max_num_of_req=1000000, modes=['salsa3'], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_Q])
+# run_var_missp_sim(trace_file_name=wiki_trace_file_name,   max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

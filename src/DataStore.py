@@ -48,15 +48,13 @@ class DataStore (object):
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
          scale_ind_factor           = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
          consider_delta_updates     = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
-         init_mr_after_each_ad      = False,
+         init_mr0_after_each_ad     = False,
+         init_mr1_after_each_ad     = False,
          ):
         """
         Return a DataStore object. 
             For the DataStore's see documentation within the __init__ function.
         """
-        self.MAX_UINTERVAL_STR       = 'max_uInterval'
-        self.MR0_STR                 = 'mr0'
-        self.MR1_STR                 = 'mr1'
         self.ID                      = ID
         self.verbose                 = verbose 
         self.cache_size              = size
@@ -73,12 +71,13 @@ class DataStore (object):
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
-        self.init_mr_after_each_ad   = init_mr_after_each_ad
+        self.init_mr0_after_each_ad  = init_mr0_after_each_ad
+        self.init_mr1_after_each_ad  = init_mr1_after_each_ad
         self.consider_delta_updates  = consider_delta_updates
         self.updated_mr0 = False # indicates whether mr0 wasn't updated since the last advertisement 
         self.updated_mr1 = False # indicates whether mr1 wasn't updated since the last advertisement
         # if self.consider_delta_updates:
-        #     self.in_delta_mode       = False
+        self.in_delta_mode       = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = int (0) # the ind' may be scaled, so need to measure the overall ind' size
         self.min_bpe                 = 5
@@ -124,8 +123,12 @@ class DataStore (object):
         self.ins_since_last_ad       = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
+        self.min_feasible_uInterval  = 10
         self.max_uInterval           = max_uInterval
-        self.bw_budget               = self.BF_size / self.min_uInterval # [bits / insertion] 
+        self.bw_budget               = self.BF_size / self.min_uInterval # [bits / insertion]
+        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+            printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
+ 
         self.use_only_updated_ind    = True if (self.max_uInterval == 1) else False
         if (self.DS_send_fpr_fnr_updates):
             self.fnr                 = 0 # Initially, there are no false indications
@@ -204,7 +207,9 @@ class DataStore (object):
             if (self.cache.currSize() == self.cache.size()):
                 self.updated_indicator.remove(self.cache.get_tail())
             self.updated_indicator.add(key)
-        self.ins_since_last_ad += 1
+        self.ins_since_last_ad     += 1
+        if self.in_delta_mode:
+            self.ins_cnt_in_delta_mode += 1
         if (self.DS_send_fpr_fnr_updates):
             self.ins_since_last_fpr_fnr_estimation += 1
             if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
@@ -213,16 +218,19 @@ class DataStore (object):
                 self.ins_since_last_fpr_fnr_estimation = 0
         if self.hist_based_uInterval:
             if (self.num_of_advertisements==0 and self.ins_since_last_ad==self.max_uInterval): # force a "warmup" advertisement
-                return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
+                return self.advertise_ind (called_by_str='max_uInterval')
             if (self.ins_since_last_ad==self.min_uInterval):
                 if True: #self.updated_mr0: 
                     if self.consider_advertise_by_mr0 (): # advertised
                         return
                 if True: #self.updated_mr1: 
                     if self.consider_advertise_by_mr1 ():
-                        return 
+                        return
+        if self.in_delta_mode:
+            if self.ins_since_last_ad >= self.min_feasible_uInterval:
+                return self.advertise_ind (called_by_str='delta mode')
         if self.ins_since_last_ad >= self.max_uInterval:
-                return self.advertise_ind (called_by_str=self.MAX_UINTERVAL_STR)
+                return self.advertise_ind (called_by_str='max_uInterval')
         
     def scale_ind_n_uInterval (self, factor):
         """
@@ -256,7 +264,8 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_since_last_ad, called_by_str))                     
         self.num_of_advertisements  += 1
-        self.updated_mr0, self.updated_mr1 = False, False
+        self.updated_mr0, self.updated_mr1 = False, False # indicate that mr0, mr1 weren't updated since the last advertisement
+        
         # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -269,10 +278,16 @@ class DataStore (object):
                     printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.BF_size)) 
                 if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
                     self.overall_ad_size += delta_ad_size
-                    # self.in_delta_mode          = True
-                    # self.in_delta_mode_ins_cnt  = int(0)
+                    if self.in_delta_mode:
+                        self.ad_size_in_delta_mode += delta_ad_size
+                        bw_in_cur_interval = self.ad_size_in_delta_mode / self.ins_cnt_in_delta_mode                              
+                    else:
+                        self.in_delta_mode         = True
+                        self.ins_cnt_in_delta_mode = int(0)
+                        self.ad_size_in_delta_mode = int(0)
+                        bw_in_cur_interval         = 0                              
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                        printf (self.q_output_file, 'advertising delta. overall_ad_size={:.0f}\n' .format (self.overall_ad_size)) 
+                        printf (self.q_output_file, 'advertising delta. ad_size_in_delta_mode={}, ins_cnt_in_delta_mode={}, bw_in_cur_interval={:.1f}\n' .format (self.ad_size_in_delta_mode, self.ins_cnt_in_delta_mode, bw_in_cur_interval))
                 else:
                     self.overall_ad_size += self.BF_size
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
@@ -291,18 +306,20 @@ class DataStore (object):
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
         
         if (self.collect_mr_stat):
-            if self.init_mr_after_each_ad:
-                self.tn_events_cnt, self.fp_events_cnt, self.reg_accs_cnt, self.spec_accs_cnt = 0,0,0,0
-                self.mr0_cur = self.initial_mr0
+            if self.init_mr0_after_each_ad and not(self.in_delta_mode):
+                self.tn_events_cnt, self.spec_accs_cnt = 0,0
+                self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
+            if self.init_mr1_after_each_ad and not(self.in_delta_mode):
+                self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 
         
-        if (self.scale_ind_factor!=1): # and called_by_str!=self.MAX_UINTERVAL_STR): # consider scaling the indicator and the uInterval
+        if (self.scale_ind_factor!=1): # and called_by_str!='max_uInterval'): # consider scaling the indicator and the uInterval
             # print ('called_by_str={}' .format (called_by_str)) #$$$
-            if (called_by_str==self.MR0_STR):
+            if (called_by_str=='mr0'):
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
-            elif (called_by_str==self.MR1_STR): # too many FPs --> enlarge the indicator
+            elif (called_by_str=='mr1'): # too many FPs --> enlarge the indicator
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
@@ -342,11 +359,11 @@ class DataStore (object):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                     (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
-                    self.advertise_ind (called_by_str=self.MR0_STR)
+                    self.advertise_ind (called_by_str='mr0')
                     return True
             else:
                 if self.mr0_cur < self.mr0_ad_th: 
-                    self.advertise_ind (called_by_str=self.MR0_STR)
+                    self.advertise_ind (called_by_str='mr0')
                     return True
         return False
      
@@ -376,11 +393,11 @@ class DataStore (object):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                      self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                    self.advertise_ind (called_by_str=self.MR1_STR)
+                    self.advertise_ind (called_by_str='mr1')
                     return True
             else:           
                 if self.mr1_cur > self.mr1_ad_th: 
-                    self.advertise_ind (called_by_str=self.MR1_STR)
+                    self.advertise_ind (called_by_str='mr1')
                     return True
         return False
         

@@ -300,6 +300,9 @@ class Simulator(object):
             self.calc_mr_by_hist            = True
             self.hist_based_uInterval       = True
             self.hit_ratio_based_uInterval  = False
+        else:
+            self.consider_delta_updates     = False
+            self.scale_ind_factor           = 1
 
         if (self.mode == 'salsa'):
             self.scale_ind_factor           = 1

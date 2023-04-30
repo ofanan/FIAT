@@ -495,7 +495,7 @@ class Res_file_parser (object):
                                              add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
        
         
-    
+       
     def plot_bars_by_missp_python (self):
         """
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  

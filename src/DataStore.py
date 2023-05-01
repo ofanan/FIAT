@@ -16,7 +16,7 @@ from printf import printf
 class DataStore (object):
 
     def __init__(self, 
-         ID, # datastore ID
+         ID,                             # datastore ID
          size                   = 1000,  # number of elements that can be stored in the datastore
          bpe                    = 14,    # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
          EWMA_alpha             = 0.85,  # sliding window parameter for miss-rate estimation
@@ -84,15 +84,15 @@ class DataStore (object):
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
-        self.BF_size                 = self.bpe * self.cache_size
-        self.lg_BF_size              = np.log2 (self.BF_size) 
+        self.ind_size                = self.bpe * self.cache_size
+        self.lg_ind_size             = np.log2 (self.ind_size) 
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
         self.use_CountingBloomFilter = use_CountingBloomFilter
         if use_CountingBloomFilter: 
-            self.updated_indicator   = CBF.CountingBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
+            self.updated_indicator   = CBF.CountingBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
         else:
-            self.stale_indicator     = SBF.SimpleBloomFilter (size = self.BF_size, num_of_hashes = self.num_of_hashes)
+            self.stale_indicator     = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         self.initial_mr0             = initial_mr0
         self.mr0_cur                 = self.initial_mr0
@@ -113,11 +113,11 @@ class DataStore (object):
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
-        self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.BF_size, self.num_of_hashes)
+        self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.ind_size, self.num_of_hashes)
         self.initial_mr1             = self.designed_fpr
         self.DS_send_fpr_fnr_updates = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
-        self.delta_th                = self.BF_size / self.lg_BF_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
+        self.delta_th                = self.ind_size / self.lg_ind_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
         self.num_of_advertisements   = 0
         self.ins_since_last_ad       = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
@@ -125,7 +125,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
         self.max_uInterval           = max_uInterval
-        self.bw_budget               = self.BF_size / self.min_uInterval # [bits / insertion]
+        self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
  
@@ -136,6 +136,17 @@ class DataStore (object):
         
         self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
         self.ins_since_last_fpr_fnr_estimation      = int (0)
+        
+        if self.consider_delta_updates and self.scale_ind_factor!=1: # if needed, pre-compute values for Lambert function (scaling of the ind' at delta mode)
+            bpe = self.min_bpe
+            self.indSize = []
+            while bpe <= self.max_bpe:
+                self.indSize.append (int (bpe * self.cache_size))
+                bpe *= self.scale_ind_factor
+            self.indSize.append (self.max_bpe*self.cache_size)
+            self.indSize.append (self.bpe*self.cache_size)
+            self.indSize.sort()
+            self.indSize_lg_indSize = np.array ([item*np.log2(item) for item in self.indSize])
 
     def __contains__(self, key):
         """
@@ -239,7 +250,7 @@ class DataStore (object):
         self.bpe           *= factor
         self.min_uInterval  = int (self.min_uInterval * factor)
         self.max_uInterval  = int (self.max_uInterval * factor)
-        self.BF_size        = int (self.BF_size       * factor) 
+        self.ind_size       = int (self.ind_size       * factor) 
         self.num_of_hashes  = MyConfig.get_optimal_num_of_hashes (self.bpe)
 
     
@@ -270,13 +281,10 @@ class DataStore (object):
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
             if (self.consider_delta_updates):
-                # if self.in_delta_mode:
-                #     self.advertise_ind_delta_mode ()
-                # else:            
-                delta_ad_size = int (np.log2 (self.BF_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+                delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.BF_size)) 
-                if delta_ad_size < self.BF_size: # advertise "delta" update is cheaper
+                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.ind_size)) 
+                if delta_ad_size < self.ind_size: # advertise "delta" update is cheaper
                     self.overall_ad_size += delta_ad_size
                     if self.in_delta_mode:
                         self.ad_size_in_delta_mode += delta_ad_size
@@ -288,33 +296,34 @@ class DataStore (object):
                         bw_in_cur_interval         = 0                              
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
                         printf (self.q_output_file, 'advertising delta. ad_size_in_delta_mode={}, ins_cnt_in_delta_mode={}, bw_in_cur_interval={:.1f}\n' .format (self.ad_size_in_delta_mode, self.ins_cnt_in_delta_mode, bw_in_cur_interval))
+                    if self.ins_cnt_in_delta_mode==self.min_uInterval: 
+                        self.scale_ind_delta_mode (bw_in_cur_interval=bw_in_cur_interval)
                 else:
-                    self.overall_ad_size += self.BF_size
+                    self.overall_ad_size += self.ind_size
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
                         printf (self.q_output_file, 'advertising full ind. overall_ad_size={:.0f}\n' .format (self.overall_ad_size)) 
             else:
                 self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # "stale_indicator" is the snapshot of the current state of the ind', until the next update
-                self.overall_ad_size += self.BF_size
+                self.overall_ad_size += self.ind_size
             self.stale_indicator = updated_sbf 
         else:
             self.stale_indicator.add_all (keys=[key for key in self.cache])
-            self.overall_ad_size += self.BF_size
+            self.overall_ad_size += self.ind_size
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
-            self.fpr                                = pow ( B1_st / self.BF_size, self.num_of_hashes)
+            self.fpr                                = pow ( B1_st / self.ind_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         self.ins_since_last_ad = 0 # reset the cnt of insertions since the last advertisement of fresh indicator
         
         if (self.collect_mr_stat):
             if self.init_mr0_after_each_ad and not(self.in_delta_mode):
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
-                self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
+                # self.mr0_cur = min (self.mr0_cur, self.initial_mr0) # re-init mr0 after each ad.
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
                 self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 
         
         if (self.scale_ind_factor!=1): # and called_by_str!='max_uInterval'): # consider scaling the indicator and the uInterval
-            # print ('called_by_str={}' .format (called_by_str)) #$$$
             if (called_by_str=='mr0'):
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
@@ -324,14 +333,17 @@ class DataStore (object):
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
             
-    def advertise_ind_delta_mode (self):
+    def scale_ind_delta_mode (self, bw_in_cur_interval):
         """
-        Advertise a "delta" update for the indicator while being in delta mode.
+        Scale the indicator (if needed) while in "delta" mode.
         Update stat, and consider reverting to full_indicator mode, if needed.
-        Currently unused
         """
-        return
-            
+        desiredRatio                = self.bw_budget / bw_in_cur_interval
+        curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
+        diffs_from_desiredRatio = [abs (item/curIndSize_lg_curIndSize - desiredRatio) for item in self.indSize_lg_indSize]
+        val, idx = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
+        self.
+                   
     def update_mr0(self):
         """
         update mr0 (the miss-probability in case of a negative indication), using an exponential moving average.
@@ -422,5 +434,5 @@ class DataStore (object):
         B1_up       = sum (updated_sbf.array)             # Num of bits set in the updated indicator
         B1_st       = sum (self.stale_indicator.array)    # Num of bits set in the stale indicator
         self.fnr    = 1 - pow ( (B1_up-Delta[1]) / B1_up, self.num_of_hashes)
-        self.fpr    = pow ( B1_st / self.BF_size, self.num_of_hashes)
+        self.fpr    = pow ( B1_st / self.ind_size, self.num_of_hashes)
         self.ins_since_last_fpr_fnr_estimation  = 0

@@ -302,11 +302,10 @@ class DataStore (object):
                 if MyConfig.VERBOSE_LOG_Q in self.verbose:
                     printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.ind_size)) 
                 if delta_ad_size < self.ind_size: # if advertising delta is cheaper, we'll switch to delta mode
-                    self.total_ad_size_in_this_period = delta_ad_size
-                    self.in_delta_mode          = True
-                    self.ins_cnt_in_this_period = 0
-                    self.ad_size_in_delta_mode  = int(0)
-                    bw_in_cur_interval          = 0                              
+                    self.in_delta_mode                = True
+                    self.ins_cnt_in_this_period       = 0
+                    self.total_ad_size_in_this_period = 0
+                    bw_in_cur_interval                = 0                              
                     if MyConfig.VERBOSE_LOG_Q in self.verbose:
                         printf (self.q_output_file, 'switching to delta mode. ad_size={}\n' .format(delta_ad_size))
                     self.stale_indicator = updated_sbf # finished advertise a delta-mode --> can return 
@@ -356,9 +355,9 @@ class DataStore (object):
         self.num_of_advertisements  += 1
         
         if (self.in_delta_mode):
-            self.advertise_ind_full_mode (called_by_str)
-        else:
             self.advertise_ind_delta_mode(called_by_str)
+        else:
+            self.advertise_ind_full_mode (called_by_str)
         
         # self.updated_mr0, self.updated_mr1 = False, False # indicate that mr0, mr1 weren't updated since the last advertisement        
             

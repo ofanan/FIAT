@@ -104,6 +104,7 @@ class Simulator(object):
             scale_ind_factor        = self.scale_ind_factor,
             init_mr0_after_each_ad  = True,               
             init_mr1_after_each_ad  = False,               
+            use_fixed_uInterval     = (self.mode in ['fno', 'fnaa']),
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             DS_send_fpr_fnr_updates                 = not (self.calc_mr_by_hist),
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,

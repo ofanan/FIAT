@@ -281,7 +281,7 @@ class DataStore (object):
         bw_in_cur_interval                  = self.total_ad_size_in_this_period / self.ins_cnt_in_this_period                              
         self.stale_indicator                = updated_sbf 
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
-            printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period, bw_in_cur_interval={:.1f}, \n' .format 
+            printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
                     (self.ind_size, ad_size, self.ins_cnt_in_this_period, bw_in_cur_interval)) 
         if self.ins_cnt_in_this_period>=self.period: 
             self.scale_ind_delta_mode (bw_in_cur_interval=bw_in_cur_interval)
@@ -359,7 +359,7 @@ class DataStore (object):
             self.advertise_ind_full_mode (called_by_str)
         else:
             self.advertise_ind_delta_mode(called_by_str)
-            
+        
         # self.updated_mr0, self.updated_mr1 = False, False # indicate that mr0, mr1 weren't updated since the last advertisement        
             
     def scale_ind_delta_mode (self, bw_in_cur_interval):

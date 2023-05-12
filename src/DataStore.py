@@ -265,7 +265,7 @@ class DataStore (object):
             return (key in self.updated_indicator)
         return (key in self.stale_indicator)
     
-    def advertise_ind_delta_mode (selfself, 
+    def advertise_ind_delta_mode (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     
                        ):
         """
@@ -288,7 +288,7 @@ class DataStore (object):
             self.ins_cnt_in_this_period         = 0
             self.total_ad_size_in_this_period   = 0
 
-    def advertise_ind_full_mode (selfself, 
+    def advertise_ind_full_mode (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     
                        ):
         """

@@ -30,7 +30,7 @@ class DataStore (object):
          verbose                    = [],# what output will be written. See macros in MyConfig.py 
          min_uInterval              = 1, # min num of insertions of new items into the cache before advertising again 
          max_uInterval              = 1, # max num of insertions of new items into the cache before advertising again
-         send_fpr_fnr_updates    = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
+         send_fpr_fnr_updates       = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
          collect_mr_stat            = True,  
          analyse_ind_deltas         = True, # analyze the differences between the stale (last advertised) and the current, updated, indicator
          designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
@@ -116,7 +116,7 @@ class DataStore (object):
         self.max_fpr                 = max_fpr
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.ind_size, self.num_of_hashes)
         self.initial_mr1             = self.designed_fpr
-        self.send_fpr_fnr_updates    = DS_send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
+        self.send_fpr_fnr_updates    = send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
         self.delta_th                = self.ind_size / self.lg_ind_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0

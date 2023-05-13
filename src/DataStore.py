@@ -240,7 +240,7 @@ class DataStore (object):
                 return self.advertise_ind (called_by_str='delta mode')
 
         # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
-        if self.hist_based_uInterval:
+        if self.hist_based_uInterval and not(self.in_delta_mode):
             if (self.ins_cnt_in_this_period>=self.min_uInterval):
                 if self.consider_advertise_by_mr0 (): # advertised
                     self.ins_cnt_in_this_period = 0
@@ -389,6 +389,9 @@ class DataStore (object):
         cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         diffs_from_desiredRatio     = [abs (item/curIndSize_lg_curIndSize - desiredRatio) for item in self.potential_indSize_lg_indSize]
+        for item in diffs_from_desiredRatio: #$$
+            print ('{:.3f}' .format (item))
+        exit () #$$$ 
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         self.ind_size               = self.potential_indSize[idx]
         self.bpe                    = int (self.ind_size / self.cache_size)

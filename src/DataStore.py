@@ -331,7 +331,7 @@ class DataStore (object):
                 return
        
         
-    def advertise_ind_full_mode (self):
+    def advertise_ind_full_mode (self, called_by_str):
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     

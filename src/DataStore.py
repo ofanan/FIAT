@@ -129,7 +129,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
         self.max_uInterval           = max_uInterval
-        self.period                  = 10*self.max_uInterval
+        self.period                  = 10*self.max_uInterval #$$$$
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -270,13 +270,10 @@ class DataStore (object):
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
         
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
-
         if self.ins_cnt_in_this_period>=self.period: 
-            self.scale_ind_delta_mode (bw_in_cur_interval=bw_in_cur_interval)
+
+            if self.scale_ind_factor!=1:                                          
+                self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_in_this_period)
             self.ins_cnt_in_this_period         = 0
             self.total_ad_size_in_this_period   = 0
             self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
@@ -284,11 +281,14 @@ class DataStore (object):
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:
                 self.stale_indicator            = self.genNewSBF ()
+            if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+                printf (self.q_output_file, 'advertising delta. ins_cnt={}\n' .format (self.ins_cnt_in_this_period))                     
+            if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                printf (self.q_output_file, 'advertising delta. ins_cnt={}\n' .format (self.ins_cnt_in_this_period))                     
             self.num_of_advertisements  += 1
             return # finished advertising an indicator
         
         if self.ins_cnt_in_this_period % self.min_feasible_uInterval == 0:
-            self.advertise_ind (called_by_str='delta mode')
 
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
                 updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -296,13 +296,12 @@ class DataStore (object):
                 updated_sbf = self.genNewSBF () 
             ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
             self.total_ad_size_in_this_period  += ad_size
-            self.overall_ad_size               += ad_size
-            bw_in_cur_interval                  = self.total_ad_size_in_this_period / self.ins_cnt_in_this_period                              
+            self.overall_ad_size               += ad_size                              
             self.stale_indicator                = updated_sbf 
-            self.num_of_advertisements  += 1
+            self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_in_this_period, bw_in_cur_interval)) 
+                        (self.ind_size, ad_size, self.ins_cnt_in_this_period, self.total_ad_size_in_this_period / self.ins_cnt_in_this_period)) 
 
     def handle_ind_full_mode (self):
         """
@@ -375,6 +374,7 @@ class DataStore (object):
                 self.mr1_cur = self.initial_mr1 
         
         if (self.scale_ind_factor!=1): # consider scaling the indicator and the uInterval
+            scale_ind_by = 1
             if (called_by_str=='mr0'):
                 scale_ind_by = max(1/self.scale_ind_factor, self.min_bpe/self.bpe) 
             elif (called_by_str=='mr1'): # too many FPs --> enlarge the indicator
@@ -387,22 +387,6 @@ class DataStore (object):
                 self.stale_indicator = self.genNewSBF ()
         self.overall_ad_size += self.ind_size
 
-    def advertise_ind (self, 
-                       called_by_str = 'Unknown' # an optional string, identifying the caller.     
-                       ):
-        """
-        Advertise an updated indicator.
-        In practice, this means merely generate a new indicator (simple Bloom filter).
-        """
-        
-        #
-        # if (self.in_delta_mode):
-        #     self.advertise_ind_delta_mode()
-        # else:
-        #     self.advertise_ind_full_mode (called_by_str)
-        
-        # self.updated_mr0, self.updated_mr1 = False, False # indicate that mr0, mr1 weren't updated since the last advertisement        
-            
     def scale_ind_delta_mode (self, bw_in_cur_interval):
         """
         Scale the indicator (if needed) while in "delta" mode.
@@ -414,14 +398,13 @@ class DataStore (object):
         diffs_from_desiredRatio     = [abs (item/curIndSize_lg_curIndSize - desiredRatio) for item in self.potential_indSize_lg_indSize]
         for item in diffs_from_desiredRatio: #$$
             print ('{:.3f}' .format (item))
-        exit () #$$$ 
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
-        self.ind_size               = self.potential_indSize[idx]
-        self.bpe                    = int (self.ind_size / self.cache_size)
-        self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
-
-        if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-            if self.ind_size!=self.cur_IndSize:
+        new_ind_size                = self.potential_indSize[idx]
+        if new_ind_size!=self.ind_size: 
+            self.ind_size               = new_ind_size
+            self.bpe                    = int (self.ind_size / self.cache_size)
+            self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
+            if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 self.scaled_ind_delta_mode = True
                 printf (self.q_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))
                    

@@ -108,7 +108,7 @@ class Simulator(object):
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa', 'salsa3'],
+            use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa'],
             
         ) for i in range(self.num_of_DSs)]
             
@@ -405,10 +405,6 @@ class Simulator(object):
         settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
         printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
 
-        #Each update is a full indicator, sent to n-1 DSs)
-        # bw_in_practice =  int (round (self.tot_num_of_updates * self.DS_size * self.bpe * (self.num_of_DSs - 1) / self.req_cnt) ) #Each update is a full indicator, sent to n-1 DSs)
-        # if (self.bw != bw_in_practice):
-        #     printf (self. output_file, '//Note: requested bw was {:.0f}, but actual bw was {:.0f}\n' .format (self.bw, bw_in_practice))
         printf (res_file, '// tot_access_cost = {:.0f}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
            (self.total_access_cost, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
         if (self.mode=='opt'):

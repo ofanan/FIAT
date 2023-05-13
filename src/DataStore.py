@@ -80,7 +80,8 @@ class DataStore (object):
         # self.updated_mr1 = False # indicates whether mr1 wasn't updated since the last advertisement
         self.in_delta_mode           = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
-        self.total_ad_size_in_this_period         = int (0) # the ind' may be scaled, so need to measure the overall ind' size
+        self.overall_ad_size         = 0
+        self.total_ad_size_in_this_period = 0 # the ind' may be scaled, so need to measure the overall ind' size
         self.min_bpe                 = 5
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
@@ -92,6 +93,8 @@ class DataStore (object):
         if use_CountingBloomFilter: 
             self.updated_indicator   = CBF.CountingBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
+            if (self.scale_ind_factor!=1):
+                MyConfig.error ('Sorry. Scaling an indicator is not supported for CountingBloomFilter')
         else:
             self.stale_indicator     = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
@@ -150,7 +153,7 @@ class DataStore (object):
             self.potential_indSize.append (self.bpe*self.cache_size)
             self.potential_indSize.sort()
             self.potential_indSize_lg_indSize = np.array ([item*np.log2(item) for item in self.potential_indSize])
-
+            
     def __contains__(self, key):
         """
         test to see if key is in the cache
@@ -275,9 +278,14 @@ class DataStore (object):
         - If a full period have passed, reset the relevant counters.
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
-        updated_sbf                         = self.updated_indicator.gen_SimpleBloomFilter ()
+        if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
+            updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
+        else: # Generate a new SBF
+            updated_sbf = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
+            updated_sbf.add_all (keys=[key for key in self.cache])
         ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
         self.total_ad_size_in_this_period  += ad_size
+        self.overall_ad_size               += ad_size
         bw_in_cur_interval                  = self.total_ad_size_in_this_period / self.ins_cnt_in_this_period                              
         self.stale_indicator                = updated_sbf 
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
@@ -294,29 +302,26 @@ class DataStore (object):
         """
         Advertise an updated indicator, while in full mode:
         """
-        # Advertise an indicator by extracting a fresh (SBF) indicator from the updated (CBF) indicator
         if self.use_CountingBloomFilter: 
-            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
-            if (self.consider_delta_updates):
-                delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
+        else: # Generate a new SBF
+            updated_sbf = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
+            updated_sbf.add_all (keys=[key for key in self.cache])
+        if (self.consider_delta_updates):
+            delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+            if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.ind_size)) 
+            if delta_ad_size < self.ind_size: # if advertising delta is cheaper, we'll switch to delta mode
+                self.in_delta_mode                = True
+                self.ins_cnt_in_this_period       = 0
+                self.total_ad_size_in_this_period = 0
+                bw_in_cur_interval                = 0                              
                 if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                    printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.ind_size)) 
-                if delta_ad_size < self.ind_size: # if advertising delta is cheaper, we'll switch to delta mode
-                    self.in_delta_mode                = True
-                    self.ins_cnt_in_this_period       = 0
-                    self.total_ad_size_in_this_period = 0
-                    bw_in_cur_interval                = 0                              
-                    if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                        printf (self.q_output_file, 'switching to delta mode. ad_size={}\n' .format(delta_ad_size))
-                    self.stale_indicator = updated_sbf # finished advertise a delta-mode --> can return 
-                    return 
-                else: # delta update isn't cheaper
-                    self.stale_indicator = updated_sbf # finished advertise a delta-mode --> can return 
-                #     if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                #         printf (self.q_output_file, 'advertising full ind. overall_ad_size={:.0f}\n' .format (self.total_ad_size_in_this_period)) 
-            # else: # no delta updates --> use only full updates 
-        else: # required to use only SBF (no CBF)
-            self.stale_indicator.add_all (keys=[key for key in self.cache])
+                    printf (self.q_output_file, 'switching to delta mode. ad_size={}\n' .format(delta_ad_size))
+                self.stale_indicator = updated_sbf # finished advertise a delta-mode --> can return 
+                return 
+        self.stale_indicator = updated_sbf  
+
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.ind_size, self.num_of_hashes)
@@ -330,7 +335,7 @@ class DataStore (object):
                 self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 
         
-        if (self.scale_ind_factor!=1): # and called_by_str!='max_uInterval'): # consider scaling the indicator and the uInterval
+        if (self.scale_ind_factor!=1): # consider scaling the indicator and the uInterval
             if (called_by_str=='mr0'):
                 self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
@@ -339,6 +344,7 @@ class DataStore (object):
                 self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
+        self.overall_ad_size += self.ind_size
 
     def advertise_ind (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     

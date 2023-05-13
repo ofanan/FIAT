@@ -320,7 +320,9 @@ class DataStore (object):
                     printf (self.q_output_file, 'switching to delta mode. ad_size={}\n' .format(delta_ad_size))
                 self.stale_indicator = updated_sbf # finished advertise a delta-mode --> can return 
                 return 
-        self.stale_indicator = updated_sbf  
+        
+        if self.scale_ind_factor==1:
+            self.stale_indicator = updated_sbf # if not scaling the ind', the stale indicator is merely the current updated ind'
 
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
@@ -337,13 +339,16 @@ class DataStore (object):
         
         if (self.scale_ind_factor!=1): # consider scaling the indicator and the uInterval
             if (called_by_str=='mr0'):
-                self.scale_ind_n_uInterval(factor=max(1/self.scale_ind_factor, self.min_bpe/self.bpe))
-                if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                    printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
+                scale_ind_by = max(1/self.scale_ind_factor, self.min_bpe/self.bpe) 
             elif (called_by_str=='mr1'): # too many FPs --> enlarge the indicator
-                self.scale_ind_n_uInterval(factor=min(self.scale_ind_factor, self.max_bpe/self.bpe))
+                scale_ind_by = min(self.scale_ind_factor, self.max_bpe/self.bpe)
+            if scale_ind_by!=1:
+                self.scale_ind_n_uInterval(factor=scale_ind_by)
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
+                # Generate a new indicator, at the correct size
+                self.stale_indicator = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
+                self.stale_indicator.add_all (keys=[key for key in self.cache])
         self.overall_ad_size += self.ind_size
 
     def advertise_ind (self, 

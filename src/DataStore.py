@@ -124,7 +124,7 @@ class DataStore (object):
         self.delta_th                = self.ind_size / self.lg_ind_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
         self.num_of_advertisements   = 0
-        self.ins_cnt_in_this_period  = np.uint32 (0) # cnt of insertions since the last advertisement of fresh indicator
+        self.ins_cnt_in_this_period  = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
@@ -229,26 +229,12 @@ class DataStore (object):
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0
 
-        if self.ins_cnt_in_this_period >= self.max_uInterval:
-            self.advertise_ind (called_by_str='max_uInterval')
-            self.ins_cnt_in_this_period = 0 
-            return
-
         # now we know that this is an alg' that dynamically-scales the uInterval 
         if self.in_delta_mode:
-            if self.ins_cnt_in_this_period % self.min_feasible_uInterval == 0:
-                return self.advertise_ind (called_by_str='delta mode')
+            self.handle_ind_delta_mode ()
+        else:
+            self.handle_ind_full_mode ()
 
-        # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
-        if self.hist_based_uInterval and not(self.in_delta_mode):
-            if (self.ins_cnt_in_this_period>=self.min_uInterval):
-                if self.consider_advertise_by_mr0 (): # advertised
-                    self.ins_cnt_in_this_period = 0
-                    return
-                if self.consider_advertise_by_mr1 ():
-                    self.ins_cnt_in_this_period = 0
-                    return
-       
     def scale_ind_n_uInterval (self, factor):
         """
         scale the indicator and the update interval by a given factor.
@@ -273,7 +259,7 @@ class DataStore (object):
         sbf.add_all (keys=[key for key in self.cache])
         return sbf
     
-    def advertise_ind_delta_mode (self, 
+    def handle_ind_delta_mode (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     
                        ):
         """
@@ -283,6 +269,12 @@ class DataStore (object):
         - If a full period have passed, reset the relevant counters.
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
+        
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
+
         if self.ins_cnt_in_this_period>=self.period: 
             self.scale_ind_delta_mode (bw_in_cur_interval=bw_in_cur_interval)
             self.ins_cnt_in_this_period         = 0
@@ -292,26 +284,62 @@ class DataStore (object):
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:
                 self.stale_indicator            = self.genNewSBF ()
+            self.num_of_advertisements  += 1
             return # finished advertising an indicator
-        if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
-            updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
-        else: # Generate a new SBF
-            updated_sbf = self.genNewSBF () 
-        ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
-        self.total_ad_size_in_this_period  += ad_size
-        self.overall_ad_size               += ad_size
-        bw_in_cur_interval                  = self.total_ad_size_in_this_period / self.ins_cnt_in_this_period                              
-        self.stale_indicator                = updated_sbf 
-        if MyConfig.VERBOSE_LOG_Q in self.verbose:
-            printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
-                    (self.ind_size, ad_size, self.ins_cnt_in_this_period, bw_in_cur_interval)) 
+        
+        if self.ins_cnt_in_this_period % self.min_feasible_uInterval == 0:
+            self.advertise_ind (called_by_str='delta mode')
 
-    def advertise_ind_full_mode (self, 
-                       called_by_str = 'Unknown' # an optional string, identifying the caller.     
-                       ):
+            if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
+                updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
+            else: # Generate a new SBF
+                updated_sbf = self.genNewSBF () 
+            ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+            self.total_ad_size_in_this_period  += ad_size
+            self.overall_ad_size               += ad_size
+            bw_in_cur_interval                  = self.total_ad_size_in_this_period / self.ins_cnt_in_this_period                              
+            self.stale_indicator                = updated_sbf 
+            self.num_of_advertisements  += 1
+            if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
+                        (self.ind_size, ad_size, self.ins_cnt_in_this_period, bw_in_cur_interval)) 
+
+    def handle_ind_full_mode (self):
         """
         Advertise an updated indicator, while in full mode:
         """
+                       # called_by_str = 'Unknown' # an optional string, identifying the caller.     
+                       # ):
+        
+        if self.ins_cnt_in_this_period >= self.max_uInterval:
+            self.advertise_ind_full_mode (called_by_str='max_uInterval')
+            self.ins_cnt_in_this_period = 0 
+            return
+
+        if not (self.hist_based_uInterval):
+            return
+        
+        # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
+        if (self.ins_cnt_in_this_period>=self.min_uInterval):
+            if self.consider_advertise_by_mr0 (): 
+                self.advertise_ind_full_mode (called_by_str='mr0')
+                self.ins_cnt_in_this_period = 0
+                return
+            if self.consider_advertise_by_mr1 ():
+                self.advertise_ind_full_mode (called_by_str='mr1')
+                self.ins_cnt_in_this_period = 0
+                return
+       
+        
+    def advertise_ind_full_mode (self):
+        
+        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
+        self.num_of_advertisements  += 1
+
+
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
         else: # Generate a new SBF
@@ -367,16 +395,11 @@ class DataStore (object):
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
         
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
-        self.num_of_advertisements  += 1
-        
-        if (self.in_delta_mode):
-            self.advertise_ind_delta_mode(called_by_str)
-        else:
-            self.advertise_ind_full_mode (called_by_str)
+        #
+        # if (self.in_delta_mode):
+        #     self.advertise_ind_delta_mode()
+        # else:
+        #     self.advertise_ind_full_mode (called_by_str)
         
         # self.updated_mr0, self.updated_mr1 = False, False # indicate that mr0, mr1 weren't updated since the last advertisement        
             
@@ -429,11 +452,9 @@ class DataStore (object):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                     (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
-                    self.advertise_ind (called_by_str='mr0')
                     return True
             else:
                 if self.mr0_cur < self.mr0_ad_th: 
-                    self.advertise_ind (called_by_str='mr0')
                     return True
         return False
      
@@ -448,8 +469,6 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_in_this_period)) 
-        # if self.hist_based_uInterval and (self.num_of_advertisements>0):
-        #     self.consider_advertise_by_mr1 ()
         self.fp_events_cnt = int(0)
         
     def consider_advertise_by_mr1 (self):
@@ -463,11 +482,9 @@ class DataStore (object):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                      self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):
-                    self.advertise_ind (called_by_str='mr1')
                     return True
             else:           
                 if self.mr1_cur > self.mr1_ad_th: 
-                    self.advertise_ind (called_by_str='mr1')
                     return True
         return False
         

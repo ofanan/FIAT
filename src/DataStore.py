@@ -267,6 +267,11 @@ class DataStore (object):
         if (self.use_only_updated_ind):
             return (key in self.updated_indicator)
         return (key in self.stale_indicator)
+
+    def genNewSBF (self):
+        sbf = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
+        sbf.add_all (keys=[key for key in self.cache])
+        return sbf
     
     def advertise_ind_delta_mode (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     
@@ -278,11 +283,20 @@ class DataStore (object):
         - If a full period have passed, reset the relevant counters.
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
+        if self.ins_cnt_in_this_period>=self.period: 
+            self.scale_ind_delta_mode (bw_in_cur_interval=bw_in_cur_interval)
+            self.ins_cnt_in_this_period         = 0
+            self.total_ad_size_in_this_period   = 0
+            self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
+            if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
+                self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
+            else:
+                self.stale_indicator            = self.genNewSBF ()
+            return # finished advertising an indicator
         if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
             updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
         else: # Generate a new SBF
-            updated_sbf = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
-            updated_sbf.add_all (keys=[key for key in self.cache])
+            updated_sbf = self.genNewSBF () 
         ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
         self.total_ad_size_in_this_period  += ad_size
         self.overall_ad_size               += ad_size
@@ -291,10 +305,6 @@ class DataStore (object):
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
                     (self.ind_size, ad_size, self.ins_cnt_in_this_period, bw_in_cur_interval)) 
-        if self.ins_cnt_in_this_period>=self.period: 
-            self.scale_ind_delta_mode (bw_in_cur_interval=bw_in_cur_interval)
-            self.ins_cnt_in_this_period         = 0
-            self.total_ad_size_in_this_period   = 0
 
     def advertise_ind_full_mode (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     
@@ -305,8 +315,7 @@ class DataStore (object):
         if self.use_CountingBloomFilter: 
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
         else: # Generate a new SBF
-            updated_sbf = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
-            updated_sbf.add_all (keys=[key for key in self.cache])
+            updated_sbf = self.genNewSBF ()
         if (self.consider_delta_updates):
             delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
@@ -347,8 +356,7 @@ class DataStore (object):
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.max_uInterval))
                 # Generate a new indicator, at the correct size
-                self.stale_indicator = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
-                self.stale_indicator.add_all (keys=[key for key in self.cache])
+                self.stale_indicator = self.genNewSBF ()
         self.overall_ad_size += self.ind_size
 
     def advertise_ind (self, 

@@ -570,7 +570,7 @@ class Res_file_parser (object):
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa wo reinit each ad and mr0_th eq 0.9.res')
+my_Res_file_parser.parse_file ('salsa.res')
 # my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85_no_init_mr0_at_ad.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

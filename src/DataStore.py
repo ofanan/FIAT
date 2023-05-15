@@ -131,7 +131,7 @@ class DataStore (object):
         self.min_feasible_uInterval  = 10
         self.uInterval_factor        = uInterval_factor
         # self.max_uInterval           = max_uInterval
-        self.period                  = self.min_uInterval #$$$ 10 * self.uInterval_factor * self.min_uInterval 
+        self.period                  = 5 * self.uInterval_factor * self.min_uInterval 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 

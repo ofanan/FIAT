@@ -131,7 +131,7 @@ class DataStore (object):
         self.min_feasible_uInterval  = 10
         self.uInterval_factor        = uInterval_factor
         # self.max_uInterval           = max_uInterval
-        self.period                  = 10 * self.uInterval_factor * self.min_uInterval 
+        self.period                  = self.min_uInterval #$$$ 10 * self.uInterval_factor * self.min_uInterval 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -394,10 +394,9 @@ class DataStore (object):
         Scale the indicator (if needed) while in "delta" mode.
         Update stat, and consider reverting to full_indicator mode, if needed.
         """
-        desiredRatio                = self.bw_budget / bw_in_cur_interval
         cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
-        diffs_from_desiredRatio     = [abs (item/curIndSize_lg_curIndSize - desiredRatio) for item in self.potential_indSize_lg_indSize]
+        diffs_from_desiredRatio     = [abs (self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize - (self.bw_budget - self.potential_indSize[i])/ bw_in_cur_interval) for i in range(len(self.potential_indSize))]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         if idx==0 and bw_in_cur_interval * self.potential_indSize_lg_indSize[0]/curIndSize_lg_curIndSize > self.bw_budget:
             self.min_uInterval = int (self.ind_size / self.bw_budget) 

@@ -83,7 +83,7 @@ class DataStore (object):
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
         self.total_ad_size_in_this_period = 0 # the ind' may be scaled, so need to measure the overall ind' size
-        self.min_bpe                 = 5
+        self.min_bpe                 = 2.5
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe

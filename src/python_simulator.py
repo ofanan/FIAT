@@ -41,10 +41,10 @@ class Simulator(object):
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
         
         # generate the initial string, that does not include the mode information
-        if (self.min_uInterval==self.max_uInterval):
-            uInterval_str = '{:.0f}' .format(self.max_uInterval)
+        if self.uInterval_factor==1: #(self.min_uInterval==self.max_uInterval):
+            uInterval_str = '{:.0f}' .format(self.min_uInterval)
         else:
-            uInterval_str = '{:.0f}-{:.0f}' .format(self.min_uInterval, self.max_uInterval)
+            uInterval_str = '{:.0f}-{:.0f}' .format(self.min_uInterval, self.min_uInterval*self.uInterval_factor)
         settings_str = \
             '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{}' .format (
             self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
@@ -81,7 +81,7 @@ class Simulator(object):
             size                    = self.DS_size, 
             bpe                     = self.bpe,
             min_uInterval           = self.min_uInterval,
-            max_uInterval           = self.max_uInterval,
+            uInterval_factor        = self.uInterval_factor,
             consider_delta_updates  = self.consider_delta_updates,
             mr_output_file          = self.mr_output_file[i], 
             collect_mr_stat         = collect_mr_stat,  
@@ -268,6 +268,7 @@ class Simulator(object):
             self.max_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
             self.advertise_cycle_of_DS = np.array ( [ds_id * self.max_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         else:
+            self.uInterval_factor = uInterval_factor
             self.max_uInterval = self.min_uInterval * self.uInterval_factor
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.max_uInterval == 1) else False
@@ -292,7 +293,6 @@ class Simulator(object):
             self.use_perfect_hist           = False
         
         if (self.mode == 'fnaa'):
-            self.min_uInterval              = self.max_uInterval
             self.calc_mr_by_hist            = False
             self.hist_based_uInterval       = False
             self.hit_ratio_based_uInterval  = False

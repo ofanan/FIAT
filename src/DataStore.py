@@ -145,7 +145,6 @@ class DataStore (object):
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         
         if self.consider_delta_updates and self.scale_ind_factor!=1: # if needed, pre-compute values for Lambert function (scaling of the ind' at delta mode)
-            self.scaled_ind_delta_mode  = False # indicates that the indicator wasn't yet scaled during a delta mode,             
             bpe                         = self.min_bpe
             self.potential_indSize      = []
             while bpe <= self.max_bpe:
@@ -403,7 +402,6 @@ class DataStore (object):
             self.in_delta_mode = False
 
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                self.scaled_ind_delta_mode = True
                 printf (self.q_output_file, 'Switching back to full mode. cur bw={}, indSize={}, curIndSize_lg_curIndSize={}, self.potential_indSize_lg_indSize[0]={}, \n' .format 
                         (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, self.potential_indSize_lg_indSize[0]))        
             print ('Switching back to full mode. cur bw={}, indSize={}, curIndSize_lg_curIndSize={}, self.potential_indSize_lg_indSize[0]={}, \n' .format #$$$ 
@@ -417,7 +415,6 @@ class DataStore (object):
             self.bpe                    = int (self.ind_size / self.cache_size)
             self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                self.scaled_ind_delta_mode = True
                 printf (self.q_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))
                    
     def update_mr0(self):

@@ -38,9 +38,6 @@ class parSeqAccsStrat (object):
                     if (solCost < optSolCost):
                         optSol     = sol.copy ()
                         optSolCost = solCost 
-                        # print ('optSol={}, optSolCost={}' .format (optSol, optSolCost))
-        # print ('greedySol={}, greedySolCost={}' .format (optSol, optSolCost))
-        # Consider the special case of accessing none rsrc
         accsNoneCost = self.calcSolCost ([0])
         if accsNoneCost < optSolCost:
             return [[0], accsNoneCost]
@@ -56,6 +53,16 @@ class parSeqAccsStrat (object):
             self.greedySol         = sol.copy ()
             self.updatedGreedySol     = True
     
+    def dynProgAlg (self):
+        """
+        Finds a solution using dynamic programming.
+        The alg' first finds the best sols for each # of rsrcs when T=1 (can use a single slot). 
+        when inc' the # of slots to n+1, the algo' considers all the possible combinations of i rsrcs at time 0,
+        and (at most?) n+1-i rsrcs in the remainder slot.
+        , the algorithm greedily accesses one additional rsrc, in a way that minimizes the cost.
+        The alg' assumes that once it's not beneficial to add a rsrc, we've reached an optimal sol. 
+        Returns [greedySol, greedyCost], where greedySol is the solution vector, and greedyCost is its (expected) cost.  
+        """
     def greedyAlg (self):
         """
         Finds a solution using a greedy algorithm.
@@ -89,34 +96,7 @@ class parSeqAccsStrat (object):
             curSol = self.greedySol.copy ()
             if (not(self.updatedGreedySol)): # didn't decrease the cost for all options of incrementing the sol size by 1 (trying 1 more rsrc w.r.t. the previous opt sol).
                 break
-        # print ('greedySol={}, greedyCost={}' .format (self.greedySol, self.greedyCost))
         return [self.greedySol, self.greedySolCost]
-
-# p1 = 1/2
-# q1 = 1 - p1
-# c1 = 4
-# p2 = 0.2
-# q2 = 1 - p2
-# c2 = 1
-#
-# missp  = 1000
-# reward = 1000
-#
-# sol0 = [0]
-# sol1 = [c1]
-# sol2 = [c2]
-# sol1reward = reward*(1-q1) - c1
-# print ('sol1Cost={}, sol1reward={}' .format (sol1Cost, sol1reward))  
-# exit ()
-
-# q       = 0.5 # prob' of failure
-# missp   = 100
-# sol = [1,2] 
-# print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
-# sol = [2,1] 
-# print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
-# exit ()
-
 
 my_parSeqAccsStrat = parSeqAccsStrat ()
 resFile = open ('../res/parSeqAccsHomo.txt', 'w')

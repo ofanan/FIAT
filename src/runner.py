@@ -240,7 +240,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in missp_vals: 
         for mode in modes:
-            uInterval_factor = 4 if mode in ['salsa2', 'salsa3'] else 10
+            uInterval_factor = 4 if mode in ['salsa2', 'salsa3'] else 1
             res_file_name = 'salsa_minBpe5_uIntFact{}' .format (uInterval_factor) if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
             DS_size          = 10000

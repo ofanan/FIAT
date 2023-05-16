@@ -109,17 +109,16 @@ class parSeqAccsStrat (object):
 # print ('sol1Cost={}, sol1reward={}' .format (sol1Cost, sol1reward))  
 # exit ()
 
-q       = 0.5 # prob' of failure
-missp   = 100
+# q       = 0.5 # prob' of failure
+# missp   = 100
+# sol = [1,2] 
+# print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
+# sol = [2,1] 
+# print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
+# exit ()
+
 
 my_parSeqAccsStrat = parSeqAccsStrat ()
-sol = [1,2] 
-print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
-sol = [2,1] 
-print ('cost of {}={}' .format (sol, my_parSeqAccsStrat.calcSolCost (sol)))
-exit ()
-
-
 resFile = open ('../res/parSeqAccsHomo.txt', 'w')
 printf (resFile, '// gSol, oSol are the greedy solution, and optimal solution, resp.\n\n')
 for q in [0.1*i for i in range (11)]:

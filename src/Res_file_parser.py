@@ -563,14 +563,14 @@ class Res_file_parser (object):
                 plt.legend ()
             # plt.suptitle (r'$M$={}' .format (missp))
             # plt.show()
-            plt.savefig ('../res/M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+            plt.savefig ('../res/uIntFact4_M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
             plt.clf ()
                     
 
 # my_Res_file_parser.print_cache_size_plot_abs()
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa.res')
+my_Res_file_parser.parse_file ('salsa_uIntFact4.res')
 # my_Res_file_parser.parse_file ('salsa_initial_mr0_0.85_no_init_mr0_at_ad.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 # my_Res_file_parser.print_missp_bars_for_tikz ()

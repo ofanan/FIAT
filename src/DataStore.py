@@ -83,7 +83,7 @@ class DataStore (object):
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
         self.total_ad_size_in_this_period = 0 # the ind' may be scaled, so need to measure the overall ind' size
-        self.min_bpe                 = 2.5
+        self.min_bpe                 = 5
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
@@ -131,7 +131,7 @@ class DataStore (object):
         self.min_feasible_uInterval  = 10
         self.uInterval_factor        = uInterval_factor
         # self.max_uInterval           = max_uInterval
-        self.period                  = 5 * self.uInterval_factor * self.min_uInterval 
+        self.period                  = 10 * self.min_uInterval 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 

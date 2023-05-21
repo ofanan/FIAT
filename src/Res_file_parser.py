@@ -525,12 +525,10 @@ class Res_file_parser (object):
                     traces_to_print.append(self.strOfTrace[trace])
                     opt_point = [item for item in self.list_of_dicts if
                                  item['trace']      == trace and 
-                                 item['uInterval']  == 1000  and
                                  item['cache_size'] == 10    and
                                  item['num_of_DSs'] == 3     and
                                  item['missp']      == missp and
                                  item['num_of_req'] == 1000  and
-                                 item['bpe']        == 14    and
                                  item['alg_mode']   == 'Opt'] 
                     if (opt_point==[]):
                         MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
@@ -543,7 +541,7 @@ class Res_file_parser (object):
                              item['num_of_DSs']     == 3     and
                              item['missp']          == missp and
                              item['num_of_req']     == 1000  and
-                             item['bpe']            == 14    and
+                             item['bpe']            == 13    and
                              item['alg_mode']       == mode] 
                     if (point==[]): # no results for this settings  
                         continue
@@ -563,11 +561,11 @@ class Res_file_parser (object):
                 plt.legend ()
             # plt.suptitle (r'$M$={}' .format (missp))
             # plt.show()
-            plt.savefig ('../res/uIntFact4_M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+            plt.savefig ('../res/bpe13_uIntFact4_M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa_minBpe5_uIntFact4.res')
+my_Res_file_parser.parse_file ('salsa_minBpe5_bpe13_uIntFact4.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 

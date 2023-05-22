@@ -509,12 +509,12 @@ class Res_file_parser (object):
         
        
     def plot_bars_by_missp_python (self, 
-                                   mr0_th           = 0.9, 
+                                   mr0_th           = 0.85, 
                                    mr1_th           = 0.01, 
                                    uInterval        = 1000,
                                    uInterval_factor = 4, 
                                    num_of_req       = 1000,
-                                   bpe              = 14,  
+                                   bpe              = 13,  
                                    cache_size       = 10):
         """
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -587,6 +587,6 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa_minBpe5_uIntFact4.res')
+my_Res_file_parser.parse_file ('salsa_minBpe5_reinit_mr0_after_period4.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 

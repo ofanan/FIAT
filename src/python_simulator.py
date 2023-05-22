@@ -88,7 +88,7 @@ class Simulator(object):
             use_indicator           = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
-            initial_mr0             = 0.85,
+            initial_mr0             = 0.88,
             # initial_mr1 is set by the DS to its designed fpr.
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,
@@ -185,7 +185,7 @@ class Simulator(object):
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
-        self.mr0_ad_th          = 0.9 
+        self.mr0_ad_th          = 0.85 
         self.mr1_ad_th          = 0.01 
         self.verbose            = verbose # Defines the log/res data printed out to files       
         

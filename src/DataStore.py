@@ -129,7 +129,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
         self.uInterval_factor        = uInterval_factor
-        self.period                  = 10 * self.min_uInterval 
+        self.period                  = 10 * self.min_uInterval  
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -368,11 +368,13 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         
         if self.collect_mr_stat:
-            if self.ins_cnt_in_this_reinit_mr0_period >= self.period 
+            if self.ins_cnt_in_this_reinit_mr0_period >= self.period: 
             #self.init_mr0_after_each_ad:
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
                 self.ins_cnt_in_this_reinit_mr0_period = 0 
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
+                if MyConfig.VERBOSE_LOG_Q in self.verbose:
+                    printf (self.q_output_file, 'RE-INIT MR0. mr0={}\n' .format (self.mr0_cur))
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
                 self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 
@@ -408,11 +410,8 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 printf (self.q_output_file, 'Switching back to full mode. cur bw={}, indSize={}, curIndSize_lg_curIndSize={}, self.potential_indSize_lg_indSize[0]={}, \n' .format 
                         (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, self.potential_indSize_lg_indSize[0]))        
-            print ('Switching back to full mode. cur bw={}, indSize={}, curIndSize_lg_curIndSize={}, self.potential_indSize_lg_indSize[0]={}, \n' .format #$$$ 
-                  (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, self.potential_indSize_lg_indSize[0]))        
          
-         # scaled ind' size is the min' feasible val.
-             
+         # scaled ind' size is the min' feasible val.             
         new_ind_size                = self.potential_indSize[idx]
         if new_ind_size!=self.ind_size: 
             self.ind_size               = new_ind_size

@@ -241,7 +241,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     for missp in missp_vals: 
         for mode in modes:
             uInterval_factor = 4 if mode in ['salsa2', 'salsa3'] else 1
-            res_file_name = 'salsa_minBpe5_reinit_mr0_after_long_period{}' .format (uInterval_factor) if mode.startswith('salsa') else 'opt_n_fnaa'
+            res_file_name = 'salsa_minBpe5_reinit_mr0_after_period{}' .format (uInterval_factor) if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
             DS_size          = 10000
             min_uInterval    = DS_size/10
@@ -258,7 +258,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
 
 traces = [F2_trace_file_name, scarab_trace_file_name, gradle_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
 for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000000, modes=['salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES]])
+    run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000000, modes=['salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 # run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 # run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

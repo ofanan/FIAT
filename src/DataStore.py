@@ -37,21 +37,20 @@ class DataStore (object):
          designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
          use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
          initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
-         non_comp_miss_th           = 0.15, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
-         non_comp_accs_th           = 0.02, # if hist_based_uInterval and hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
+         non_comp_miss_th           = 0.15, # if (!use_fixed_uInterval) AND hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
+         non_comp_accs_th           = 0.02, # if (!use_fixed_uInterval) AND hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
          mr0_ad_th                  = 0.9,
          mr1_ad_th                  = 0.01,
          mr_output_file             = None, # When this input isn't known, log data about the mr to this file
          use_indicator              = True, # when True, generate and maintain an indicator (BF).
-         use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale). 
-         hist_based_uInterval       = False, # when True, advertise an indicator based on hist-based statistics (e.g., some threshold value of mr0, mr1, fpr, fnr).
+         use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale).
          hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
          scale_ind_factor           = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
          consider_delta_updates     = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
          init_mr0_after_each_ad     = False,
          init_mr1_after_each_ad     = False,
-         use_fixed_uInterval        = False
+         use_fixed_uInterval        = True,
          ):
         """
         Return a DataStore object. 
@@ -62,7 +61,7 @@ class DataStore (object):
         self.cache_size              = size
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str            = settings_str
-        self.hist_based_uInterval    = hist_based_uInterval # when true, send advertisements according to the hist-based estimations of mr.
+        self.use_fixed_uInterval     = use_fixed_uInterval
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
@@ -105,7 +104,7 @@ class DataStore (object):
         self.mr1_ewma_window_size    = mr1_ewma_window_size
         self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
-        if (self.hist_based_uInterval):
+        if not (self.use_fixed_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
                 self.non_comp_miss_th = non_comp_miss_th
@@ -225,10 +224,15 @@ class DataStore (object):
             self.updated_indicator.add(key)
         if (self.send_fpr_fnr_updates):
             self.ins_since_last_fpr_fnr_estimation += 1
-            if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations): 
+            if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations):
                 self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0
+
+        if self.use_fixed_uInterval:
+            if self.ins_cnt_in_this_period >= self.min_uInterval:
+                self.advertise_ind_full_mode(called_by_str='fixed uInterval')
+            return
 
         # now we know that this is an alg' that dynamically-scales the uInterval 
         if self.in_delta_mode:
@@ -318,10 +322,7 @@ class DataStore (object):
             self.advertise_ind_full_mode (called_by_str='max_uInterval')
             self.ins_cnt_in_this_period = 0 
             return
-
-        if not (self.hist_based_uInterval):
-            return
-        
+       
         # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
         if (self.ins_cnt_in_this_period>=self.min_uInterval):
             if self.consider_advertise_by_mr0 (): 
@@ -333,6 +334,8 @@ class DataStore (object):
                 self.ins_cnt_in_this_period = 0
                 return
        
+        
+        
         
     def advertise_ind_full_mode (self, called_by_str):
         
@@ -346,7 +349,7 @@ class DataStore (object):
             updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
         else: # Generate a new SBF
             updated_sbf = self.genNewSBF ()
-        if (self.consider_delta_updates):
+        if self.consider_delta_updates:
             delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.ind_size)) 
@@ -359,13 +362,16 @@ class DataStore (object):
                     printf (self.q_output_file, 'switching to delta mode. ad_size={}\n' .format(delta_ad_size))
                 self.stale_indicator = updated_sbf  
                 return # finished advertise a delta-mode --> can return
+
+        if self.use_CountingBloomFilter: # update the stale indicator also for the case of not (consider_delta_updates)
+            self.stale_indicator = updated_sbf        
         
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.ind_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         
-        if (self.collect_mr_stat):
+        if self.collect_mr_stat:
             if self.init_mr0_after_each_ad and not(self.in_delta_mode):
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0) # re-init mr0 after each ad.
@@ -429,8 +435,6 @@ class DataStore (object):
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_in_this_period)) 
-        # if self.hist_based_uInterval:
-        #     self.consider_advertise_by_mr0 ()
         self.tn_events_cnt = int(0)
         
     def consider_advertise_by_mr0 (self):

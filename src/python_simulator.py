@@ -89,7 +89,6 @@ class Simulator(object):
             EWMA_alpha              = self.EWMA_alpha,
             use_EWMA                = self.use_EWMA,
             use_indicator           = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
-            hist_based_uInterval    = self.hist_based_uInterval,
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
             initial_mr0             = 0.85,
@@ -158,7 +157,7 @@ class Simulator(object):
                  bpe = 13, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
                  use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item       = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
-                 hist_based_uInterval        = False, # when true, send advertisements according to the hist-based estimations of mr.
+                 use_fixed_uInterval         = True, 
                  hit_ratio_based_uInterval   = False, # when True, send advertisements according to the hist-based estimations of the hit ratio
                  use_global_uInerval         = False, 
                  bw                 = 0, # Determine the update interval by a given bandwidth (currently usused)
@@ -248,17 +247,7 @@ class Simulator(object):
         self.FN_miss_cnt          = 0 # num of misses happened due to FN event
         self.tot_num_of_updates   = 0
         self.bw                   = bw
-        if (self.calc_mr_by_hist):
-            self.hist_based_uInterval        = hist_based_uInterval
-            self.hit_ratio_based_uInterval   = hit_ratio_based_uInterval
-        else:
-            print ('Note: running FNAA, and therefore setting hist_based_uInterval=False')
-            self.hist_based_uInterval        = False
-            self.hit_ratio_based_uInterval   = False # when True, send advertisements according to the hist-based estimations of the hit ratio 
-        
-        if (self.hit_ratio_based_uInterval and not(self.hist_based_uInterval)):
-            MyConfig.error ('hit_ratio_based_uInterval is currently supported only if hist_based_uInterval==True')
-        
+               
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
         self.use_global_uInerval = use_global_uInerval
@@ -294,12 +283,12 @@ class Simulator(object):
         
         if (self.mode == 'fnaa'):
             self.calc_mr_by_hist            = False
-            self.hist_based_uInterval       = False
+            self.use_fixed_uInterval        = True
             self.hit_ratio_based_uInterval  = False
         
         if self.mode.startswith('salsa'):
             self.calc_mr_by_hist            = True
-            self.hist_based_uInterval       = True
+            self.use_fixed_uInterval        = False
             self.hit_ratio_based_uInterval  = False
         else:
             self.consider_delta_updates     = False
@@ -322,10 +311,7 @@ class Simulator(object):
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
-            if (self.bpe==14):
-                self.initial_mr1    = 0.001 # The inherent (designed) positive exclusion prob', stemmed from inaccuracy of the indicator. Note that this is NOT exactly fpr
-            else:
-                self.initial_mr1 = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
+            self.initial_mr1    = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
             self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
@@ -425,9 +411,8 @@ class Simulator(object):
             printf (res_file, ' avg update interval = INF')
         else:
             printf (res_file, ' avg update interval = {:.1f} req' .format (float(self.req_cnt) / avg_num_of_ads))
-        if self.hist_based_uInterval:
-            if self.hit_ratio_based_uInterval:
-                printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
+        if self.hit_ratio_based_uInterval:
+            printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
         printf (res_file, '\n')
@@ -482,12 +467,10 @@ class Simulator(object):
         Used to decide whether to send an update when updates are sent "globally", namely, by some global requests count, 
         and not by the number of insertions of each concrete DS. 
         """
-        if (not(self.use_global_uInerval)): # To be used only if we have a "globally calculated uInterval"
-            return
         remainder = self.req_cnt % self.max_uInterval
         for ds_id in range (self.num_of_DSs):
             if (remainder == self.advertise_cycle_of_DS[ds_id]):
-                self.DS_list[ds_id].advertise_ind ()
+                self.DS_list[ds_id].advertise_ind_full_mode ()
                 self.tot_num_of_updates += 1
 
 
@@ -496,8 +479,9 @@ class Simulator(object):
         Run a full trace where the access strategy is the PGM, as proposed in the journal paper "Access Strategies for Network Caching".
         This algorithm is FNO: False-Negative Oblivious, namely, it never accesses a cache with a negative indication.
         """
-        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            self.consider_advertise ()
+        for self.req_cnt in range(self.trace_len): # for each request in the trace...
+            if self.use_global_uInerval:
+                self.consider_advertise ()
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id()
             
@@ -543,12 +527,13 @@ class Simulator(object):
         """
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
+            if self.use_global_uInerval:
+                self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
             for i in range (self.num_of_DSs):
                 self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
-            if (self.calc_mr_by_hist):
+            if self.calc_mr_by_hist:
                 if self.use_perfect_hist:
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
                 else:
@@ -584,9 +569,6 @@ class Simulator(object):
         - Update mr0, mr1, accordingly.
         """
         
-        if (self.hist_based_uInterval): # in a hist-based uInterval, we need a "warmup" first advertisement
-            for DS in self.ds_list:
-                DS.advertise_ind () 
         for ds in range (self.num_of_DSs):
             
             # The lines below reset the estimators and counters when the DS advertises a new indicator. 
@@ -689,7 +671,7 @@ class Simulator(object):
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         self.insert_key_to_DSs ()
-        if (self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
+        if (MyConfig.VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
             MyConfig.error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
 
     def insert_key_to_closest_DS(self, req):

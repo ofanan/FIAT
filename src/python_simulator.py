@@ -41,10 +41,7 @@ class Simulator(object):
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
         
         # generate the initial string, that does not include the mode information
-        if self.uInterval_factor==1: 
-            uInterval_str = '{:.0f}' .format(self.min_uInterval)
-        else:
-            uInterval_str = '{:.0f}-{:.0f}' .format(self.min_uInterval, self.min_uInterval*self.uInterval_factor)
+        uInterval_str = '{:.0f}' .format(self.min_uInterval)
         settings_str = \
             '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{}' .format (
             self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
@@ -64,7 +61,7 @@ class Simulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = '{}.mr0th_{}_mr1th_{}_uIntFact{}' .format (settings_str, self.mr0_ad_th, self.mr1_ad_th, self.uInterval_factor) 
+            settings_str = '{}.mr0th{}.mr1th{}.uIntFact{}' .format (settings_str, self.mr0_ad_th, self.mr1_ad_th, self.uInterval_factor) 
         return settings_str
     
     def init_DS_list(self):

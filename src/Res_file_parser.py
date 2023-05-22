@@ -165,7 +165,7 @@ class Res_file_parser (object):
             return # no further data in this .res entry
         self.dict['mr0_th'] = float (splitted_line [mr0th_idx].split("mr0th")[1])
         self.dict['mr1_th'] = float (splitted_line [mr1th_idx].split("mr1th")[1])
-        self.dict['uInterval_factor'] = float (splitted_line [uInterval_factor_idx].split("uInterval factor")[1])
+        self.dict['uInterval_factor'] = float (splitted_line [uInterval_factor_idx].split("uIntFact")[1])
          
     def print_tbl (self):
         """
@@ -556,7 +556,7 @@ class Res_file_parser (object):
                     # remove all points of other mcdes
                     relevant_points = [item for item in relevant_points if item['alg_mode'] == mode]
                     relevant_points = [item for item in relevant_points if
-                                        item['bpe']           == bpe and  
+                                       item['bpe']           == bpe and  
                                        item['min_uInterval'] == uInterval] 
                     if (relevant_points==[]): # no results for this settings  
                         continue
@@ -582,7 +582,7 @@ class Res_file_parser (object):
                 plt.legend ()
             # plt.suptitle (r'$M$={}' .format (missp))
             # plt.show()
-            plt.savefig ('../res/new_uIntFact4_M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+            plt.savefig ('../res/M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()

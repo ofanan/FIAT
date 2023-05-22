@@ -41,7 +41,7 @@ class Simulator(object):
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
         
         # generate the initial string, that does not include the mode information
-        if self.uInterval_factor==1: #(self.min_uInterval==self.max_uInterval):
+        if self.uInterval_factor==1: 
             uInterval_str = '{:.0f}' .format(self.min_uInterval)
         else:
             uInterval_str = '{:.0f}-{:.0f}' .format(self.min_uInterval, self.min_uInterval*self.uInterval_factor)
@@ -254,13 +254,10 @@ class Simulator(object):
         self.min_uInterval       = min_uInterval
         self.uInterval_factor    = uInterval_factor 
         if self.use_global_uInerval:
-            self.max_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
-            self.advertise_cycle_of_DS = np.array ( [ds_id * self.max_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
-        else:
-            self.uInterval_factor = uInterval_factor
-            self.max_uInterval = self.min_uInterval * self.uInterval_factor
+            self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
+            self.advertise_cycle_of_DS = np.array ( [ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         self.cur_updating_DS = 0
-        self.use_only_updated_ind = True if (self.max_uInterval == 1) else False
+        self.use_only_updated_ind = True if (self.min_uInterval == 1 and self.uInterval_factor==1) else False
         self.num_of_insertions_between_estimations = np.uint8 (150)
         if (self.num_of_clients == 1):
             self.use_given_client_per_item = False # if there's only 1 client, all requests belong to this client, disregarding what was pre-computed in the trace file.
@@ -270,7 +267,7 @@ class Simulator(object):
 
         self.avg_DS_accessed_per_req = float(0)
         if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
-            lg_uInterval = np.log2 (self.max_uInterval).astype (int)
+            lg_uInterval = np.log2 (self.min_uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
@@ -433,7 +430,7 @@ class Simulator(object):
                     self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
             else: # miss
                 self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
-        printf (self.res_file, '({}, {})' .format (self.max_uInterval, self.FN_miss_cnt/self.hit_cnt))               
+        printf (self.res_file, '({}, {})' .format (self.min_uInterval, self.FN_miss_cnt/self.hit_cnt))               
 
     def run_trace_opt_hetro (self):
         """
@@ -467,7 +464,7 @@ class Simulator(object):
         Used to decide whether to send an update when updates are sent "globally", namely, by some global requests count, 
         and not by the number of insertions of each concrete DS. 
         """
-        remainder = self.req_cnt % self.max_uInterval
+        remainder = self.req_cnt % self.min_uInterval
         for ds_id in range (self.num_of_DSs):
             if (remainder == self.advertise_cycle_of_DS[ds_id]):
                 self.DS_list[ds_id].advertise_ind_full_mode ()

@@ -30,7 +30,6 @@ class DataStore (object):
          verbose                    = [],# what output will be written. See macros in MyConfig.py 
          min_uInterval              = 1, # min num of insertions of new items into the cache before advertising again
          uInterval_factor           = 1, 
-         # max_uInterval              = 1, # max num of insertions of new items into the cache before advertising again
          send_fpr_fnr_updates       = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
          collect_mr_stat            = True,  
          analyse_ind_deltas         = True, # analyze the differences between the stale (last advertised) and the current, updated, indicator
@@ -129,7 +128,6 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
         self.uInterval_factor        = uInterval_factor
-        # self.max_uInterval           = max_uInterval
         self.period                  = 10 * self.min_uInterval 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
@@ -246,7 +244,6 @@ class DataStore (object):
         """
         self.bpe           *= factor
         self.min_uInterval  = int (self.min_uInterval * factor)
-        # self.max_uInterval  = int (self.max_uInterval * factor)
         self.ind_size       = int (self.ind_size       * factor) 
         self.num_of_hashes  = MyConfig.get_optimal_num_of_hashes (self.bpe)
 
@@ -315,9 +312,6 @@ class DataStore (object):
         """
         Advertise an updated indicator, while in full mode:
         """
-                       # called_by_str = 'Unknown' # an optional string, identifying the caller.     
-                       # ):
-        
         if self.ins_cnt_in_this_period >= self.min_uInterval * self.uInterval_factor:
             self.advertise_ind_full_mode (called_by_str='max_uInterval')
             self.ins_cnt_in_this_period = 0 

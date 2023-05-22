@@ -45,28 +45,28 @@ def calc_DS_cost (num_of_DSs = 3, use_homo_DS_cost = False):
     else:
         return calc_hetro_costs(num_of_DSs, num_of_clients)
 
-def run_max_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
-    """
-    Run a simulation where the running parameter is max_uInterval.
-    """
-    max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
-    num_of_DSs          = 3
-    requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req)
-    trace_file_name     = trace_file_name.split("/")[0]
-    num_of_req          = requests.shape[0]
-    DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    res_file_name       = 'uInterval' #open ("../res/" + trace_file_name + "_max_uInterval.res", "a")
-    
-    print("now = ", datetime.now(), 'running uInterval sim')
-    for mode in ['fna']:  
-        calc_mr_by_hist = False
-        for min_uInterval in [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16]:
-            if (mode == 'fna' and not(calc_mr_by_hist) and min_uInterval < 50): # When max_uInterval < parameters updates interval, FNO and FNA are identical, so no need to run also FNA
-                continue
-            tic()
-            sm = sim.Simulator(res_file_name, trace_file_name, mode, requests, DS_cost, min_uInterval = min_uInterval, calc_mr_by_hist=calc_mr_by_hist)        
-            sm.run_simulator()
-            toc()
+# def run_max_uInterval_sim (trace_file_name, use_homo_DS_cost = False):
+#     """
+#     Run a simulation where the running parameter is max_uInterval.
+#     """
+#     max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
+#     num_of_DSs          = 3
+#     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req)
+#     trace_file_name     = trace_file_name.split("/")[0]
+#     num_of_req          = requests.shape[0]
+#     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
+#     res_file_name       = 'uInterval' #open ("../res/" + trace_file_name + "_max_uInterval.res", "a")
+#
+#     print("now = ", datetime.now(), 'running uInterval sim')
+#     for mode in ['fna']:  
+#         calc_mr_by_hist = False
+#         for min_uInterval in [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16]:
+#             if (mode == 'fna' and not(calc_mr_by_hist) and min_uInterval < 50): # When max_uInterval < parameters updates interval, FNO and FNA are identical, so no need to run also FNA
+#                 continue
+#             tic()
+#             sm = sim.Simulator(res_file_name, trace_file_name, mode, requests, DS_cost, min_uInterval = min_uInterval, calc_mr_by_hist=calc_mr_by_hist)        
+#             sm.run_simulator()
+#             toc()
 
 def run_cache_size_sim (trace_file_name, use_homo_DS_cost = False):
     """

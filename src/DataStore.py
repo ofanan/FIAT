@@ -371,7 +371,8 @@ class DataStore (object):
             if self.ins_cnt_in_this_reinit_mr0_period >= self.period 
             #self.init_mr0_after_each_ad:
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
-                self.mr0_cur = min (self.mr0_cur, self.initial_mr0) 
+                self.ins_cnt_in_this_reinit_mr0_period = 0 
+                self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
                 self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 

@@ -142,7 +142,7 @@ class Res_file_parser (object):
             print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
             return False
 
-        self.dict['bpe'] = int (splitted_line [bpe_idx].split("bpe")[1]),
+        self.dict['bpe'] = int (splitted_line [bpe_idx].split("bpe")[1])
         if (bwCost != None):
             self.dict['bwCost'] = bwCost
             
@@ -513,7 +513,8 @@ class Res_file_parser (object):
                                    mr1_th           = 0.01, 
                                    uInterval        = 1000,
                                    uInterval_factor = 4, 
-                                   num_of_req       = 1000, 
+                                   num_of_req       = 1000,
+                                   bpe              = 14,  
                                    cache_size       = 10):
         """
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -553,8 +554,9 @@ class Res_file_parser (object):
                     opt_serviceCost = opt_point[0]['serviceCost']
                     
                     # remove all points of other mcdes
-                    relevant_points = [item for item in relevant_points if item['alg_mode']      == mode]
-                    relevant_points = [item for item in relevant_points if 
+                    relevant_points = [item for item in relevant_points if item['alg_mode'] == mode]
+                    relevant_points = [item for item in relevant_points if
+                                        item['bpe']           == bpe and  
                                        item['min_uInterval'] == uInterval] 
                     if (relevant_points==[]): # no results for this settings  
                         continue
@@ -580,7 +582,7 @@ class Res_file_parser (object):
                 plt.legend ()
             # plt.suptitle (r'$M$={}' .format (missp))
             # plt.show()
-            plt.savefig ('../res/bpe13_uIntFact4_M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+            plt.savefig ('../res/new_uIntFact4_M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()

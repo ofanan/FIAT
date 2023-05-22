@@ -124,6 +124,7 @@ class DataStore (object):
         self.update_bw               = 0
         self.num_of_advertisements   = 0
         self.ins_cnt_in_this_period  = 0 # cnt of insertions since the last advertisement of fresh indicator
+        self.ins_cnt_in_this_reinit_mr0_period = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
@@ -216,6 +217,7 @@ class DataStore (object):
             return
         
         self.ins_cnt_in_this_period += 1
+        self.ins_cnt_in_this_reinit_mr0_period += 1
         if self.use_CountingBloomFilter:
             if (self.cache.currSize() == self.cache.size()): # if cache is full, remove the victim item from the CBF
                 self.updated_indicator.remove(self.cache.get_tail())
@@ -366,9 +368,10 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         
         if self.collect_mr_stat:
-            if self.init_mr0_after_each_ad and not(self.in_delta_mode):
+            if self.ins_cnt_in_this_reinit_mr0_period >= self.period 
+            #self.init_mr0_after_each_ad:
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
-                self.mr0_cur = min (self.mr0_cur, self.initial_mr0) # re-init mr0 after each ad.
+                self.mr0_cur = min (self.mr0_cur, self.initial_mr0) 
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
                 self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 

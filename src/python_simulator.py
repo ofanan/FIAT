@@ -36,7 +36,7 @@ class Simulator(object):
 
     def gen_settings_string (self, num_of_req=None):
         """
-        Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_file_name, update intervals etc.). 
+        Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_name, update intervals etc.). 
         """
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
         
@@ -44,7 +44,7 @@ class Simulator(object):
         uInterval_str = '{:.0f}' .format(self.min_uInterval)
         settings_str = \
             '{}.C{:.0f}K.bpe{:.0f}.{:.0f}Kreq.{:.0f}DSs.Kloc{:.0f}.M{:.0f}.B{:.0f}.U{}' .format (
-            self.trace_file_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
+            self.trace_name, self.DS_size/1000, self.bpe, num_of_req/1000, 
             self.num_of_DSs, self.k_loc, self.missp, self.bw, uInterval_str)
         
         # Add the string representing the mode   
@@ -98,7 +98,7 @@ class Simulator(object):
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
             scale_ind_factor        = self.scale_ind_factor,
-            init_mr0_after_each_ad  = True,               
+            init_mr0_after_each_ad  = False,               
             init_mr1_after_each_ad  = False,               
             use_fixed_uInterval     = (self.mode in ['fno', 'fnaa']),
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
@@ -149,7 +149,7 @@ class Simulator(object):
             return res_file
 
 
-    def __init__(self, res_file_name, trace_file_name, 
+    def __init__(self, res_file_name, trace_name, 
                  mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
                  bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
                  use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
@@ -185,7 +185,7 @@ class Simulator(object):
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
-        self.mr0_ad_th          = 0.85 
+        self.mr0_ad_th          = 0.88 
         self.mr1_ad_th          = 0.01 
         self.verbose            = verbose # Defines the log/res data printed out to files       
         
@@ -194,7 +194,7 @@ class Simulator(object):
         if (MyConfig.VERBOSE_FULL_RES in self.verbose):
             self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
         
-        self.trace_file_name    = trace_file_name
+        self.trace_name         = trace_name
         self.missp              = missp
         self.DS_size            = DS_size
         self.bpe                = bpe

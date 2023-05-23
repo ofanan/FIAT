@@ -514,7 +514,7 @@ class Res_file_parser (object):
                                    uInterval        = 1000,
                                    uInterval_factor = 4, 
                                    num_of_req       = 1000,
-                                   bpe              = 13,  
+                                   bpe              = 14,  
                                    cache_size       = 10):
         """
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -586,7 +586,7 @@ class Res_file_parser (object):
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_file ('Opt_n_fnaa.res')
+my_Res_file_parser.parse_file ('opt_n_fnaa_PC.res')
 my_Res_file_parser.parse_file ('salsa_minBpe5_reinit_mr0_after_period4.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 

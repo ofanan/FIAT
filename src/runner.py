@@ -87,7 +87,7 @@ def run_cache_size_sim (trace_file_name, use_homo_DS_cost = False):
             for alg_mode in ['f']: 
                 print("now = ", datetime.now(), 'running cache_size sim')
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, DS_size = DS_size, calc_mr_by_hist=True, use_fresh_hist=False)
+                sm = sim.Simulator(res_file_name, trace_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, DS_size = DS_size, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
                      
@@ -100,17 +100,17 @@ def run_bpe_sim (trace_file_name, use_homo_DS_cost = False):
     max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
     num_of_DSs          = 3
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req)
-    trace_file_name     = trace_file_name.split("/")[0]
+    trace_name          = MyConfig.get_trace_name (trace_file_name)
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
-    res_file_name       = 'bpe' #open ("../res/" + trace_file_name + "_bpe.res", "a")
+    res_file_name       = 'bpe' #open ("../res/" + trace_name + "_bpe.res", "a")
                        
     print("now = ", datetime.now(), 'running bpe sim')
     for bpe in [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
         for max_uInterval in [1024, 256]:
             for alg_mode in ['fno']:              
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, bpe = bpe, max_uInterval = max_uInterval, calc_mr_by_hist=True, use_fresh_hist=False) 
+                sm = sim.Simulator(res_file_name, trace_name, alg_mode, requests, DS_cost, bpe = bpe, max_uInterval = max_uInterval, calc_mr_by_hist=True, use_fresh_hist=False) 
                 sm.run_simulator()
                 toc()
 
@@ -124,7 +124,7 @@ def run_num_of_caches_sim (trace_file_name, use_homo_DS_cost = True):
     DS_size             = 10000
     max_num_of_req      = 4300000 # Shorten the num of requests for debugging / shorter runs
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req)
-    trace_file_name     = trace_file_name.split("/")[0]
+    trace_name          = MyConfig.get_trace_name (trace_file_name)
     num_of_req          = requests.shape[0]
     res_file_name       = 'num_of_caches' #open ("../res/" + trace_file_name + "_num_of_caches.res", "a")
     
@@ -140,7 +140,7 @@ def run_num_of_caches_sim (trace_file_name, use_homo_DS_cost = True):
                         
                 print("now = ", datetime.now(), 'running num of caches sim')
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, calc_mr_by_hist=True, use_fresh_hist=False)
+                sm = sim.Simulator(res_file_name, trace_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
 
@@ -155,7 +155,7 @@ def run_k_loc_sim (trace_file_name, use_homo_DS_cost = True):
     k_loc               = 1
     num_of_DSs          = 8
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req, k_loc) # In this sim', each item's location will be calculated as a hash of the key. Hence we actually don't use the k_loc pre-computed entries. 
-    trace_file_name     = trace_file_name.split("/")[0]
+    trace_name          = MyConfig.get_trace_name (trace_file_name)
     num_of_req          = requests.shape[0]
     res_file_name       = 'k_loc' #open ("../res/" + trace_file_name + "_k_loc.res", "a")
     
@@ -172,7 +172,7 @@ def run_k_loc_sim (trace_file_name, use_homo_DS_cost = True):
                         
                 print("now = ", datetime.now(), 'running k_loc sim')
                 tic()
-                sm = sim.Simulator(res_file_name, trace_file_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, k_loc = k_loc, calc_mr_by_hist=True, use_fresh_hist=False)
+                sm = sim.Simulator(res_file_name, trace_name, alg_mode, requests, DS_cost, max_uInterval = max_uInterval, k_loc = k_loc, calc_mr_by_hist=True, use_fresh_hist=False)
                 sm.run_simulator()
                 toc()
 
@@ -184,23 +184,23 @@ def run_FN_by_staleness_sim ():
 
     for trace_file_name in ['scarab/scarab.recs.trace.20160808T073231Z.15M_req_1000K_3DSs.csv', 'umass/storage/F2.3M_req_1000K_3DSs.csv']:
         requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req)  
-        trace_file_name     = trace_file_name.split("/")[0]
+        trace_name          = MyConfig.get_trace_name (trace_file_name)
         num_of_req          = requests.shape[0]
         #printf (output_file, '\n\ntrace = {}\n///////////////////\n' .format (trace_file_name))
     
         for bpe in [2, 4, 8, 16]:
             tic()
-            sm = sim.Simulator(res_file_name, trace_file_name, 'fno', requests, DS_cost, bpe = bpe,    
+            sm = sim.Simulator(res_file_name, trace_name, 'fno', requests, DS_cost, bpe = bpe,    
                                verbose = [MyConfig.VERBOSE_CNT_FN_BY_STALENESS, MyConfig.VERBOSE_RES], max_uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
             sm.run_simulator()
             toc()
 
 
-def run_FN_by_max_uInterval_sim (trace_file_name): 
+def run_FN_by_uInterval_sim (trace_file_name): 
     max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # In this sim', each item's location will be calculated as a hash of the key. Hence we actually don't use the k_loc pre-computed entries. 
     DS_cost             = calc_DS_cost(num_of_DSs=1)            
-    trace_file_name     = trace_file_name.split("/")[0]
+    trace_name          = MyConfig.get_trace_name (trace_file_name)
     num_of_req          = requests.shape[0]
     
     print("now = ", datetime.now(), 'running FN_by_max_uInterval_sim sim')
@@ -209,7 +209,7 @@ def run_FN_by_max_uInterval_sim (trace_file_name):
 
         for max_uInterval in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]:
             tic()
-            sm = sim.Simulator(res_file_name, trace_file_name, 'measure fp fn', requests, DS_cost,    
+            sm = sim.Simulator(res_file_name, trace_name, 'measure fp fn', requests, DS_cost,    
                                bpe = bpe, max_uInterval = max_uInterval)
             sm.run_simulator()
             toc()
@@ -245,7 +245,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             tic()
             DS_size          = 10000
             min_uInterval    = DS_size/10
-            sm = sim.Simulator(res_file_name, trace_file_name.split("/")[0], 
+            sm = sim.Simulator(res_file_name, MyConfig.get_trace_name (trace_file_name), 
                                mode, requests, DS_cost, 
                                missp            = missp,
                                DS_size          = DS_size,   
@@ -256,9 +256,12 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-traces = [F2_trace_file_name, scarab_trace_file_name, gradle_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
+traces = [scarab_trace_file_name, gradle_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
+
 for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000000, modes=['salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    print (MyConfig.get_trace_name (trace_file_name))
+
+    # run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000000, modes=['salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 # run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 # run_var_missp_sim(trace_file_name=gradle_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

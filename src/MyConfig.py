@@ -188,6 +188,13 @@ def parse_list_of_keys (input_file_name,
     else:
         return full_trace_df
 
+def get_trace_name (trace_file_name):
+    """
+    Given the file name of the trace (possibly including the path), return a short trace name.
+    E.g., given the trace_file_name 'umass/storage/F2.spc.bz2.txt', the function returns 'F2'.
+    """
+    return trace_file_name.split("/")[-1].split('.')[0]
+
     ## historgram
     #count_df = trace.value_counts()
     #count_df[count_df > 1].plot()

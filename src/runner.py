@@ -256,7 +256,7 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa3'], missp_vals=[300], verbose=[MyConfig.VERBOSE_LOG_Q])
+run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['salsa2'], missp_vals=[300], verbose=[MyConfig.VERBOSE_LOG_Q])
 # traces = [scarab_trace_file_name, gradle_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
 #
 # for trace_file_name in traces:

@@ -300,6 +300,9 @@ class Simulator(object):
             self.scale_ind_factor           = 1.1
             self.consider_delta_updates     = True
 
+        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2'])):
+            MyConfig.error ('sorry. Mode {} is not supported' .format(self.mode) )                                             
+            
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
@@ -636,7 +639,7 @@ class Simulator(object):
             self.run_trace_pgm_fno_hetro ()
             self.gather_statistics ()
         
-        elif self.mode in ['fnaa', 'salsa', 'salsa2', 'salsa3']:
+        elif self.mode in ['fnaa'] or self.mode.startswith('salsa'):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
         else: 

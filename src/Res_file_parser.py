@@ -19,9 +19,9 @@ missp_idx               = 6
 bw_idx                  = 7
 uInterval_idx           = 8
 alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: Opt, FNAA, SALSA
-mr0th_idx               = 10 # mr0 th for SALSA2 advertisement decision
-mr1th_idx               = 11 # mr0 th for SALSA2 advertisement decision
-uInterval_factor_idx    = 12 # mr0 th for SALSA2 advertisement decision
+mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
+mr1th_idx               = 11 # mr0 th for SALSA's advertisement decision
+uInterval_factor_idx    = 12 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH = 0.25
@@ -57,6 +57,7 @@ class Res_file_parser (object):
 
         self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
                           'SALSA' : 'SALSA',
+                          'SALSA1' : 'SALSA1',
                           'SALSA2' : 'SALSA2',
                           'SALSA085' : 'SALSA_.85',
                           'SALSA285' : 'SALSA2_.85',
@@ -74,6 +75,7 @@ class Res_file_parser (object):
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : 'blue',
                             'SALSA'     : 'cyan',
+                            'SALSA1'    : 'cyan',
                             'SALSA2'    : 'black',
                             'SALSA285'  : 'magenta',
                             'SALSA085'  : 'purple',
@@ -523,7 +525,7 @@ class Res_file_parser (object):
         self.set_plt_params ()
         traces = ['gradle', 'wiki', 'scarab', 'umass']
 
-        modes = ['FNAA', 'SALSA2', 'SALSA3'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
+        modes = ['FNAA', 'SALSA1', 'SALSA2'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 

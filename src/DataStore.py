@@ -352,7 +352,6 @@ class DataStore (object):
         else: # Generate a new SBF
             self.updated_sbf = self.genNewSBF ()
 
-        print ('ins_cnt={}. sizeof updated_sbf={}, sizeof stale_indicator={}' .format (self.ins_cnt_in_this_period, len(self.updated_sbf.array), len(self.stale_indicator.array))) #$$$
         self.delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 

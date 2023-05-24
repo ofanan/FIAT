@@ -289,22 +289,22 @@ class DataStore (object):
             else:
                 self.stale_indicator            = self.genNewSBF ()
             if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                printf (self.q_output_file, 'advertising delta. ins_cnt={}\n' .format (self.ins_cnt_in_this_period))                     
+                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period ={}\n' .format (self.ins_cnt_in_this_period))                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.q_output_file, 'advertising delta. ins_cnt={}\n' .format (self.ins_cnt_in_this_period))                     
+                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period={}\n' .format (self.ins_cnt_in_this_period))                     
             self.num_of_advertisements  += 1
             return # finished advertising an indicator
         
         if self.ins_cnt_in_this_period % self.min_feasible_uInterval == 0:
 
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
-                updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
+                self.updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
             else: # Generate a new SBF
-                updated_sbf = self.genNewSBF () 
-            ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
+                self.updated_sbf = self.genNewSBF () 
+            ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
             self.total_ad_size_in_this_period  += ad_size
             self.overall_ad_size               += ad_size                              
-            self.stale_indicator                = updated_sbf 
+            self.stale_indicator                = self.updated_sbf 
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
@@ -315,52 +315,74 @@ class DataStore (object):
         Advertise an updated indicator, while in full mode:
         """
         if self.ins_cnt_in_this_period >= self.min_uInterval * self.uInterval_factor:
-            self.advertise_ind_full_mode (called_by_str='max_uInterval')
-            self.ins_cnt_in_this_period = 0 
+            if self.consider_delta_updates and self.delta_update_is_cheaper():
+                self.advertise_switch_to_delta_update()
+            else:
+                self.advertise_ind_full_mode (called_by_str='max_uInterval')
+                self.ins_cnt_in_this_period = 0 
             return
        
         # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
         if (self.ins_cnt_in_this_period>=self.min_uInterval):
-            if self.consider_advertise_by_mr0 (): 
+            if self.consider_delta_updates and self.delta_update_is_cheaper():
+                self.advertise_switch_to_delta_update()
+                return
+            
+            if self.should_advertise_by_mr0 (): 
                 self.advertise_ind_full_mode (called_by_str='mr0')
                 self.ins_cnt_in_this_period = 0
                 return
+
             if self.consider_advertise_by_mr1 ():
                 self.advertise_ind_full_mode (called_by_str='mr1')
                 self.ins_cnt_in_this_period = 0
                 return
        
-        
-        
-        
+    def delta_update_is_cheaper (self):
+        """
+        Check whether advertising a delta requires less bits than advertising a full ind.
+        - Update the fields
+            - self.delta_ad_size (size of the delta update).
+            - self.updated_sbf (a Simple Bloom Filter, representing the currently-cached items).
+        - Returns true iff advertising a delta requires less bits than advertising a full ind. 
+        """
+        if self.use_CountingBloomFilter: 
+            self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
+        else: # Generate a new SBF
+            self.updated_sbf = self.genNewSBF ()
+
+        self.delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
+        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+            printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 
+        return self.delta_ad_size < self.ind_size
+    
+    def advertise_switch_to_delta_update (self):
+        """
+        Advertise a delta update after a period of full indicators:
+        - Update relevant counters.
+        - Assign self.stale_indicator <-- self.updated_sbf (update Simple Bloom Filter)  
+        - If requested by self.verbose, print to log files.
+        """
+        self.in_delta_mode                 = True
+        self.ins_cnt_in_this_period        = 0
+        self.total_ad_size_in_this_period  = 0
+        self.num_of_advertisements        += 1
+        self.overall_ad_size              += self.delta_ad_size  
+        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+            printf (self.q_output_file, 'switching to delta mode. advertising ad_size={}, ins_cnt={}\n' .format(self.delta_ad_size, self.ins_cnt_in_this_period))
+        self.stale_indicator = self.updated_sbf  
+
     def advertise_ind_full_mode (self, called_by_str):
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
-        self.num_of_advertisements  += 1
-
-        if self.use_CountingBloomFilter: 
-            updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
-        else: # Generate a new SBF
-            updated_sbf = self.genNewSBF ()
-        if self.consider_delta_updates:
-            delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (updated_sbf.array, self.stale_indicator.array)]))
-            if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (delta_ad_size, self.ind_size)) 
-            if delta_ad_size < self.ind_size: # if advertising delta is cheaper, we'll switch to delta mode
-                self.in_delta_mode                = True
-                self.ins_cnt_in_this_period       = 0
-                self.total_ad_size_in_this_period = 0
-                bw_in_cur_interval                = 0                              
-                if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                    printf (self.q_output_file, 'switching to delta mode. ad_size={}\n' .format(delta_ad_size))
-                self.stale_indicator = updated_sbf  
-                return # finished advertise a delta-mode --> can return
 
         if self.use_CountingBloomFilter: # update the stale indicator also for the case of not (consider_delta_updates)
-            self.stale_indicator = updated_sbf        
+            self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
+        else: # Generate a new SBF
+            self.stale_indicator = self.genNewSBF ()
         
         if self.analyse_ind_deltas: # Do we need to estimate fpr, fnr by analyzing the diff between the stale and updated indicators? 
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
@@ -389,10 +411,8 @@ class DataStore (object):
                 self.scale_ind_full_mode(factor=scale_ind_by)
                 if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                     printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
-        # Generate a new indicator, at the correct size
-        if not(self.use_CountingBloomFilter): 
-            self.stale_indicator = self.genNewSBF ()
-        self.overall_ad_size += self.ind_size
+        self.num_of_advertisements += 1
+        self.overall_ad_size       += self.ind_size
 
     def scale_ind_delta_mode (self, bw_in_cur_interval):
         """
@@ -434,7 +454,7 @@ class DataStore (object):
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_in_this_period)) 
         self.tn_events_cnt = int(0)
         
-    def consider_advertise_by_mr0 (self):
+    def should_advertise_by_mr0 (self):
         """
         Check whether it's required to advertise, based on:
         - the level of mr0 (the miss-probability in case of a negative indication), and 
@@ -495,11 +515,11 @@ class DataStore (object):
         The new values are written to self.fnr_fpr, where self.fnr_fpr[0] is the fnr, and self.fnr_fpr[1] is the fpr
         The optional inputs req_cnt and key are used only for debug.
         """
-        updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
+        self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
         # Delta[0] will hold the # of bits that are reset in the updated array, and set in the stale array.
         # Delta[1] will hold the # of bits that are set in the updated array, and reset in the stale array.
-        Delta       = [sum (np.bitwise_and (~updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (updated_sbf.array, ~self.stale_indicator.array))]
-        B1_up       = sum (updated_sbf.array)             # Num of bits set in the updated indicator
+        Delta       = [sum (np.bitwise_and (~self.updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array))]
+        B1_up       = sum (self.updated_sbf.array)             # Num of bits set in the updated indicator
         B1_st       = sum (self.stale_indicator.array)    # Num of bits set in the stale indicator
         self.fnr    = 1 - pow ( (B1_up-Delta[1]) / B1_up, self.num_of_hashes)
         self.fpr    = pow ( B1_st / self.ind_size, self.num_of_hashes)

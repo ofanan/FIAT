@@ -66,9 +66,9 @@ class Res_file_parser (object):
                           'SALSA3'    : 'SALSA3'
                            }
         
-        self.strOfTrace = {'umass'  : 'F2',
+        self.strOfTrace = {'F2'     : 'F2',
                           'gradle'  : 'Gradle',
-                          'wiki'    : 'Wiki',
+                          'wiki1'   : 'Wiki',
                           'scarab'  : 'Scarab'
                            }
         # The colors used for each alg's plot, in the dist' case
@@ -174,7 +174,7 @@ class Res_file_parser (object):
         Print table of service costs, normalized w.r.t. to Opt, in tikz format
         """
         self.tbl_output_file    = open ("../res/missp.txt", "w")
-        traces = ['wiki', 'gradle', 'scarab', 'umass']
+        traces = ['wiki1', 'gradle', 'scarab', 'F2']
 
         printf (self.tbl_output_file, '\tMiss Penalty & Policy ')
         for trace in traces:
@@ -245,7 +245,7 @@ class Res_file_parser (object):
         """
         serviceCost_by_missp_output_file = open ("../res/serviceCost_by_missp.txt", "w")
         bwCost_by_missp_output_file      = open ("../res/bwCost_by_missp.txt", "w")
-        traces = ['gradle', 'wiki', 'scarab', 'umass']
+        traces = ['gradle', 'wiki', 'scarab', 'F2']
 
         modes = ['FNAA', 'SALSA', 'SALSA2']
         missp_vals = [30, 100, 300]
@@ -523,7 +523,7 @@ class Res_file_parser (object):
         """
 
         self.set_plt_params ()
-        traces = ['gradle', 'wiki', 'scarab', 'umass']
+        traces = ['gradle', 'wiki1', 'scarab', 'F2']
 
         modes = ['FNAA', 'SALSA1', 'SALSA2'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
@@ -589,6 +589,6 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_file ('opt_n_fnaa_PC.res')
-my_Res_file_parser.parse_file ('salsa_minBpe5_reinit_mr0_after_period4.res')
+my_Res_file_parser.parse_file ('salsa_minBpe5_reinit_mr0_after_period.res')
 my_Res_file_parser.plot_bars_by_missp_python ()
 

@@ -11,6 +11,8 @@ import os
 import numpy as np
 import pandas as pd
 
+INF_INT = 999999999
+
 # levels of verbose
 VERBOSE_RES                 = 1 # write to output files
 VERBOSE_FULL_RES            = 2 
@@ -23,7 +25,6 @@ VERBOSE_DEBUG               = 9
 VERBOSE_CNT_FN_BY_STALENESS = 10 
 
 
-INF_INT = 999999999
 
 def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, read_locs_from_trace=False):
     """
@@ -42,14 +43,14 @@ def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, rea
     return new_trace_df
 
 
-def gen_requests (trace_file_name, max_num_of_req=4300000, k_loc=1, num_of_clients=1):
+def gen_requests (trace_file_name, max_num_of_req=INF_INT, k_loc=1, num_of_clients=1):
     """
     Generates a trace of requests, given a trace file.
     """
     if (len(trace_file_name.split ('.csv'))==2): # The input file is already a .csv parsed from the trace - no need to parse the trace
         return reduce_trace_mem_print (pd.read_csv (getTracesPath() + trace_file_name).head(max_num_of_req))
     else: # need to parse the trace first
-        return parse_list_of_keys (input_file_name=trace_file_name, num_of_req = max_num_of_req, print_output_to_file=False)
+        return reduce_trace_mem_print (parse_list_of_keys (input_file_name=trace_file_name, num_of_req = max_num_of_req, print_output_to_file=False))
     # reduce_trace_mem_print (pd.read_csv (getTracesPath() + trace_file_name).head(max_num_of_req))
 
 
@@ -139,15 +140,19 @@ def calc_designed_fpr (cache_size, BF_size, num_of_hashes):
 def parse_list_of_keys (input_file_name,
                         num_of_clients=1, # number of clients to choose from, when associating each request with a given client 
                         kloc = 1,  # number of DSs with which each unique item will be associated  
-                        num_of_req = 4300000, # maximum number of requests to be considered from the trace
+                        num_of_req = INF_INT, # maximum number of requests to be considered from the trace
                         print_output_to_file=True, # When False, the func' returns the output as a dataframe, rather than printing it to a file
                         print_num_of_uniques=False # When True, print the number of unique items in the trace to the standard output
                         ):
     """
     Parses a trace whose format is merely a list of keys (each key in a different line). 
-    Output: a csv file, where:
+    Output: 
+        if print_output_to_file==True, then the output is  a csv file, where:
             - the first col. is the keys,
-            - the 2nd col. is the id of the clients of this req,
+            - If num_of_clients>1: add a 2nd col. containing the u.a.r.-generated id of the clients associated with this req.
+        Else, the output is a panda DataFrame, where:
+            - the first col. is the keys,
+            - If num_of_clients>1: add a 2nd col. containing the u.a.r.-generated id of the clients associated with this req.
     """
 
     traces_path = getTracesPath()
@@ -162,27 +167,27 @@ def parse_list_of_keys (input_file_name,
     url_lut_dict = dict(zip(unique_urls , range(unique_urls.size))) # generate dictionary to serve as a LUT of unique_key -> integer
     keys = np.array ([url_lut_dict[url] for url in df[0]]).astype('uint32')
     
+    num_of_req = len(keys) 
     # generate client assignments for each request
-    if (num_of_clients > 1 or print_num_of_uniques):
+    if (num_of_clients > 1):
         client_assignment = np.random.RandomState(seed=42).randint(0 , num_of_clients , df.shape[0]).astype('uint8')
         
         unique_permutations_array  = np.array ([np.random.RandomState(seed=i).permutation(range(num_of_clients)) for i in range(unique_urls.size)]).astype('uint8') # generate permutation for each unique key in the trace
-        unique_permutations_array  = unique_permutations_array [:, range (kloc)] # Select only the first kloc columns for each row (unique key) in the random permutation matrix
-    
-        print ('num of uniques = ', unique_permutations_array.size )
-    
+        unique_permutations_array  = unique_permutations_array [:, range (kloc)] # Select only the first kloc columns for each row (unique key) in the random permutation matrix    
         permutation_lut_dict = dict(zip(unique_urls , unique_permutations_array)) # generate dictionary to serve as a LUT of unique_key -> permutation
         permutations_array = np.array([permutation_lut_dict[url] for url in df[0]]).astype('uint8') # generate full permutations array for all requests. identical keys will get identical permutations
         permutations_df = pd.DataFrame(permutations_array)
         trace_df = pd.DataFrame(np.transpose([keys, client_assignment]))
         trace_df.columns = ['key', 'client_id']
-        full_trace_df = pd.concat([ trace_df, permutations_df], axis=1)
+        full_trace_df = pd.concat([trace_df, permutations_df], axis=1)
     
     else:
         full_trace_df = pd.DataFrame(np.transpose([keys]))
         full_trace_df.columns = ['key']
     
-    if (print_output_to_file):    
+    if print_num_of_uniques:
+        print ('{}K req, {}K uniques' .format (num_of_req/1000, len(unique_urls)/1000))
+    if (print_output_to_file):
         full_trace_df.to_csv (traces_path + input_file_name.split (".txt")[0] + '_{:.0f}K_{:.0f}DSs.csv' .format (num_of_req/1000, num_of_clients), 
                               index=False, header=True)
     else:

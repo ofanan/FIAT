@@ -12,7 +12,7 @@ from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
 
-wiki_trace_file_name   = 'wiki/wiki1.1190448987.txt'
+wiki_trace_file_name   = 'wiki/wiki1.1190448987_4300K_1DSs.csv'
 gradle_trace_file_name = 'gradle/gradle.build-cache.xz.txt'
 scarab_trace_file_name = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'
 F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
@@ -233,7 +233,12 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
     Run a simulation with different miss penalties for the initial table
     """
     num_of_DSs          = 3
+    # t = datetime.now ()
+    tic ()
     requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
+    # print ('elapsed time ={}' .format (datetime.now () - t))
+    toc ()
+    exit ()
     num_of_req          = requests.shape[0]
     DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
@@ -257,6 +262,8 @@ def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=T
             toc()
 
 traces = [scarab_trace_file_name, gradle_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
+MyConfig.parse_list_of_keys (input_file_name='wiki/wiki2.1191403252.gz.txt', print_output_to_file=True, print_num_of_uniques=True)
+# run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['salsa1'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
-for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000, modes=['salsa1'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+# for trace_file_name in traces:
+#     run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000, modes=['salsa1'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

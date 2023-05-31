@@ -294,6 +294,11 @@ class Simulator(object):
             self.indications                = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.use_perfect_hist           = False
         
+        if (self.mode == 'opt'):
+            self.calc_mr_by_hist            = False
+            self.use_fixed_uInterval        = True
+            self.hit_ratio_based_uInterval  = False
+
         if (self.mode == 'fnaa'):
             self.calc_mr_by_hist            = False
             self.use_fixed_uInterval        = True

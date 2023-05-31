@@ -6,7 +6,6 @@ Output: a csv file, where:
         - the rest of the cols. are the locations ("k_loc") to which a central controller would enter this req. upon a miss. 
 """
 
-
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -68,7 +67,7 @@ def parse_wiki_trace (trace_file_name      = 'wiki1.1190448987.txt',
     # trace_df = pd.DataFrame(np.transpose([keys, client_assignment, key_hash[0, :], key_hash[1, :], key_hash[2, :], key_hash[3, :], key_hash[4, :]]))
     # trace_df.columns = ['key', 'client_id', 'hash0', 'hash1', 'hash2', 'hash3', 'hash4']
     
-    full_trace_df = pd.concat([ trace_df, permutations_df ], axis=1)
+    full_trace_df = pd.concat([trace_df, permutations_df ], axis=1)
     
     full_trace_df.to_csv (traces_path + input_file_name.split (".txt")[0] + ".%dDSs.K%d.csv" %(num_of_clients, num_of_locations), index=False, header=True)
     

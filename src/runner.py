@@ -12,11 +12,14 @@ from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
 
-wiki_trace_file_name   = 'wiki/wiki1.1190448987_4300K_1DSs.csv'
-gradle_trace_file_name = 'gradle/gradle.build-cache.xz.txt'
-scarab_trace_file_name = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'
-F2_trace_file_name     = 'umass/storage/F2.spc.bz2.txt'
-
+wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
+gradle_trace_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
+scarab_trace_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159K_req.csv'
+F1_trace_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
+F2_trace_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
+WS1_trace_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
+P3_trace_file_name      = 'arc/P3.3912Kreq.csv'
+  
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
     Returns a DS_cost matrix, representing an homogeneous access cost of 2 from each client to each DS. 
@@ -176,13 +179,14 @@ def run_k_loc_sim (trace_file_name, use_homo_DS_cost = True):
                 sm.run_simulator()
                 toc()
 
-def run_FN_by_staleness_sim (): 
-    max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
+def run_FN_by_staleness_sim (trace_file_names, 
+                             max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
+                             ): 
     DS_cost             = calc_DS_cost ()            
     res_file_name       = 'FN_by_staleness' #open ("../res/FN_by_staleness.res", "a")
     print("now = ", datetime.now(), 'running FN_by_staleness sim')
 
-    for trace_file_name in ['scarab/scarab.recs.trace.20160808T073231Z.15M_req_1000K_3DSs.csv', 'umass/storage/F2.3M_req_1000K_3DSs.csv']:
+    for trace in trace_file_name: 
         requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req)  
         trace_name          = MyConfig.get_trace_name (trace_file_name)
         num_of_req          = requests.shape[0]
@@ -190,11 +194,33 @@ def run_FN_by_staleness_sim ():
     
         for bpe in [2, 4, 8, 16]:
             tic()
-            sm = sim.Simulator(res_file_name, trace_name, 'fno', requests, DS_cost, bpe = bpe,    
+            sm = sim.Simulator(res_file_name, trace_name, 'fnao', requests, DS_cost, bpe = bpe,    
                                verbose = [MyConfig.VERBOSE_CNT_FN_BY_STALENESS, MyConfig.VERBOSE_RES], max_uInterval = 8192, calc_mr_by_hist=True, use_fresh_hist=False) 
             sm.run_simulator()
             toc()
 
+
+def run_mr0_by_staleness_sim (trace_file_names, 
+                             max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
+                             ): 
+    DS_cost             = calc_DS_cost ()            
+    res_file_name       = 'mr0_by_staleness' #open ("../res/FN_by_staleness.res", "a")
+    print("now = ", datetime.now(), 'running mr0 by staleness sim')
+
+    for trace in trace_file_name: 
+        requests            = MyConfig.gen_requests   (trace_file_name, max_num_of_req)  
+        trace_name          = MyConfig.get_trace_name (trace_file_name)
+        num_of_req          = requests.shape[0]
+        DS_size             = 10000
+    
+        for bpe in [14]:
+            tic()
+            sm = sim.Simulator(res_file_name, trace_name, 'fnao', requests, DS_cost, DS_size=DS_size,     
+                               verbose = [MyConfig.VERBOSE_CNT_MR0_BY_STALENESS], 
+                               max_uInterval = DS_size/10, calc_mr_by_hist=True, use_fresh_hist=False,
+                               bw = 100) 
+            sm.run_simulator()
+            toc()
 
 def run_FN_by_uInterval_sim (trace_file_name): 
     max_num_of_req      = 1000000 # Shorten the num of requests for debugging / shorter runs
@@ -228,41 +254,40 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
-def run_var_missp_sim (trace_file_name, use_homo_DS_cost = False, print_est_mr=True, max_num_of_req=1000000, missp_vals=[], modes=[], verbose=[]):
+def run_var_missp_sim (trace_file_name, 
+                       use_homo_DS_cost = False, 
+                       print_est_mr     = True, 
+                       max_num_of_req   = 1000000, 
+                       missp_vals       = [], 
+                       modes            = [], 
+                       verbose          = [],
+                       DS_size          = 10000
+                       ):
     """
     Run a simulation with different miss penalties for the initial table
     """
-    num_of_DSs          = 3
-    # t = datetime.now ()
-    tic ()
-    requests            = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
-    # print ('elapsed time ={}' .format (datetime.now () - t))
-    toc ()
-    exit ()
-    num_of_req          = requests.shape[0]
-    DS_cost             = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
+    num_of_DSs  = 3
+    requests    = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
+    num_of_req  = requests.shape[0]
+    DS_cost     = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in missp_vals: 
         for mode in modes:
-            uInterval_factor = 4 if mode in ['salsa2', 'salsa3'] else 1
-            res_file_name = 'salsa_minBpe5_reinit_mr0_after_period' if mode.startswith('salsa') else 'opt_n_fnaa'
             tic()
-            DS_size          = 10000
-            min_uInterval    = DS_size/10
-            sm = sim.Simulator(res_file_name, MyConfig.get_trace_name (trace_file_name), 
+            sm = sim.Simulator(res_file_name    = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa', 
+                               MyConfig.get_trace_name (trace_file_name), 
                                mode, requests, DS_cost, 
                                missp            = missp,
                                DS_size          = DS_size,   
-                               min_uInterval    = min_uInterval, 
-                               uInterval_factor = uInterval_factor,
+                               min_uInterval    = DS_size/10, 
+                               uInterval_factor = 4 if mode.startswith('salsa') else 1,
                                verbose          = verbose,
                                )
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-traces = [scarab_trace_file_name, gradle_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
-MyConfig.parse_list_of_keys (input_file_name='wiki/wiki2.1191403252.gz.txt', print_output_to_file=True, print_num_of_uniques=True)
+traces = [scarab_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['salsa1'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 # for trace_file_name in traces:

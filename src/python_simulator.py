@@ -102,10 +102,10 @@ class Simulator(object):
             init_mr1_after_each_ad  = False,               
             use_fixed_uInterval     = (self.mode in ['fno', 'fnaa']),
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
+            use_global_uInerval     = self.use_global_uInerval,
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
             use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa'],
-            
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -251,8 +251,8 @@ class Simulator(object):
         self.min_uInterval       = min_uInterval
         self.uInterval_factor    = uInterval_factor 
         if self.use_global_uInerval:
-            self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, bw)
-            self.advertise_cycle_of_DS = np.array ( [ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
+            self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, self.bw)
+            self.advertise_cycle_of_DS = np.array ([ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.min_uInterval == 1 and self.uInterval_factor==1) else False
         self.num_of_insertions_between_estimations = np.uint8 (150)
@@ -267,6 +267,13 @@ class Simulator(object):
             lg_uInterval = np.log2 (self.min_uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
+
+        if (MyConfig.VERBOSE_CNT_MR0_BY_STALENESS in self.verbose):
+            self.tn_cnt                 = np.zeros (self.num_of_DSs) # self.tn_cnt[d] will hold the # of tn indications in DS d during the trace
+            self.neg_ind_cnt            = np.zeros (self.num_of_DSs) # self.neg_ind_cnt[d] will hold the # of neg. ind. in DS d during the trace
+            self.ins_cnt                = np.zeros (self.num_of_DSs) # self.neg_ind_cnt[d] will hold the # of insertions to DS d
+            self.use_global_uInerval    = True
+            self.cnt_mr0_by_staleness_res_file = 'mr0_by_staleness.res'
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
@@ -373,6 +380,7 @@ class Simulator(object):
             printf (res_file, 'PI hits cnt by staleness = {}\n' .format (self.PI_hits_by_staleness))
             for bin in range (len(self.FN_by_staleness)):
                 printf (res_file, '({:.0f}, {:.07f})' .format (2**(bin+1), self.FN_by_staleness[bin]/self.PI_hits_by_staleness[bin]))
+
         self.total_access_cost  = np.sum ( [client.total_access_cost for client in self.client_list ] ) 
         self.hit_cnt            = np.sum ( [client.hit_cnt for client in self.client_list ] )
         self.hit_ratio          = float(self.hit_cnt) / self.req_cnt
@@ -516,6 +524,19 @@ class Simulator(object):
             if (not (self.cur_req.key in self.DS_list[DS_id].stale_indicator)):
                 self.FN_by_staleness[bin] += 1
 
+    def cnt_mr0_by_staleness (self):
+        """
+        Counts the number of False Negative events that happen, as a function of the staleness, namely,
+        the number of insertions since the last advertisement of a fresh indicator.
+        """
+        # true_answer_DS_list will hold the list of DSs which indeed have the key
+        true_answer_DS_list = np.array([DS_id for DS_id in range(self.num_of_DSs) if (self.cur_req.key in self.DS_list[DS_id])])
+        for DS_id in true_answer_DS_list:
+            staleness = max (self.DS_list[DS_id].ins_cnt % self.DS_list[DS_id].uInterval, 2)
+            bin = int (np.ceil (np.log2 (staleness))) - 1 # bin is the lg' of the # of insertions since the last update by cache DS_id
+            self.PI_hits_by_staleness[bin] += 1
+            if (not (self.cur_req.key in self.DS_list[DS_id].stale_indicator)):
+                self.FN_by_staleness[bin] += 1
 
     def run_trace_pgm_fna_hetro (self):
         """

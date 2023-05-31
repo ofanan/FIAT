@@ -14,17 +14,16 @@ import pandas as pd
 INF_INT = 999999999
 
 # levels of verbose
-VERBOSE_RES                 = 1 # write to output files
-VERBOSE_FULL_RES            = 2 
-VERBOSE_LOG                 = 3 # write to log files
-VERBOSE_DETAILED_LOG        = 4 
-VERBOSE_LOG_MR              = 5 # Write a log file detailing the mr upon every advertisement
-VERBOSE_DETAILED_LOG_MR     = 6 # Write a log file detailing the mr upon every advertisement
-VERBOSE_LOG_Q               = 7 # Write a log file detailing the q (prob' of pos ind')
-VERBOSE_DEBUG               = 9
-VERBOSE_CNT_FN_BY_STALENESS = 10 
-
-
+VERBOSE_RES                     = 1 # write to output files
+VERBOSE_FULL_RES                = 2 
+VERBOSE_LOG                     = 3 # write to log files
+VERBOSE_DETAILED_LOG            = 4 
+VERBOSE_LOG_MR                  = 5 # Write a log file detailing the mr upon every advertisement
+VERBOSE_DETAILED_LOG_MR         = 6 # Write a log file detailing the mr upon every advertisement
+VERBOSE_LOG_Q                   = 7 # Write a log file detailing the q (prob' of pos ind')
+VERBOSE_DEBUG                   = 9
+VERBOSE_CNT_FN_BY_STALENESS     = 10 
+VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
 def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, read_locs_from_trace=False):
     """
@@ -112,7 +111,7 @@ def bw_to_uInterval (DS_size, bpe, num_of_DSs, bw):
 	The simulator calculates the number of events implicitly, by assuming that each user request causes an event to a single cache -- 
 	and hence, each cache sees an event once in num_of_DSs user requests on average. 
 	"""
-	return int (round (DS_size * bpe * num_of_DSs * (num_of_DSs-1)) / bw)
+	return int (round (DS_size * bpe * num_of_DSs) / bw)
  
 def uInterval_to_Bw (DS_size, bpe, num_of_DSs, uInerval):
     """
@@ -166,10 +165,9 @@ def parse_list_of_keys (input_file_name,
     unique_urls = np.unique (df)
     url_lut_dict = dict(zip(unique_urls , range(unique_urls.size))) # generate dictionary to serve as a LUT of unique_key -> integer
     keys = np.array ([url_lut_dict[url] for url in df[0]]).astype('uint32')
-    
     num_of_req = len(keys) 
-    # generate client assignments for each request
-    if (num_of_clients > 1):
+    
+    if (num_of_clients > 1):    # generate client assignments for each request
         client_assignment = np.random.RandomState(seed=42).randint(0 , num_of_clients , df.shape[0]).astype('uint8')
         
         unique_permutations_array  = np.array ([np.random.RandomState(seed=i).permutation(range(num_of_clients)) for i in range(unique_urls.size)]).astype('uint8') # generate permutation for each unique key in the trace
@@ -186,9 +184,9 @@ def parse_list_of_keys (input_file_name,
         full_trace_df.columns = ['key']
     
     if print_num_of_uniques:
-        print ('{}K req, {}K uniques' .format (num_of_req/1000, len(unique_urls)/1000))
+        print ('{:.0f}K req, {:.0f}K uniques' .format (num_of_req/1000, len(unique_urls)/1000))
     if (print_output_to_file):
-        full_trace_df.to_csv (traces_path + input_file_name.split (".txt")[0] + '_{:.0f}K_{:.0f}DSs.csv' .format (num_of_req/1000, num_of_clients), 
+        full_trace_df.to_csv (traces_path + input_file_name.split (".txt")[0] + '_{:.0f}Kreq.csv' .format (num_of_req/1000), 
                               index=False, header=True)
     else:
         return full_trace_df
@@ -206,3 +204,4 @@ def get_trace_name (trace_file_name):
     #hist_array = np.zeros(int(np.log2(count_df.max())) + 1)
     #for i in range(int(np.log2(count_df.max())) + 1):
     #    hist_array[i] = sum(count_df[(count_df >= 2**i) & (count_df < 2**(i+1))])
+# parse_list_of_keys (input_file_name='arc/P3.lis.txt', print_output_to_file=True, print_num_of_uniques=True)

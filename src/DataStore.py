@@ -50,6 +50,7 @@ class DataStore (object):
          init_mr0_after_each_ad     = False,
          init_mr1_after_each_ad     = False,
          use_fixed_uInterval        = True,
+         use_global_uInerval        = False,
          ):
         """
         Return a DataStore object. 
@@ -74,9 +75,10 @@ class DataStore (object):
         self.init_mr0_after_each_ad  = init_mr0_after_each_ad
         self.init_mr1_after_each_ad  = init_mr1_after_each_ad
         self.consider_delta_updates  = consider_delta_updates
-        self.use_fixed_uInterval     = use_fixed_uInterval 
-        # self.updated_mr0 = False # indicates whether mr0 wasn't updated since the last advertisement 
-        # self.updated_mr1 = False # indicates whether mr1 wasn't updated since the last advertisement
+        self.use_fixed_uInterval     = use_fixed_uInterval
+        self.use_global_uInerval     = use_global_uInerval         
+        # self.updated_mr0           = False # indicates whether mr0 wasn't updated since the last advertisement 
+        # self.updated_mr1           = False # indicates whether mr1 wasn't updated since the last advertisement
         self.in_delta_mode           = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
@@ -228,6 +230,9 @@ class DataStore (object):
                 self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0
+        
+        if self.use_global_uInerval: # advertisements are dictated by central cntrlr - no need to locally consider  advertisement 
+            return
 
         if self.use_fixed_uInterval:
             if self.ins_cnt_in_this_period >= self.min_uInterval:

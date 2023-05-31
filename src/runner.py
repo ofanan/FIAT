@@ -257,7 +257,7 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
 def run_var_missp_sim (trace_file_name, 
                        use_homo_DS_cost = False, 
                        print_est_mr     = True, 
-                       max_num_of_req   = 1000000, 
+                       max_num_of_req   = 10000000, 
                        missp_vals       = [], 
                        modes            = [], 
                        verbose          = [],
@@ -276,8 +276,10 @@ def run_var_missp_sim (trace_file_name,
         for mode in modes:
             tic()
             sm = sim.Simulator(res_file_name    = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa', 
-                               MyConfig.get_trace_name (trace_file_name), 
-                               mode, requests, DS_cost, 
+                               trace_name       = MyConfig.get_trace_name (trace_file_name), 
+                               mode             = mode, 
+                               req_df           = requests, 
+                               client_DS_cost   = DS_cost, 
                                missp            = missp,
                                DS_size          = DS_size,   
                                min_uInterval    = DS_size/10, 
@@ -287,8 +289,8 @@ def run_var_missp_sim (trace_file_name,
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-traces = [scarab_trace_file_name, F2_trace_file_name, wiki_trace_file_name]
+traces = [wiki_trace_file_name, scarab_trace_file_name, F1_trace_file_name, P3_trace_file_name]
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['salsa1'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
-# for trace_file_name in traces:
-#     run_var_missp_sim(trace_file_name=trace_file_name, max_num_of_req=1000, modes=['salsa1'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+for trace_file_name in traces:
+    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['salsa1', 'salsa2'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

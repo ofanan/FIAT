@@ -149,9 +149,21 @@ class Simulator(object):
             return res_file
 
 
-    def __init__(self, res_file_name, trace_name, 
-                 mode, req_df, client_DS_cost, missp=100, k_loc=1, DS_size = 10000, 
-                 bpe = 14, rand_seed = 42, use_redundan_coef = False, max_fpr = 0.01, max_fnr = 0.01, verbose=[MyConfig.VERBOSE_RES], 
+    def __init__(self, 
+                 res_file_name  = '_', 
+                 trace_name     = '_', 
+                 mode           = None, 
+                 req_df         = None, 
+                 client_DS_cost = [1], 
+                 missp          = 100, 
+                 k_loc          = 1, 
+                 DS_size        = 10000, 
+                 bpe            = 14, 
+                 rand_seed      = 42, 
+                 use_redundan_coef = False, 
+                 max_fpr        = 0.01, 
+                 max_fnr        = 0.01, 
+                 verbose        = [MyConfig.VERBOSE_RES], 
                  use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item       = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  use_fixed_uInterval         = True, 

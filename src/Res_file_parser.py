@@ -523,7 +523,7 @@ class Res_file_parser (object):
         """
 
         self.set_plt_params ()
-        traces = ['gradle', 'wiki1', 'scarab', 'F2']
+        traces = ['wiki1', 'scarab', 'F1', 'P3']
 
         modes = ['FNAA', 'SALSA1', 'SALSA2'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
@@ -543,7 +543,7 @@ class Res_file_parser (object):
                 traces_to_print = []
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
-                    traces_to_print.append(self.strOfTrace[trace])
+                    traces_to_print.append(trace)
                     relevant_points = [item for item in self.list_of_dicts if
                                  item['trace']      == trace        and 
                                  item['cache_size'] == cache_size   and
@@ -588,7 +588,9 @@ class Res_file_parser (object):
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_file ('opt_n_fnaa_PC.res')
-my_Res_file_parser.parse_file ('salsa_minBpe5_reinit_mr0_after_period.res')
-my_Res_file_parser.plot_bars_by_missp_python ()
+my_Res_file_parser.parse_file ('opt_n_fnaa.res')
+my_Res_file_parser.parse_file ('salsa.res')
+my_Res_file_parser.plot_bars_by_missp_python (cache_size=4)
+my_Res_file_parser.plot_bars_by_missp_python (cache_size=16)
+my_Res_file_parser.plot_bars_by_missp_python (cache_size=64)
 

@@ -14,7 +14,7 @@ from   tictoc import tic, toc
 
 wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
 gradle_trace_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
-scarab_trace_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159K_req.csv'
+scarab_trace_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv'
 F1_trace_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
 F2_trace_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
 WS1_trace_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
@@ -283,7 +283,7 @@ def run_var_missp_sim (trace_file_name,
             else:
                 MyConfig.error ('the mode {} you chose in unsupported.' .format (mode))
             tic()
-            sm = sim.Simulator(res_file_name    = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa', 
+            sm = sim.Simulator(res_file_name    = res_file_name, 
                                trace_name       = MyConfig.get_trace_name (trace_file_name), 
                                mode             = mode, 
                                req_df           = requests, 
@@ -297,7 +297,7 @@ def run_var_missp_sim (trace_file_name,
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-traces = [P3_trace_file_name, scarab_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
+traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['salsa1'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 for trace_file_name in traces:

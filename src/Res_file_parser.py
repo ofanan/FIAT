@@ -548,11 +548,11 @@ class Res_file_parser (object):
                                  item['trace']      == trace        and 
                                  item['cache_size'] == cache_size   and
                                  item['num_of_DSs'] == 3            and
-                                 item['missp']      == missp        and
-                                 item['num_of_req'] == num_of_req] 
+                                 item['missp']      == missp] 
                     opt_point = [item for item in relevant_points if item['alg_mode'] =='Opt'] 
                     if (opt_point==[]):
-                        MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace, missp))
+                        MyConfig.error ('no results {}.C{}K.bpe{} M{} {}' .format (
+                                        trace, cache_size, bpe, missp, mode))
                     opt_serviceCost = opt_point[0]['serviceCost']
                     
                     # remove all points of other mcdes

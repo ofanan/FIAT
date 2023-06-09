@@ -51,6 +51,7 @@ class DataStore (object):
          init_mr1_after_each_ad     = False,
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
+         do_not_advertise_upon_insert = True
          ):
         """
         Return a DataStore object. 
@@ -76,7 +77,7 @@ class DataStore (object):
         self.init_mr1_after_each_ad  = init_mr1_after_each_ad
         self.consider_delta_updates  = consider_delta_updates
         self.use_fixed_uInterval     = use_fixed_uInterval
-        self.use_global_uInerval     = use_global_uInerval         
+        self.do_not_advertise_upon_insert = do_not_advertise_upon_insert
         # self.updated_mr0           = False # indicates whether mr0 wasn't updated since the last advertisement 
         # self.updated_mr1           = False # indicates whether mr1 wasn't updated since the last advertisement
         self.in_delta_mode           = False
@@ -125,8 +126,8 @@ class DataStore (object):
         self.delta_th                = self.ind_size / self.lg_ind_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
         self.num_of_advertisements   = 0
-        self.ins_cnt_in_this_period  = 0 # cnt of insertions since the last advertisement of fresh indicator
-        self.ins_cnt_in_this_reinit_mr0_period = 0 # cnt of insertions since the last advertisement of fresh indicator
+        self.ins_cnt_since_last_full_ad  = 0 # cnt of insertions since the last advertisement of fresh indicator
+        self.ins_cnt_in_this_period = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = 10
@@ -208,22 +209,28 @@ class DataStore (object):
 
     def insert(self, key, req_cnt = -1):
         """
-        - Inserts a key to the cache
-        - Update the indicator
-        - Check if it's time to send an update
-        if key is already in the cache: return False
-        otherwise: return True
+        If using an indicator:
+        - If we maintain a Counting Bloom Filter (that should always reflect the list of cached items):         
+            - If the cache is full:
+                remove the victim element from the CBF.
+            - Inserts the new key to the CBF
+            - Inserts the new key to the cache and return
+        - Else:
+            - Inserts a key to the cache and return
+        - If it's time to send an update, then send an update.
         """
-        self.cache[key] = key
         if not (self.use_indicator):
+            self.cache[key] = key
             return
-        
-        self.ins_cnt_in_this_period += 1
-        self.ins_cnt_in_this_reinit_mr0_period += 1
+
+        # now we know that we're using an indicator --> update insertions' cntrs.        
+        self.ins_cnt_since_last_full_ad += 1
+        self.ins_cnt_in_this_period     += 1
         if self.use_CountingBloomFilter:
-            if (self.cache.currSize() == self.cache.size()): # if cache is full, remove the victim item from the CBF
+            if (self.cache.currSize() == self.cache.size( )): # if cache is full, remove the victim item from the CBF
                 self.updated_indicator.remove(self.cache.get_tail())
             self.updated_indicator.add(key)
+        self.cache[key] = key
         if (self.send_fpr_fnr_updates):
             self.ins_since_last_fpr_fnr_estimation += 1
             if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations):
@@ -231,11 +238,11 @@ class DataStore (object):
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0
         
-        if self.use_global_uInerval: # advertisements are dictated by central cntrlr - no need to locally consider  advertisement 
+        if self.do_not_advertise_upon_insert: # advertisements are dictated by central cntrlr - no need to locally consider  advertisement 
             return
 
         if self.use_fixed_uInterval:
-            if self.ins_cnt_in_this_period >= self.min_uInterval:
+            if self.ins_cnt_since_last_full_ad >= self.min_uInterval:
                 self.advertise_ind_full_mode(called_by_str='fixed uInterval')
             return
 
@@ -282,11 +289,11 @@ class DataStore (object):
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
         
-        if self.ins_cnt_in_this_period>=self.period: # time to consider scaling, or at least send a keep-alive full ind'
+        if self.ins_cnt_since_last_full_ad>=self.period: # time to consider scaling, or at least send a keep-alive full ind'
 
             if self.scale_ind_factor!=1:                                          
-                self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_in_this_period)
-            self.ins_cnt_in_this_period         = 0
+                self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
+            self.ins_cnt_since_last_full_ad         = 0
             self.total_ad_size_in_this_period   = 0
             self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
@@ -294,13 +301,13 @@ class DataStore (object):
             else:
                 self.stale_indicator            = self.genNewSBF ()
             if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period ={}\n' .format (self.ins_cnt_in_this_period))                     
+                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period ={}\n' .format (self.ins_cnt_since_last_full_ad))                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period={}\n' .format (self.ins_cnt_in_this_period))                     
+                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period={}\n' .format (self.ins_cnt_since_last_full_ad))                     
             self.num_of_advertisements  += 1
             return # finished advertising an indicator
         
-        if self.ins_cnt_in_this_period % self.min_feasible_uInterval == 0:
+        if self.ins_cnt_since_last_full_ad % self.min_feasible_uInterval == 0:
 
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
                 self.updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -313,35 +320,35 @@ class DataStore (object):
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_in_this_period, self.total_ad_size_in_this_period / self.ins_cnt_in_this_period)) 
+                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
 
     def handle_ind_full_mode (self):
         """
         Advertise an updated indicator, while in full mode:
         """
-        if self.ins_cnt_in_this_period == self.min_uInterval * self.uInterval_factor:
+        if self.ins_cnt_since_last_full_ad == self.min_uInterval * self.uInterval_factor:
             if self.consider_delta_updates and self.delta_update_is_cheaper():
                 self.advertise_switch_to_delta_update()
             else:
                 self.advertise_ind_full_mode (called_by_str='max_uInterval')
-                self.ins_cnt_in_this_period = 0 
+                self.ins_cnt_since_last_full_ad = 0 
             return
        
         # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
-        if (self.ins_cnt_in_this_period==self.min_uInterval):
+        if (self.ins_cnt_since_last_full_ad==self.min_uInterval):
             if self.consider_delta_updates and self.delta_update_is_cheaper():
                 self.advertise_switch_to_delta_update()
                 return
             
-        if (self.ins_cnt_in_this_period>=self.min_uInterval):
+        if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
             if self.should_advertise_by_mr0 (): 
                 self.advertise_ind_full_mode (called_by_str='mr0')
-                self.ins_cnt_in_this_period = 0
+                self.ins_cnt_since_last_full_ad = 0
                 return
         
-            if self.consider_advertise_by_mr1 ():
+            if self.should_advertise_by_mr1 ():
                 self.advertise_ind_full_mode (called_by_str='mr1')
-                self.ins_cnt_in_this_period = 0
+                self.ins_cnt_since_last_full_ad = 0
                 return
        
     def delta_update_is_cheaper (self):
@@ -370,20 +377,20 @@ class DataStore (object):
         - If requested by self.verbose, print to log files.
         """
         self.in_delta_mode                 = True
-        self.ins_cnt_in_this_period        = 0
+        self.ins_cnt_since_last_full_ad        = 0
         self.total_ad_size_in_this_period  = 0
         self.num_of_advertisements        += 1
         self.overall_ad_size              += self.delta_ad_size  
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
-            printf (self.q_output_file, 'switching to delta mode. advertising ad_size={}, ins_cnt={}\n' .format(self.delta_ad_size, self.ins_cnt_in_this_period))
+            printf (self.q_output_file, 'switching to delta mode. advertising ad_size={}\n' .format(self.delta_ad_size))
         self.stale_indicator = self.updated_sbf  
 
     def advertise_ind_full_mode (self, called_by_str):
         
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_in_this_period, called_by_str))                     
+            printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
 
         if self.use_CountingBloomFilter: # update the stale indicator also for the case of not (consider_delta_updates)
             self.stale_indicator = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
@@ -394,10 +401,10 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         
         if self.collect_mr_stat:
-            if self.ins_cnt_in_this_reinit_mr0_period >= self.period: 
+            if self.ins_cnt_in_this_period >= self.period: 
             #self.init_mr0_after_each_ad:
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
-                self.ins_cnt_in_this_reinit_mr0_period = 0 
+                self.ins_cnt_in_this_period = 0 
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
                 if MyConfig.VERBOSE_LOG_Q in self.verbose:
                     printf (self.q_output_file, 'RE-INIT MR0. mr0={}\n' .format (self.mr0_cur))
@@ -459,7 +466,7 @@ class DataStore (object):
             printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_in_this_period)) 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
         self.tn_events_cnt = int(0)
         
     def should_advertise_by_mr0 (self):
@@ -469,7 +476,7 @@ class DataStore (object):
         - the level of mult0 (mr0, times the prob' of a negative indication).
         Returns True if advertised.
         """
-        if (self.ins_cnt_in_this_period >= self.min_uInterval):
+        if (self.ins_cnt_since_last_full_ad >= self.min_uInterval):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                     (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur) > self.non_comp_miss_th):
@@ -489,17 +496,17 @@ class DataStore (object):
             printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_in_this_period)) 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
         self.fp_events_cnt = int(0)
         
-    def consider_advertise_by_mr1 (self):
+    def should_advertise_by_mr1 (self):
         """
         Check whether it's required to advertise, based on:
         - the level of mr1 (the miss-probability in case of a positive indication), and 
         - the level of mult0 (mr1, times the prob' of a positive indication).
         Returns True if advertised.
         """
-        if (self.ins_cnt_in_this_period >= self.min_uInterval):
+        if (self.ins_cnt_since_last_full_ad >= self.min_uInterval):
             if (self.hit_ratio_based_uInterval):
                 if ((self.num_of_advertisements>0) and 
                      self.pr_of_pos_ind_estimation * self.mr1_cur > self.non_comp_accs_th):

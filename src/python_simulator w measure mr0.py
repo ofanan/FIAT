@@ -68,11 +68,7 @@ class Simulator(object):
         """
         Init a list of empty DSs (Data Stores == caches)
         """
-        if self.mode in ['opt', 'fnaa']: 
-            collect_mr_stat = False
-        else: 
-            collect_mr_stat = self.calc_mr_by_hist and (not (self.use_perfect_hist))
-            
+           
         self.DS_list = [DataStore.DataStore(
             ID                      = i, 
             size                    = self.DS_size, 
@@ -199,7 +195,7 @@ class Simulator(object):
         self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.88 
         self.mr1_ad_th          = 0.01 
-        self.verbose            = verbose # Defines the log/res data printed out to files       
+        self.verbose            = verbose # Defines the log/res data printed out to files
         self.use_perfect_hist   = use_perfect_hist       
         
         if (MyConfig.VERBOSE_RES in self.verbose):
@@ -266,9 +262,7 @@ class Simulator(object):
         if self.use_global_uInerval:
             self.do_not_advertise_upon_insert = True # Disallow each cache-initiated advertisement; instead, self will decide when to advertise, based on self counters.
             self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, self.bw)
-            self.advertise_cycle_of_DS = np.array ([ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)])
-        else:
-			self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
+            self.advertise_cycle_of_DS = np.array ([ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)]) 
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.min_uInterval == 1 and self.uInterval_factor==1) else False
         self.num_of_insertions_between_estimations = np.uint8 (150)
@@ -279,6 +273,7 @@ class Simulator(object):
         self.use_given_DS_per_item = use_given_DS_per_item
 
         self.avg_DS_accessed_per_req = float(0)
+        self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
         if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
             lg_uInterval = np.log2 (self.min_uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
@@ -301,15 +296,15 @@ class Simulator(object):
             self.collect_mr_stat                = False
             self.mr0_measure_window             = self.min_uInterval/10
             self.mr0_by_staleness_res_file      = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval),  "w")
+
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
             self.speculate_hit_cnt          = 0 # num of hits among speculative accss
             self.indications                = np.array (range (self.num_of_DSs), dtype = 'bool')
-            self.use_perfect_hist           = False
         
         if (self.mode == 'opt'):
-            self.collect_mr_stat            = False												   
+            self.collect_mr_stat            = False
             self.calc_mr_by_hist            = False
             self.use_fixed_uInterval        = True
             self.hit_ratio_based_uInterval  = False
@@ -509,6 +504,7 @@ class Simulator(object):
                 self.ins_cnt     = 0 
                 self.neg_ind_cnt = 0
                 self.tn_cnt      = 0
+            
     def run_trace_opt_hetro (self):
         """
         Run a full trace as Opt access strat' when the DS costs are heterogeneous

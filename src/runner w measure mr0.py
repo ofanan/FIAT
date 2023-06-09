@@ -274,16 +274,8 @@ def run_var_missp_sim (trace_file_name,
     print("now = ", datetime.now(), 'running var_missp sim')
     for missp in missp_vals: 
         for mode in modes:
-            if mode.startswith('salsa'):
-                res_file_name = 'salsa'
-            elif mode=='opt':
-                res_file_name = 'opt'
-            elif mode=='fnaa':
-                res_file_name = 'fnaa'
-            else:
-                MyConfig.error ('the mode {} you chose in unsupported.' .format (mode))
             tic()
-            sm = sim.Simulator(res_file_name    = res_file_name, 
+            sm = sim.Simulator(res_file_name    = 'salsa' if mode.startswith('salsa') else 'opt_n_fnaa', 
                                trace_name       = MyConfig.get_trace_name (trace_file_name), 
                                mode             = mode, 
                                req_df           = requests, 
@@ -297,12 +289,9 @@ def run_var_missp_sim (trace_file_name,
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
+traces = [wiki_trace_file_name, scarab_trace_file_name, F1_trace_file_name, P3_trace_file_name]
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['salsa1'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['measure_mr0'], missp_vals=[10], verbose=[])
 
 # for trace_file_name in traces:
-#     run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+#     run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['opt', 'fnaa'], missp_vals=[10, 30, 100, 300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

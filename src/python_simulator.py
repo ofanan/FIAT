@@ -727,7 +727,7 @@ class Simulator(object):
         elif (self.mode == 'fno'):
             self.run_trace_pgm_fno_hetro ()
             self.gather_statistics ()
-        
+
         elif self.mode in ['fnaa'] or self.mode.startswith('salsa'):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()

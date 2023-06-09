@@ -289,9 +289,6 @@ class Simulator(object):
             simulate a single DS, with a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
             """
-            # self.tn_cnt                 = np.zeros (self.num_of_DSs) # self.tn_cnt[d] will hold the # of tn indications in DS d during the trace
-            # self.neg_ind_cnt            = np.zeros (self.num_of_DSs) # self.neg_ind_cnt[d] will hold the # of neg. ind. in DS d during the trace
-            # self.ins_cnt                = np.zeros (self.num_of_DSs) # self.neg_ind_cnt[d] will hold the # of insertions to DS d
             self.tn_cnt                         = 0
             self.neg_ind_cnt                    = 0
             self.ins_cnt                        = 0

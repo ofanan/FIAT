@@ -299,10 +299,25 @@ def run_var_missp_sim (trace_file_name,
 
 traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-# run_var_missp_sim(trace_file_name=scarab_trace_file_name, max_num_of_req=1000000, modes=['measure_mr0'], missp_vals=[10], verbose=[])
 
-for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+trace_file_name =scarab_trace_file_name
+num_of_DS       = 1
+DS_size         = 10000
+num_of_DSs      = 3
+max_num_of_req  = 100000
+sm = sim.Simulator(res_file_name    = '', 
+                   trace_name       = MyConfig.get_trace_name (trace_file_name),
+                   mode             = 'measure_mr0',
+                   req_df           = MyConfig.gen_requests (trace_file_name, max_num_of_req=max_num_of_req), 
+                   client_DS_cost   = calc_DS_cost (num_of_DSs, use_homo_DS_cost=False),
+                   missp            = 10,
+                   DS_size          = DS_size,
+                   min_uInterval    = DS_size/10,
+                   verbose          = [])
+sm.run_simulator(interval_between_mid_reports=max_num_of_req)
+
+# for trace_file_name in traces:
+#     run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

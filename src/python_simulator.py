@@ -268,7 +268,7 @@ class Simulator(object):
             self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, self.bw)
             self.advertise_cycle_of_DS = np.array ([ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)])
         else:
-			self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
+            self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.min_uInterval == 1 and self.uInterval_factor==1) else False
         self.num_of_insertions_between_estimations = np.uint8 (150)

@@ -12,6 +12,7 @@ from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
 
+# trace_file_name = [{}]
 wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
 gradle_trace_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
 scarab_trace_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv'
@@ -315,10 +316,12 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
 #                    verbose          = [])
 # sm.run_simulator(interval_between_mid_reports=max_num_of_req)
 
-run_var_missp_sim(max_num_of_req = 10000, trace_file_name=scarab_trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-exit ()
-for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+res_file = open ('../res/tmp.txt', 'w')
+printf (res_file, sys.argv[1])
+# run_var_missp_sim(max_num_of_req = 10000, trace_file_name=scarab_trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+# exit ()
+# for trace_file_name in traces:
+#     run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

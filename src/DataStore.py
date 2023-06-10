@@ -28,7 +28,7 @@ class DataStore (object):
                                                                 # Each time a new indicator is published, the updated indicator contains a fresh estimation, and a counter is reset. 
                                                                 # Then, each time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
          verbose                    = [],# what output will be written. See macros in MyConfig.py 
-         min_uInterval              = 1, # min num of insertions of new items into the cache before advertising again
+         min_uInterval              = 100, # min num of insertions of new items into the cache before advertising again
          uInterval_factor           = 1, 
          send_fpr_fnr_updates       = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
          collect_mr_stat            = True,  
@@ -170,7 +170,7 @@ class DataStore (object):
         - Update the relevant cntrs (regular / spec access cnt, fp / tn cnt).
         - Update the mr0, mr1 (prob' of a miss, given a neg / pos ind'), if needed.
         """
-        hit = True if (key in self.cache) else False          
+        hit = key in self.cache          
         if hit: 
             self.cache[key] #Touch the element, so as to update the LRU mechanism
 
@@ -241,8 +241,9 @@ class DataStore (object):
             return
 
         if self.use_fixed_uInterval:
-            if self.ins_cnt_since_last_full_ad >= self.min_uInterval:
+            if self.ins_cnt_since_last_full_ad == self.min_uInterval:
                 self.advertise_ind_full_mode(called_by_str='fixed uInterval')
+                self.ins_cnt_since_last_full_ad = 0 
             return
 
         # now we know that this is an alg' that dynamically-scales the uInterval 
@@ -439,7 +440,6 @@ class DataStore (object):
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         if idx==0 and bw_in_cur_interval * self.potential_indSize_lg_indSize[0]/curIndSize_lg_curIndSize > self.bw_budget:
             self.min_uInterval = int (self.ind_size / self.bw_budget) 
-            self.in_delta_mode = False
 
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 printf (self.q_output_file, 'Switching back to full mode. cur bw={}, indSize={}, curIndSize_lg_curIndSize={}, self.potential_indSize_lg_indSize[0]={}, \n' .format 

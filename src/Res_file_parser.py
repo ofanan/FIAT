@@ -20,8 +20,8 @@ bw_idx                  = 7
 uInterval_idx           = 8
 alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: Opt, FNAA, SALSA
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
-mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
-uInterval_factor_idx    = 14 # mr0 th for SALSA's advertisement decision
+mr1th_idx               = 11 # mr0 th for SALSA's advertisement decision
+uInterval_factor_idx    = 12 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH = 0.25
@@ -165,7 +165,8 @@ class Res_file_parser (object):
 
         if len (splitted_line) <= mr0th_idx:
             return # no further data in this .res entry
-        self.dict['mr0_th0.'] = float ('0.' + splitted_line [mr0th_idx].split("mr0th")[1])
+        # MyConfig.error (splitted_line [mr0th_idx+1])
+        self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
         self.dict['mr1_th0.'] = float ('0.' + splitted_line [mr1th_idx].split("mr1th")[1])
         self.dict['uInterval_factor'] = float (splitted_line [uInterval_factor_idx].split("uIntFact")[1])
          
@@ -567,6 +568,8 @@ class Res_file_parser (object):
                                            item['mr1_th'] == mr1_th and
                                            item['uInterval factor']==uInterval_factor]     
                     point = relevant_points[0]
+                    print (relevant_points[0])
+                    exit ()
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point['bwCost']
 

@@ -557,7 +557,6 @@ class Res_file_parser (object):
                     
                     # remove all points of other mcdes
                     relevant_points = [item for item in relevant_points if item['alg_mode'] == mode and item['bpe'] == bpe]
-                    print (relevant_points) #$$$
                     if uInterval!=None:
                         relevant_points = [item for item in relevant_points if item['min_uInterval'] == uInterval] 
                     if (relevant_points==[]): # no results for this settings  
@@ -571,7 +570,6 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point['bwCost']
 
-                    exit () #$$$
                 plt.subplot (1, 2, 1)
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                 plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
@@ -589,8 +587,8 @@ class Res_file_parser (object):
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()
-for res_file in ['salsa.res']:  #'opt.res'
+for res_file in ['salsa.res', 'opt.res']:  #
     my_Res_file_parser.parse_file (res_file)
-# for cache_size in [4, 16, 64]:
-#     my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
+for cache_size in [4, 16, 64]:
+    my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
 

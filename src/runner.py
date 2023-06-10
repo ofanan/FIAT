@@ -13,7 +13,7 @@ from   tictoc import tic, toc
 
 DS_size = 16000
 mode    = 'salsa1'
-
+missp   = 10
 # trace_file_name = [{}]
 wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
 gradle_trace_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
@@ -324,7 +324,7 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
 # run_var_missp_sim(max_num_of_req = 10000, trace_file_name=scarab_trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 # exit ()
 for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[missp], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

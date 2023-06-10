@@ -20,8 +20,8 @@ bw_idx                  = 7
 uInterval_idx           = 8
 alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: Opt, FNAA, SALSA
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
-mr1th_idx               = 11 # mr0 th for SALSA's advertisement decision
-uInterval_factor_idx    = 12 # mr0 th for SALSA's advertisement decision
+mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
+uInterval_factor_idx    = 14 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH = 0.25
@@ -157,7 +157,7 @@ class Res_file_parser (object):
         self.dict['min_uInterval'] = int(uInterval_val[0])
         self.dict['uInterval']     = int(uInterval_val[0]) # for backward compatibility, keep also this field 
 
-        if not(mode.startswith('salsa')):
+        if not(mode.startswith('SALSA')):
             return 
             
         if len(uInterval_val)>1: # a single uInterval val is given
@@ -247,7 +247,7 @@ class Res_file_parser (object):
         bwCost_by_missp_output_file      = open ("../res/bwCost_by_missp.txt", "w")
         traces = ['gradle', 'wiki', 'scarab', 'F2']
 
-        modes = ['FNAA', 'SALSA', 'SALSA2']
+        modes = ['FNAA', 'SALSA1', 'SALSA2']
         missp_vals = [30, 100, 300]
         for output_file in [serviceCost_by_missp_output_file, bwCost_by_missp_output_file]:
             printf (output_file, 'input \t ')
@@ -265,6 +265,7 @@ class Res_file_parser (object):
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
+                        
                         MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace_to_print, missp))
                     opt_serviceCost = point[0]['serviceCost']
                     uInterval = 1000
@@ -511,21 +512,20 @@ class Res_file_parser (object):
         
        
     def plot_bars_by_missp_python (self, 
-                                   mr0_th           = 0.85, 
+                                   mr0_th           = 0.88, 
                                    mr1_th           = 0.01, 
-                                   uInterval        = 1000,
+                                   uInterval        = None,
                                    uInterval_factor = 4, 
-                                   num_of_req       = 1000,
-                                   bpe              = 14,  
+                                   bpe              = 14,
+                                   traces           = ['wiki1', 'scarab', 'F1', 'P3'],  
                                    cache_size       = 10):
         """
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
         """
 
         self.set_plt_params ()
-        traces = ['wiki1', 'scarab', 'F1', 'P3']
 
-        modes = ['FNAA', 'SALSA1', 'SALSA2'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
+        modes = ['SALSA1', 'SALSA2'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
@@ -551,15 +551,15 @@ class Res_file_parser (object):
                                  item['missp']      == missp] 
                     opt_point = [item for item in relevant_points if item['alg_mode'] =='Opt'] 
                     if (opt_point==[]):
-                        MyConfig.error ('no results {}.C{}K.bpe{} M{} {}' .format (
+                        MyConfig.error ('no results Opt {}.C{}K.bpe{} M{}' .format (
                                         trace, cache_size, bpe, missp, mode))
                     opt_serviceCost = opt_point[0]['serviceCost']
                     
                     # remove all points of other mcdes
-                    relevant_points = [item for item in relevant_points if item['alg_mode'] == mode]
-                    relevant_points = [item for item in relevant_points if
-                                       item['bpe']           == bpe and  
-                                       item['min_uInterval'] == uInterval] 
+                    relevant_points = [item for item in relevant_points if item['alg_mode'] == mode and item['bpe'] == bpe]
+                    print (relevant_points) #$$$
+                    if uInterval!=None:
+                        relevant_points = [item for item in relevant_points if item['min_uInterval'] == uInterval] 
                     if (relevant_points==[]): # no results for this settings  
                         continue
                     if mode.startswith('salsa'):
@@ -571,6 +571,7 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
                     mode_bwCost     [traceIdx] = point['bwCost']
 
+                    exit () #$$$
                 plt.subplot (1, 2, 1)
                 plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                 plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
@@ -588,9 +589,8 @@ class Res_file_parser (object):
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_file ('opt_n_fnaa.res')
-my_Res_file_parser.parse_file ('salsa.res')
-my_Res_file_parser.plot_bars_by_missp_python (cache_size=4)
-my_Res_file_parser.plot_bars_by_missp_python (cache_size=16)
-my_Res_file_parser.plot_bars_by_missp_python (cache_size=64)
+for res_file in ['salsa.res']:  #'opt.res'
+    my_Res_file_parser.parse_file (res_file)
+# for cache_size in [4, 16, 64]:
+#     my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
 

@@ -20,8 +20,8 @@ bw_idx                  = 7
 uInterval_idx           = 8
 alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: Opt, FNAA, SALSA
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
-mr1th_idx               = 11 # mr0 th for SALSA's advertisement decision
-uInterval_factor_idx    = 12 # mr0 th for SALSA's advertisement decision
+mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
+uInterval_factor_idx    = 14 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH = 0.25
@@ -165,9 +165,8 @@ class Res_file_parser (object):
 
         if len (splitted_line) <= mr0th_idx:
             return # no further data in this .res entry
-        # MyConfig.error (splitted_line [mr0th_idx+1])
         self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
-        self.dict['mr1_th0.'] = float ('0.' + splitted_line [mr1th_idx].split("mr1th")[1])
+        self.dict['mr1_th'] = float ('0.' + splitted_line [mr1th_idx+1])
         self.dict['uInterval_factor'] = float (splitted_line [uInterval_factor_idx].split("uIntFact")[1])
          
     def print_tbl (self):
@@ -562,15 +561,13 @@ class Res_file_parser (object):
                         relevant_points = [item for item in relevant_points if item['min_uInterval'] == uInterval] 
                     if (relevant_points==[]): # no results for this settings  
                         continue
-                    if mode.startswith('salsa'):
+                    if mode.startswith('SALSA'):
                         relevant_points = [item for item in relevant_points if
                                            item['mr0_th'] == mr0_th and
                                            item['mr1_th'] == mr1_th and
-                                           item['uInterval factor']==uInterval_factor]     
+                                           item['uInterval_factor']==uInterval_factor]     
                     point = relevant_points[0]
-                    print (relevant_points[0])
-                    exit ()
-                    mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
+                    mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost
                     mode_bwCost     [traceIdx] = point['bwCost']
 
                 plt.subplot (1, 2, 1)
@@ -584,14 +581,12 @@ class Res_file_parser (object):
                 x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                 plt.xticks (mid_x_positions, traces_to_print)
                 plt.legend ()
-            # plt.suptitle (r'$M$={}' .format (missp))
-            # plt.show()
-            plt.savefig ('../res/M{}.pdf' .format (missp), bbox_inches='tight', dpi=100)
+            plt.savefig ('../res/C_{}K_M{}.pdf' .format (cache_size, missp), bbox_inches='tight', dpi=100)
             plt.clf ()
                     
 my_Res_file_parser = Res_file_parser ()
 for res_file in ['salsa.res', 'opt.res']:  #
     my_Res_file_parser.parse_file (res_file)
-for cache_size in [4, 16, 64]:
+for cache_size in [4]: #[4, 16, 64]:
     my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
 

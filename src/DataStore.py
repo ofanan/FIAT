@@ -62,7 +62,6 @@ class DataStore (object):
         self.cache_size              = size
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str            = settings_str
-        self.use_fixed_uInterval     = use_fixed_uInterval
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
@@ -126,7 +125,6 @@ class DataStore (object):
         self.delta_th                = self.ind_size / self.lg_ind_size # threshold for number of flipped bits in the BF; below this th, it's cheaper to send only the "delta" (indices of flipped bits), rather than the full ind'         
         self.update_bw               = 0
         self.num_of_advertisements   = 0
-        self.ins_cnt_since_last_full_ad  = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.ins_cnt_in_this_period = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
@@ -134,6 +132,7 @@ class DataStore (object):
         self.uInterval_factor        = uInterval_factor
         self.period                  = 10 * self.min_uInterval  
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
+        self.ins_cnt_since_last_full_ad = 0 # cnt of insertions since the last advertisement of fresh indicator
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
  
@@ -293,7 +292,7 @@ class DataStore (object):
 
             if self.scale_ind_factor!=1:                                          
                 self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
-            self.ins_cnt_since_last_full_ad         = 0
+            self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
             self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
@@ -377,7 +376,7 @@ class DataStore (object):
         - If requested by self.verbose, print to log files.
         """
         self.in_delta_mode                 = True
-        self.ins_cnt_since_last_full_ad        = 0
+        self.ins_cnt_since_last_full_ad    = 0
         self.total_ad_size_in_this_period  = 0
         self.num_of_advertisements        += 1
         self.overall_ad_size              += self.delta_ad_size  

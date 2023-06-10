@@ -100,7 +100,7 @@ class Simulator(object):
             scale_ind_factor        = self.scale_ind_factor,
             init_mr0_after_each_ad  = False,               
             init_mr1_after_each_ad  = False,               
-            use_fixed_uInterval     = (self.mode in ['fno', 'fnaa']),
+            use_fixed_uInterval     = self.use_fixed_uInterval,
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
@@ -179,7 +179,7 @@ class Simulator(object):
                  ):
         """
         Return a Simulator object with the following attributes:
-            mode:               e.g. 'opt', 'fna', 'fno'
+            mode:               e.g. 'opt', 'fnaa', 'fno'
             client_DS_cost:     2D array of costs. entry (i,j) is the cost from client i to DS j
             missp:               miss penalty
             k_loc:              number of DSs a missed key is inserted to
@@ -270,7 +270,7 @@ class Simulator(object):
             self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.min_uInterval == 1 and self.uInterval_factor==1) else False
-        self.num_of_insertions_between_estimations = np.uint8 (150)
+        self.num_of_insertions_between_estimations = np.uint8 (50)
         if (self.num_of_clients == 1):
             self.use_given_client_per_item = False # if there's only 1 client, all requests belong to this client, disregarding what was pre-computed in the trace file.
         else:
@@ -434,7 +434,7 @@ class Simulator(object):
             return
         printf (res_file, '// estimation window = {}\n' .format (self.ewma_window_size))
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
-        if (self.mode == 'fna' and not(self.calc_mr_by_hist)):
+        if (self.mode == 'fnaa' and not(self.calc_mr_by_hist)):
             printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
             printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
@@ -632,7 +632,7 @@ class Simulator(object):
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
-        run a single request, when the algorithm mode is 'fna' and using practical, partial history knowledge.
+        run a single request, when the algorithm mode is 'fnaa' and using practical, partial history knowledge.
         The history is collected by the DSs themselves.
         """
         for ds in range (self.num_of_DSs):            
@@ -644,7 +644,7 @@ class Simulator(object):
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
-        run a single request, when the algorithm mode is 'fna' and assuming perfect history knowledge.
+        run a single request, when the algorithm mode is 'fnaa' and assuming perfect history knowledge.
         This includes:
         - Calculate mr of each datastore.
         - Access the DSs accordingly.

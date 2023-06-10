@@ -113,11 +113,13 @@ class Simulator(object):
         Init a list of clients
         """
         
-        verbose_file = self.res_file if (MyConfig.VERBOSE_RES in self.verbose) else None
-        
-        self.client_list = [Client.Client(ID = i, num_of_DSs = self.num_of_DSs, window_size = self.DS_size/10, verbose = self.verbose, 
-        use_redundan_coef = self.use_redundan_coef, k_loc = self.k_loc, missp = self.missp,
-        verbose_file = verbose_file) 
+        self.client_list = [Client.Client(
+                ID          = i, 
+                num_of_DSs  = self.num_of_DSs, 
+                window_size = self.DS_size/10, 
+                verbose     = self.verbose, 
+                k_loc       = self.k_loc, 
+                missp       = self.missp) 
         for i in range(self.num_of_clients)]
     
     def init_res_file (self, res_file_name):
@@ -160,7 +162,6 @@ class Simulator(object):
                  DS_size        = 10000, 
                  bpe            = 14, 
                  rand_seed      = 42, 
-                 use_redundan_coef = False, 
                  max_fpr        = 0.01, 
                  max_fnr        = 0.01, 
                  verbose        = [MyConfig.VERBOSE_RES], 
@@ -232,7 +233,6 @@ class Simulator(object):
             exit ()
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
-        self.est_win_factor     = 10
         self.ewma_window_size   = int (self.DS_size/10) # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
@@ -240,7 +240,6 @@ class Simulator(object):
         self.mr_of_DS           = np.zeros(self.num_of_DSs) # mr_of_DS[i] will hold the estimated miss rate of DS i 
         self.req_df             = req_df
         self.trace_len          = self.req_df.shape[0]
-        self.use_redundan_coef  = use_redundan_coef
         self.pos_ind_cnt        = np.zeros (self.num_of_DSs , dtype='uint') #pos_ind_cnt[i] will hold the number of positive indications of indicator i in the current window
         self.leaf_of_DS         = np.array(np.floor(np.log2(self.client_DS_cost))).astype('uint8') # lg_client_DS_cost(i,j) will hold the lg2 of access cost for client i accessing DS j
         self.pos_ind_list       = [] #np.array (0, dtype = 'uint8') #list of the DSs with pos' ind' (positive indication) for the current request

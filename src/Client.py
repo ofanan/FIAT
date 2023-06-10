@@ -20,7 +20,7 @@ class Request(object):
 class Client(object):
     
     def __init__(self, ID, num_of_DSs, window_size  = 1000, window_alpha = 0.25, verbose = [], 
-                use_redundan_coef = False, k_loc = 1, missp = 100, verbose_file = None):
+                k_loc = 1, missp = 100):
         """
         Return a Client object with the following attributes:
         """
@@ -54,7 +54,6 @@ class Client(object):
         self.missp              = missp
         self.use_spec_factor    = False
 
-        self.use_redundan_coef  = False  
 #         if (use_redundan_coef and self.redundan_coef > math.exp(1)):
 #             self.use_redundan_coef  = True # A boolean variable, determining whether to consider the redundan' coef' while calculating mr_0
 #             self.redundan_coef      = math.log (self.redundan_coef)
@@ -62,7 +61,6 @@ class Client(object):
         # dictionary describing for every req_id of client: 0: init, 1: hit upon access of DSs, 2: miss upon access of DSs, 3: high DSs cost, prefer beta, 4: no pos ind, pay beta
         # self.action 			= {}
         self.verbose            = verbose
-        self.verbose_file       = verbose_file
         
         if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose):
             self.DS_accessed 		= {} # dictionary containing DSs accessed for every req_id of client where access takes place. Currently used only in higher-verbose modes.

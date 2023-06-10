@@ -518,6 +518,7 @@ class Res_file_parser (object):
                                    uInterval_factor = 4, 
                                    bpe              = 14,
                                    traces           = ['wiki1', 'scarab', 'F1', 'P3'],  
+                                   modes            = ['FNAA', 'SALSA1', 'SALSA2'], 
                                    cache_size       = 10):
         """
         Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -525,7 +526,6 @@ class Res_file_parser (object):
 
         self.set_plt_params ()
 
-        modes = ['SALSA1', 'SALSA2'] #['FNAA', 'SALSA', 'SALSA085', 'SALSA2', 'SALSA285', 'SALSA385']
         missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 

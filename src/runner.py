@@ -7,10 +7,12 @@ import os, pickle, sys
 
 import MyConfig
 import numpy as np
-#import pandas as pd
 from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
+
+DS_size = 16000
+mode    = 'salsa1'
 
 # trace_file_name = [{}]
 wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
@@ -21,6 +23,9 @@ F2_trace_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
 WS1_trace_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
 P3_trace_file_name      = 'arc/P3.3912Kreq.csv'
   
+# res_file = open ('../res/tmp.txt', 'w')
+# printf (res_file, sys.argv[1])
+
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
     Returns a DS_cost matrix, representing an homogeneous access cost of 2 from each client to each DS. 
@@ -319,11 +324,7 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
 # run_var_missp_sim(max_num_of_req = 10000, trace_file_name=scarab_trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 # exit ()
 for trace_file_name in traces:
-    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-    # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-
-
-# res_file = open ('../res/tmp.txt', 'w')
-# printf (res_file, sys.argv[1])
+    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[30], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

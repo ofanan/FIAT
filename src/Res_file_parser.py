@@ -165,8 +165,8 @@ class Res_file_parser (object):
 
         if len (splitted_line) <= mr0th_idx:
             return # no further data in this .res entry
-        self.dict['mr0_th'] = float (splitted_line [mr0th_idx].split("mr0th")[1])
-        self.dict['mr1_th'] = float (splitted_line [mr1th_idx].split("mr1th")[1])
+        self.dict['mr0_th0.'] = float ('0.' + splitted_line [mr0th_idx].split("mr0th")[1])
+        self.dict['mr1_th0.'] = float ('0.' + splitted_line [mr1th_idx].split("mr1th")[1])
         self.dict['uInterval_factor'] = float (splitted_line [uInterval_factor_idx].split("uIntFact")[1])
          
     def print_tbl (self):

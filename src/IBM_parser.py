@@ -20,14 +20,14 @@ def parse_IBM_trace (trace_file_name,
     input_file_name             = 'snia/IBM/' + trace_file_name
     full_path_input_file_name   = traces_path + 'snia/IBM/' +  trace_file_name
      
-    input_file = open (full_path_input_file_name,  "r")
-    lines               = (line.rstrip() for line in input_file) # "lines" contains all lines in input file
-    lines               = (line for line in lines if line)       # Discard blank lines
+    # input_file = open (full_path_input_file_name,  "r")
+    # lines               = (line.rstrip() for line in input_file) # "lines" contains all lines in input file
+    # lines               = (line for line in lines if line)       # Discard blank lines
         
-    keys = []
+    keys                = []
     discarded_line_cntr = 0  
     
-    for line in lines:
+    for line in open (full_path_input_file_name,  "r"):
         splitted_line = line.split (' ')
         if  splitted_line[0].startswith('IBMObjectStoreTrace'):
             discarded_line_cntr += 1
@@ -43,6 +43,9 @@ def parse_IBM_trace (trace_file_name,
             continue
         if splitted_line[1].split('.')[1]!='PUT': # ignore put (write) requests
             keys.append(splitted_line[2])
+        req_cnt += 1
+        if req_cnt > max_num_of_req:
+            break
     
     print ('num of discarded_lines={}' .format(discarded_line_cntr))
     

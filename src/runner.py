@@ -305,22 +305,23 @@ def run_var_missp_sim (trace_file_name,
             toc()
 
 traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
+
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
-# trace_file_name =scarab_trace_file_name
-# DS_size         = 16000
-# num_of_DSs      = 1
-# max_num_of_req  = 100000
-# sm = sim.Simulator(res_file_name    = '', 
-#                    trace_name       = MyConfig.get_trace_name (trace_file_name),
-#                    mode             = 'measure_mr0',
-#                    req_df           = MyConfig.gen_requests (trace_file_name, max_num_of_req=max_num_of_req), 
-#                    client_DS_cost   = calc_DS_cost (num_of_DSs, use_homo_DS_cost=False),
-#                    missp            = 10,
-#                    DS_size          = DS_size,
-#                    min_uInterval    = DS_size/10,
-#                    verbose          = [])
-# sm.run_simulator(interval_between_mid_reports=max_num_of_req)
+trace_file_name =scarab_trace_file_name
+DS_size         = 1600 #0
+num_of_DSs      = 1
+max_num_of_req  = 1000# 00
+sm = sim.Simulator(res_file_name    = '', 
+                   trace_name       = MyConfig.get_trace_name (trace_file_name),
+                   mode             = 'measure_mr0',
+                   req_df           = MyConfig.gen_requests (trace_file_name, max_num_of_req=max_num_of_req), 
+                   client_DS_cost   = calc_DS_cost (num_of_DSs, use_homo_DS_cost=False),
+                   missp            = 10,
+                   DS_size          = DS_size,
+                   min_uInterval    = DS_size/10,
+                   verbose          = [])
+sm.run_simulator(interval_between_mid_reports=max_num_of_req)
 
 # run_var_missp_sim(max_num_of_req = 10000, trace_file_name=scarab_trace_file_name, DS_size=4000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 # exit ()
@@ -330,21 +331,3 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[100], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
-# gamad = [False, True]
-# x = next (x for x in gamad if x)
-# print ('index of ') 
-# mylist = [False, False, True, True]
-# item = True
-# start=0
-# end=7
-#
-# #search for the item
-# index = mylist.index(True)
-# #print output
-# print(f"index of {item} in the list : {index}")
-# ds2accs = None
-# if ds2accs:
-#     print ('a')
-# else:
-#     print ('b')
-#

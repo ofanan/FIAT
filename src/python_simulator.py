@@ -297,11 +297,12 @@ class Simulator(object):
             self.tn_cnt                         = np.zeros (self.num_of_DSs)
             self.neg_ind_cnt                    = np.zeros (self.num_of_DSs)
             self.ins_cnt                        = np.zeros (self.num_of_DSs)
+            self.use_fixed_uInterval            = True
             self.do_not_advertise_upon_insert   = True
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.mr0_measure_window             = self.min_uInterval/10
-            self.mr0_by_staleness_res_file      = []
+            self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
                 self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, ds),  "w")
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
@@ -539,9 +540,9 @@ class Simulator(object):
                     hit = True
                     
             if not(hit): # miss --> need to insert the key to a cache
-                ds2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
-                self.DS_list[ds2insert].insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
-                self.DS_list[ds2insert].ins_cnt += 1
+                DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
+                DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
+                self.ins_cnt[DS2insert.ID] += 1
             
             for ds in range(self.num_of_DSs):
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:

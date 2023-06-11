@@ -517,7 +517,7 @@ class Simulator(object):
         """
         Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
         """
-        last_printed_ins_cnt = 0
+        last_printed_ins_cnt = np.zeros (self.num_of_DSs)
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             # positive_indications = [self.cur_req.key in self.DS_list[ds].stale_indicator for ds in range(self.num_of_DSs)]
@@ -542,6 +542,23 @@ class Simulator(object):
                 ds2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
                 self.DS_list[ds2insert].insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
                 self.DS_list[ds2insert].ins_cnt += 1
+            
+            for ds in range(self.num_of_DSs):
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
+                    printf (self.mr0_by_staleness_res_file[ds], '\nins_cnt={}, neg_ind_cnt={}, tn_cnt={}, mr0=' .format (self.ins_cnt[ds], self.neg_ind_cnt[ds], self.tn_cnt[ds]))
+                    if self.neg_ind_cnt[ds]>0:
+                        printf (self.mr0_by_staleness_res_file[ds], '{:.4f} ,' .format (self.tn_cnt[ds]/self.neg_ind_cnt[ds]))
+                    else:
+                        printf (self.mr0_by_staleness_res_file[ds], 'NaN, ')
+                    last_printed_ins_cnt[ds] = self.ins_cnt[ds]
+                    self.neg_ind_cnt[ds]     = 0
+                    self.tn_cnt[ds]          = 0
+
+                if self.ins_cnt[ds] == self.min_uInterval:
+                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    self.ins_cnt[ds]     = 0 
+                    self.neg_ind_cnt[ds] = 0
+                    self.tn_cnt[ds]      = 0
 
 
     def run_trace_opt_hetro (self):

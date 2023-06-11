@@ -288,15 +288,22 @@ class Simulator(object):
             simulate a single DS, with a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
             """
-            self.tn_cnt                         = 0
-            self.neg_ind_cnt                    = 0
-            self.ins_cnt                        = 0
-            self.num_of_DSs                     = 1
+            # self.tn_cnt                         = 0
+            # self.neg_ind_cnt                    = 0
+            # self.ins_cnt                        = 0
+            # self.num_of_DSs                     = 1
+            # self.mr0_by_staleness_res_file      = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval),  "w")
+            self.num_of_DSs                     = 3            
+            self.tn_cnt                         = np.zeros (self.num_of_DSs)
+            self.neg_ind_cnt                    = np.zeros (self.num_of_DSs)
+            self.ins_cnt                        = np.zeros (self.num_of_DSs)
             self.do_not_advertise_upon_insert   = True
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.mr0_measure_window             = self.min_uInterval/10
-            self.mr0_by_staleness_res_file      = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval),  "w")
+            self.mr0_by_staleness_res_file      = []
+            for ds in range (self.num_of_DSs):
+                self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, ds),  "w")
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
@@ -471,7 +478,7 @@ class Simulator(object):
                 self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
         printf (self.res_file, '({}, {})' .format (self.min_uInterval, self.FN_miss_cnt/self.hit_cnt))               
 
-    def run_trace_measure_mr0 (self):
+    def run_trace_measure_mr0_on_a_single_ds (self):
         """
         Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
         """
@@ -505,6 +512,38 @@ class Simulator(object):
                 self.ins_cnt     = 0 
                 self.neg_ind_cnt = 0
                 self.tn_cnt      = 0
+
+    def run_trace_measure_mr0 (self):
+        """
+        Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
+        """
+        last_printed_ins_cnt = 0
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req = self.req_df.iloc[self.req_cnt]  
+            # positive_indications = [self.cur_req.key in self.DS_list[ds].stale_indicator for ds in range(self.num_of_DSs)]
+
+            hit     = False # default value - didn't retrieve the requested key from any DS
+            ds2accs = None  # default value: don't accs any DS            
+            for ds in range(self.num_of_DSs):
+                if self.cur_req.key in self.DS_list[ds].stale_indicator: # positive ind' 
+                    if not(ds2accs): # first positive indication. we assume here that caches are sorted in an increasing accs cost order. 
+                        ds2accs = ds
+                    continue
+                else: # negative indication 
+                    self.neg_ind_cnt[ds] += 1
+                    if not(self.cur_req.key in self.DS_list[ds]): # TN  
+                        self.tn_cnt += 1
+            if ds2accs: # found a DS w/ a pos' ind' --> accs it
+                if self.cur_req.key in self.DS_list[ds]: # TP --> only touch the item. no need to insert it
+                    self.DS_list[ds2accs].access (key=self.cur_req.key, is_speculative_accs = False)
+                    hit = True
+                    
+            if not(hit): # miss --> need to insert the key to a cache
+                ds2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
+                self.DS_list[ds2insert].insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
+                self.DS_list[ds2insert].ins_cnt += 1
+
+
     def run_trace_opt_hetro (self):
         """
         Run a full trace as Opt access strat' when the DS costs are heterogeneous

@@ -1,5 +1,5 @@
 """
-Parses an IBM trace, 
+Parses a twitter trace, 
 Output: a csv file, where:
         - the first col. is the keys,
         - (optional): a 2nd col. detailing the (u.a.r. picked) id of the clients associated with this req,
@@ -11,42 +11,29 @@ from numpy import infty
 import mmh3, sys, hashlib
 import MyConfig
 
-def parse_IBM_trace (trace_file_name, 
+def parse_IBN_trace (trace_file_name, 
                      max_num_of_req       = MyConfig.INF_INT, # maximum number of requests to be parsed, starting from the beginning of the trace
                      num_of_clients       = 1 # when larger than 1, the output will contain also the client u.a.r.-associated with each req. 
                      ):
 
     traces_path                 = MyConfig.getTracesPath()
-    input_file_name             = 'snia/IBM/' + trace_file_name
-    full_path_input_file_name   = traces_path + 'snia/IBM/' +  trace_file_name
+    input_file_name             = 'snia/twitter/' + trace_file_name
+    full_path_input_file_name   = traces_path + 'snia/twitter/' +  trace_file_name
      
-    input_file = open (full_path_input_file_name,  "r")
-    lines               = (line.rstrip() for line in input_file) # "lines" contains all lines in input file
-    lines               = (line for line in lines if line)       # Discard blank lines
+    # input_file = open (full_path_input_file_name,  "r")
+    # lines               = (line.rstrip() for line in input_file) # "lines" contains all lines in input file
+    # lines               = (line for line in lines if line)       # Discard blank lines
         
     keys = []
     discarded_line_cntr = 0  
     
-    for line in lines:
-        splitted_line = line.split (' ')
-        if  splitted_line[0].startswith('IBMObjectStoreTrace'):
-            discarded_line_cntr += 1
-            continue
-        if len(splitted_line)<2:
-            print ('problematic line: {}' .format (line))
-            discarded_line_cntr += 1
-            continue
-        mode_field = splitted_line[1].split('.')
-        if len(mode_field)<2:
-            print ('problematic field: {}' .format (line))
-            discarded_line_cntr += 1
-            continue
-        if splitted_line[1].split('.')[1]!='PUT': # ignore put (write) requests
-            keys.append(splitted_line[2])
+    with open (full_path_input_file_name,  "r") as input_file:
+        for line in input_file:
+            splitted_line = line.split (',')
+            if not (splitted_line[5].startswith('get')):
+                continue
+            keys.append(splitted_line[1])
     
-    print ('num of discarded_lines={}' .format(discarded_line_cntr))
-    
-    # generate hashes of URLs. name column 'key' 
     uniq_keys       = np.unique(keys)
     keys_lut_dict   = dict(zip(uniq_keys , range(uniq_keys.size))) # dictionary serving as a LUT associating each unique_url with a unique integer
     keys            = np.array([keys_lut_dict[key] for key in keys]).astype('uint32')
@@ -71,4 +58,4 @@ def parse_IBM_trace (trace_file_name,
     print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))    
     full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
     
-parse_IBM_trace ('IBMObjectStoreTrace004Part0.txt')
+parse_IBN_trace ('cluster10.txt', max_num_of_req=700000)

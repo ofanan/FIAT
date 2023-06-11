@@ -225,12 +225,10 @@ class Simulator(object):
         self.num_of_DSs         = client_DS_cost.shape[1]
         self.k_loc              = k_loc
         if (self.DS_insert_mode != 1):
-            print ('sorry, currently only fix insert mode (1) is supported')
-            exit ()
+            MyConfig.error ('sorry, currently only fix insert mode (1) is supported')
 
         if (self.k_loc > self.num_of_DSs):
-            print ('k_loc must be at most num_of_DSs')
-            exit ()
+            MyConfig.error ('k_loc must be at most num_of_DSs')
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
         self.ewma_window_size   = int (self.DS_size/10) # window for parameters' estimation 
@@ -293,6 +291,7 @@ class Simulator(object):
             # self.ins_cnt                        = 0
             # self.num_of_DSs                     = 1
             # self.mr0_by_staleness_res_file      = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval),  "w")
+            self.print_detailed_output          = False
             self.num_of_DSs                     = 3            
             self.tn_cnt                         = np.zeros (self.num_of_DSs)
             self.neg_ind_cnt                    = np.zeros (self.num_of_DSs)
@@ -304,7 +303,7 @@ class Simulator(object):
             self.mr0_measure_window             = self.min_uInterval/10
             self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
-                self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, ds),  "w")
+                self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
@@ -530,7 +529,6 @@ class Simulator(object):
 
             hit                     = False # default value - didn't retrieve the requested key from any DS
             ds2accs                 = None  # default value: don't accs any DS            
-            print_detailed_output   = False
             for ds in range(self.num_of_DSs):
                 if self.cur_req.key in self.DS_list[ds].stale_indicator: # positive ind' 
                     if not(ds2accs): # first positive indication. we assume here that caches are sorted in an increasing accs cost order. 
@@ -553,7 +551,7 @@ class Simulator(object):
             for ds in range(self.num_of_DSs):
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
                     if num_of_ads[ds] > self.DS_size/self.min_uInterval: # start printing only after a warm-up period
-                        if print_detailed_output:
+                        if self.print_detailed_output:
                             printf (self.mr0_by_staleness_res_file[ds], '\nins_cnt={}, neg_ind_cnt={}, tn_cnt={}, mr0=' .format (self.ins_cnt[ds], self.neg_ind_cnt[ds], self.tn_cnt[ds]))
                             if self.neg_ind_cnt[ds]>0:
                                 printf (self.mr0_by_staleness_res_file[ds], '{:.4f}' .format (self.tn_cnt[ds]/self.neg_ind_cnt[ds]))
@@ -565,8 +563,8 @@ class Simulator(object):
                     last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                     self.neg_ind_cnt[ds]     = 0
                     self.tn_cnt[ds]          = 0
-                    if num_of_ads[ds] > int (1.3 *self.DS_size/self.min_uInterval):
-                        exit ()
+                    if num_of_ads[ds] > int (1.5 *self.DS_size/self.min_uInterval):
+                        return
 
                 if self.ins_cnt[ds] == self.min_uInterval:
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')

@@ -482,6 +482,7 @@ class Simulator(object):
     def run_trace_measure_mr0_on_a_single_ds (self):
         """
         Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
+        Run the trace and measure for a sys' with a single $.
         """
         last_printed_ins_cnt = 0
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
@@ -517,6 +518,9 @@ class Simulator(object):
     def run_trace_measure_mr0 (self):
         """
         Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
+        The accs strat' using in the trace is FN-oblivious Cheapest, namely: 
+        - it there're positive indications - accs the cheapest among them.
+        - else, do not accs any cahce.
         """
         last_printed_ins_cnt = np.zeros (self.num_of_DSs)
         num_of_ads           = np.zeros (self.num_of_DSs)   
@@ -526,7 +530,7 @@ class Simulator(object):
 
             hit                     = False # default value - didn't retrieve the requested key from any DS
             ds2accs                 = None  # default value: don't accs any DS            
-            print_detailed_output   = True
+            print_detailed_output   = False
             for ds in range(self.num_of_DSs):
                 if self.cur_req.key in self.DS_list[ds].stale_indicator: # positive ind' 
                     if not(ds2accs): # first positive indication. we assume here that caches are sorted in an increasing accs cost order. 
@@ -561,7 +565,7 @@ class Simulator(object):
                     last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                     self.neg_ind_cnt[ds]     = 0
                     self.tn_cnt[ds]          = 0
-                    if num_of_ads[ds] > 2*self.DS_size/self.min_uInterval:
+                    if num_of_ads[ds] > int (1.3 *self.DS_size/self.min_uInterval):
                         exit ()
 
                 if self.ins_cnt[ds] == self.min_uInterval:

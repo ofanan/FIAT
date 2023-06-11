@@ -109,7 +109,8 @@ class Res_file_parser (object):
                                   'FNAA' : '\\pgmfna', 
                                   'FNOA' : '\\pgmfno',
                                   'FNOA' : '\\pgmfno'}
-
+        
+        self.set_plt_params ()
 
 
     def parse_line (self, line):
@@ -583,10 +584,30 @@ class Res_file_parser (object):
                 plt.legend ()
             plt.savefig ('../res/C_{}K_M{}.pdf' .format (cache_size, missp), bbox_inches='tight', dpi=100)
             plt.clf ()
+            
+    def plot_mr0 (self, input_file_name):
+        """
+        generate a plot, showing the mr0 as a func' of time (manifested by # of requests).
+        Input: input_file_name - a file containing the 'mr0' values, in one line, comma-separated.
+        output: input_file_name.jpg = plot of the mr0 as a func' of time.
+        
+        """
+        for line in open ('../res/{}' .format (input_file_name),  "r"):
+            splitted_line = line.split (',')
+            mr0 = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
+        print (f'mr0 len={len(mr0)}')
+        plt.xlim (0, 4800)
+        plt.ylim (0.8, 1)
+        plt.plot ([160*i for i in range(len(mr0))], mr0, markersize=MARKER_SIZE, linewidth=LINE_WIDTH)
+        plt.xlabel ('Insertion Count')
+        plt.ylabel ('mr0')
+        plt.show ()
+        
                     
 my_Res_file_parser = Res_file_parser ()
-for res_file in ['salsa.res', 'opt.res']:  #
-    my_Res_file_parser.parse_file (res_file)
-for cache_size in [4]: #[4, 16, 64]:
-    my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
+my_Res_file_parser.plot_mr0(input_file_name='wiki1_C16K_U1600_mr0_by_staleness_0.res')
+# for res_file in ['salsa.res', 'opt.res']:  #
+#     my_Res_file_parser.parse_file (res_file)
+# for cache_size in [4]: #[4, 16, 64]:
+#     my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
 

@@ -533,7 +533,7 @@ class Simulator(object):
                 else: # negative indication 
                     self.neg_ind_cnt[ds] += 1
                     if not(self.cur_req.key in self.DS_list[ds]): # TN  
-                        self.tn_cnt += 1
+                        self.tn_cnt[ds] += 1
             if ds2accs: # found a DS w/ a pos' ind' --> accs it
                 if self.cur_req.key in self.DS_list[ds]: # TP --> only touch the item. no need to insert it
                     self.DS_list[ds2accs].access (key=self.cur_req.key, is_speculative_accs = False)
@@ -548,9 +548,9 @@ class Simulator(object):
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
                     printf (self.mr0_by_staleness_res_file[ds], '\nins_cnt={}, neg_ind_cnt={}, tn_cnt={}, mr0=' .format (self.ins_cnt[ds], self.neg_ind_cnt[ds], self.tn_cnt[ds]))
                     if self.neg_ind_cnt[ds]>0:
-                        printf (self.mr0_by_staleness_res_file[ds], '{:.4f} ,' .format (self.tn_cnt[ds]/self.neg_ind_cnt[ds]))
+                        printf (self.mr0_by_staleness_res_file[ds], '{:.4f}' .format (self.tn_cnt[ds]/self.neg_ind_cnt[ds]))
                     else:
-                        printf (self.mr0_by_staleness_res_file[ds], 'NaN, ')
+                        printf (self.mr0_by_staleness_res_file[ds], 'NaN')
                     last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                     self.neg_ind_cnt[ds]     = 0
                     self.tn_cnt[ds]          = 0

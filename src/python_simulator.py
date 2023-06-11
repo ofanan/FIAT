@@ -545,7 +545,7 @@ class Simulator(object):
                 self.ins_cnt[DS2insert.ID] += 1
             
             for ds in range(self.num_of_DSs):
-                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
+                if self.ins_cnt[ds]>self.DS_size and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
                     printf (self.mr0_by_staleness_res_file[ds], '\nins_cnt={}, neg_ind_cnt={}, tn_cnt={}, mr0=' .format (self.ins_cnt[ds], self.neg_ind_cnt[ds], self.tn_cnt[ds]))
                     if self.neg_ind_cnt[ds]>0:
                         printf (self.mr0_by_staleness_res_file[ds], '{:.4f}' .format (self.tn_cnt[ds]/self.neg_ind_cnt[ds]))

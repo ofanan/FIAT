@@ -308,10 +308,10 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
 
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
-trace_file_name =scarab_trace_file_name
-DS_size         = 1600 #0
+trace_file_name = wiki_trace_file_name
+DS_size         = 16000
 num_of_DSs      = 1
-max_num_of_req  = 1000# 00
+max_num_of_req  = 300000
 sm = sim.Simulator(res_file_name    = '', 
                    trace_name       = MyConfig.get_trace_name (trace_file_name),
                    mode             = 'measure_mr0',

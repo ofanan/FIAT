@@ -311,7 +311,7 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
 trace_file_name = wiki_trace_file_name
 DS_size         = 16000
 num_of_DSs      = 1
-max_num_of_req  = 300000
+max_num_of_req  = 3000000
 sm = sim.Simulator(res_file_name    = '', 
                    trace_name       = MyConfig.get_trace_name (trace_file_name),
                    mode             = 'measure_mr0',

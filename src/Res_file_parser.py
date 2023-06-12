@@ -596,17 +596,17 @@ class Res_file_parser (object):
             splitted_line = line.split (',')
             mr0 = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
             mr0 = mr0[:31]
-        print (f'mr0 len={len(mr0)}')
-        plt.xlim (0, 160*len(mr0))
-        plt.ylim (0.82, 1.02)
-        plt.plot ([160*i for i in range(len(mr0))], mr0, markersize=MARKER_SIZE, linewidth=LINE_WIDTH)
+        # print (f'mr0 len={len(mr0)}')
+        plt.xlim (0, 160*(len(mr0)-1))
+        plt.ylim (0.8, 1.02)
+        plt.plot ([160*i for i in range(len(mr0))], mr0, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
         plt.xlabel ('Insertion Count')
         plt.ylabel (r'$\nu$')
-        plt.show ()
+        plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
+my_Res_file_parser.plot_mr0(input_file_name='P3_C16K_U1600_mr0_by_staleness_0.res')
 # for res_file in ['salsa.res', 'opt.res']:  #
 #     my_Res_file_parser.parse_file (res_file)
 # for cache_size in [4]: #[4, 16, 64]:

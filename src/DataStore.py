@@ -530,9 +530,7 @@ class DataStore (object):
         The optional inputs req_cnt and key are used only for debug.
         """
         self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
-        # Delta[0] will hold the # of bits that are reset in the updated array, and set in the stale array.
-        # Delta[1] will hold the # of bits that are set in the updated array, and reset in the stale array.
-        Delta1      = sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array))
+        Delta1      = sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array)) # # of bits that are set in the updated array, and reset in the stale array.
         B1_up       = sum (self.updated_sbf.array)             # Num of bits set in the updated indicator
         B1_st       = sum (self.stale_indicator.array)    # Num of bits set in the stale indicator
         self.fnr    = 1 - pow ( (B1_up-Delta1) / B1_up, self.num_of_hashes)

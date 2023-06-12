@@ -332,4 +332,4 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 for trace_file_name in traces:
-    run_var_missp_sim (max_num_of_req = 400000, trace_file_name=trace_file_name, DS_size=10000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    run_var_missp_sim (max_num_of_req = 400000, trace_file_name=trace_file_name, DS_size=10000, modes=['salsa2'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])

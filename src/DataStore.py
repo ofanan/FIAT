@@ -532,9 +532,9 @@ class DataStore (object):
         self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
         # Delta[0] will hold the # of bits that are reset in the updated array, and set in the stale array.
         # Delta[1] will hold the # of bits that are set in the updated array, and reset in the stale array.
-        Delta       = [sum (np.bitwise_and (~self.updated_sbf.array, self.stale_indicator.array)), sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array))]
+        Delta1      = sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array))
         B1_up       = sum (self.updated_sbf.array)             # Num of bits set in the updated indicator
         B1_st       = sum (self.stale_indicator.array)    # Num of bits set in the stale indicator
-        self.fnr    = 1 - pow ( (B1_up-Delta[1]) / B1_up, self.num_of_hashes)
+        self.fnr    = 1 - pow ( (B1_up-Delta1) / B1_up, self.num_of_hashes)
         self.fpr    = pow ( B1_st / self.ind_size, self.num_of_hashes)
         self.ins_since_last_fpr_fnr_estimation  = 0

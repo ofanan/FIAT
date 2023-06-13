@@ -15,7 +15,7 @@ from   tictoc import tic, toc
 DS_size = 16000
 mode    = 'salsa1'
 missp   = 10
-traces  = [MyConfig.F1_trace_file_name, MyConfig.wiki_trace_file_name] #[scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
+traces  = ['wiki'] #[scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
 
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
@@ -263,7 +263,7 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
         # else:
 
 
-def run_var_missp_sim (trace_file_name, 
+def run_var_missp_sim (trace, 
                        use_homo_DS_cost = False, 
                        print_est_mr     = True, 
                        max_num_of_req   = None, 
@@ -276,17 +276,12 @@ def run_var_missp_sim (trace_file_name,
     Run a simulation with different miss penalties for the initial table
     """
     if max_num_of_req==None: # the caller hasn't assign a requested number of requests
-        if DS_size <= 4000:
-            max_num_of_req = 400000
-        elif DS_size <= 16000:
-            max_num_of_req = 1000000
-        else:
-            max_num_of_req = int (float('inf'))
+        max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
     else:
         max_num_of_req = max_num_of_req
          
     num_of_DSs  = 3
-    requests    = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
+    requests    = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req) # Generate a dataframe of requests from the input trace file
     num_of_req  = requests.shape[0]
     DS_cost     = calc_DS_cost (num_of_DSs, use_homo_DS_cost)
     
@@ -343,4 +338,4 @@ def run_var_missp_sim (trace_file_name,
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 for trace_file_name in traces:
-    run_var_missp_sim (max_num_of_req = 10000, trace_file_name=trace_file_name, DS_size=1000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES])
+    run_var_missp_sim (max_num_of_req = 10000, trace='wiki', DS_size=1000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES])

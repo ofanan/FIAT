@@ -25,12 +25,13 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
-num_of_req = {'wiki' : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 5000000}
+num_of_req = {'wiki'   : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 6000000},
+              'scarab' : {4000 : 200000, 10000 : 500000, 16000 : 700000,  64000 : 4000000}
              }
 
 # relative paths of the traces, under the directory 'traces' 
 wiki_txt_file_name    = 'wiki/wiki1.1190448987.txt'
-wiki_csv_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
+wiki_csv_file_name    = 'wiki/wiki1.1190448987_13007Kreq.csv'
 gradle_txt_file_name  = 'gradle/gradle.build-cache.txt' 
 gradle_csv_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
 scarab_txt_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt' 
@@ -39,6 +40,33 @@ F1_csv_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
 F2_csv_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
 WS1_csv_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
 P3_csv_file_name      = 'arc/P3.3912Kreq.csv'
+
+trace_csv_file_name = {'wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
+                       'gradle' : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
+                       'scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
+                       'F1'     : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
+                       'WS1'    : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
+                       'P3'     : 'arc/P3.3912Kreq.csv'
+                       }
+
+
+def calc_num_of_req (trace, DS_size):
+    """
+    Given a trace and caches size, calculate the number of requests for having a substantial sim.
+    A substantial simulation contains a num of uniques which is at least 2.5 times the overall caches' size.
+    We assue here 3 caches. Hence, the num of unqiues should be at least 2.5*3*DS_size. 
+    """
+    if DS_size <= 4000:
+        return num_of_req['wiki'][4000]
+    elif DS_size <= 10000:
+        return num_of_req[10000]
+    elif DS_size <= 16000:
+        return num_of_req[16000]
+    elif DS_size <= 64000:
+        return num_of_req[64000]
+    else:
+        return 999999999
+    
 
 def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, read_locs_from_trace=False):
     """
@@ -220,7 +248,7 @@ def parse_list_of_keys (input_file_name,
         full_trace_df.columns = ['key']
     
     if (print_output_to_file):
-        full_trace_df.to_csv (traces_path + input_file_name.split (".txt")[0] + '_{:.0f}Kreq.csv' .format (num_of_req/1000), 
+        full_trace_df.to_csv (relative_path_trace_file_name.split (".txt")[0] + '_{:.0f}Kreq.csv' .format (num_of_req/1000), 
                               index=False, header=True)
     else:
         return full_trace_df
@@ -263,15 +291,16 @@ def get_trace_name (trace_file_name):
 
 def main ():
     num_of_req = 999999999
-    # for num_of_req in [5000000]:
-    #     characterize_trace (csv_input_file_name = wiki_csv_file_name, 
-    #                         num_of_req                  = num_of_req
-    #                         )
-    parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
-                        num_of_req                  = num_of_req,
-                        print_output_to_file        = True,
-                        print_num_of_uniques        = True,
-                        only_calc_num_of_uniques    = False)
+    for num_of_req in [700000]:
+        characterize_trace (csv_input_file_name = scarab_csv_file_name, 
+                            num_of_req                  = num_of_req
+                            )
+    # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
+    #                     num_of_req                  = num_of_req,
+    #                     print_output_to_file        = True,
+    #                     print_num_of_uniques        = True,
+    #                     only_calc_num_of_uniques    = False)
     
 if __name__ == '__main__':
+    # print (calc_num_of_req ('wiki', 1000))
     main ()

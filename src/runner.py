@@ -10,16 +10,29 @@ import numpy as np
 from printf import printf
 import python_simulator as sim
 from   tictoc import tic, toc
-# from builtins import None
 
 def main ():
-    print (DS_size)
-# for trace_file_name in traces:
-#     run_var_missp_sim (trace='wiki', DS_size=1000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES])
-DS_size = 16000
-mode    = 'salsa1'
-missp   = 10
-traces  = ['wiki'] #[scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
+    DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    for trace in ['wiki']:
+        for DS_size in [4000]:
+            max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
+            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
+            for mode in ['opt']:
+                for missp in [10]:
+                    tic()
+                    sm = sim.Simulator(
+                        res_file_name = mode,
+                        trace_name       = trace,
+                        mode             = mode,
+                        req_df           = requests,
+                        client_DS_cost   = DS_cost,
+                        missp            = missp,
+                        DS_size          = DS_size,
+                        min_uInterval    = DS_size/10,
+                        uInterval_factor = 4 if mode.startswith('salsa') else 1,
+                        verbose          = [MyConfig.VERBOSE_RES])
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+                    toc()
 
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
@@ -39,7 +52,7 @@ def calc_hetro_costs (num_of_DSs, num_of_clients):
             DS_cost[i][j % num_of_DSs] = j - i + 1
     return DS_cost
 
-def calc_DS_cost (num_of_DSs = 3, use_homo_DS_cost = False):
+def calc_DS_cost (num_of_DSs=3, use_homo_DS_cost = False):
     """
     Returns a DS_cost matrix - either homo' or hetro', by the user's request  
     """

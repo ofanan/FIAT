@@ -309,10 +309,7 @@ class DataStore (object):
         
         if self.ins_cnt_since_last_full_ad % self.min_feasible_uInterval == 0:
 
-            if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
-                self.updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
-            else: # Generate a new SBF
-                self.updated_sbf = self.genNewSBF () 
+            self.gen_updated_sbf()
             ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
             self.total_ad_size_in_this_period  += ad_size
             self.overall_ad_size               += ad_size                              
@@ -359,11 +356,7 @@ class DataStore (object):
             - self.updated_sbf (a Simple Bloom Filter, representing the currently-cached items).
         - Returns true iff advertising a delta requires less bits than advertising a full ind. 
         """
-        if self.use_CountingBloomFilter: 
-            self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter () # Extract a fresh SBF from the updated (CBF) indicator
-        else: # Generate a new SBF
-            self.updated_sbf = self.genNewSBF ()
-
+        self.gen_updated_sbf()
         self.delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 
@@ -521,6 +514,16 @@ class DataStore (object):
         """
         for i in itertools.islice(self.cache.dli(),head):
             print (i.key)
+            
+    def gen_updated_sbf (self):
+        """
+        generate an updated Simple Bloom Filter, that lists the items currenlty cahched.
+        """
+        if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
+            self.updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
+        else: # Generate a new SBF
+            self.updated_sbf = self.genNewSBF () 
+        
     
     def estimate_fnr_fpr_by_analysis (self, req_cnt = -1, key = -1):
         """
@@ -529,7 +532,7 @@ class DataStore (object):
         The new values are written to self.fnr_fpr, where self.fnr_fpr[0] is the fnr, and self.fnr_fpr[1] is the fpr
         The optional inputs req_cnt and key are used only for debug.
         """
-        self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
+        self.gen_updated_sbf()
         Delta1      = sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array)) # # of bits that are set in the updated array, and reset in the stale array.
         B1_up       = sum (self.updated_sbf.array)             # Num of bits set in the updated indicator
         B1_st       = sum (self.stale_indicator.array)    # Num of bits set in the stale indicator

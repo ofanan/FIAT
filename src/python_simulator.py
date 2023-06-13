@@ -105,7 +105,7 @@ class Simulator(object):
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = self.mode in ['fno', 'fnaa'],
+            use_CountingBloomFilter                 = self.mode in ['fno'],
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):

@@ -12,9 +12,6 @@ import python_simulator as sim
 from   tictoc import tic, toc
 # from builtins import None
 
-DS_size = 16000
-mode    = 'salsa1'
-missp   = 10
 # trace_file_name = [{}]
 wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
 gradle_trace_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
@@ -23,9 +20,11 @@ F1_trace_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
 F2_trace_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
 WS1_trace_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
 P3_trace_file_name      = 'arc/P3.3912Kreq.csv'
-  
-# res_file = open ('../res/tmp.txt', 'w')
-# printf (res_file, sys.argv[1])
+
+DS_size = 16000
+mode    = 'salsa1'
+missp   = 10
+traces = [F1_trace_file_name, wiki_trace_file_name] #[scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
 
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """
@@ -261,10 +260,22 @@ def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
     print ('Opt service cost is ', (accs_cost + comp_miss_cnt * missp) / num_of_req)
 
+
+    # def 
+        # if max_num_of_req==None: # the caller hasn't assign a requested number of requests
+        #     if DS_size <= 4000:
+        #         max_num_of_req = 400000
+        #     elif DS_size <= 16000:
+        #         max_num_of_req = 1000000
+        #     else:
+        #         max_num_of_req = int (float('inf'))
+        # else:
+
+
 def run_var_missp_sim (trace_file_name, 
                        use_homo_DS_cost = False, 
                        print_est_mr     = True, 
-                       max_num_of_req   = 10000000, 
+                       max_num_of_req   = None, 
                        missp_vals       = [], 
                        modes            = [], 
                        verbose          = [],
@@ -273,6 +284,16 @@ def run_var_missp_sim (trace_file_name,
     """
     Run a simulation with different miss penalties for the initial table
     """
+    if max_num_of_req==None: # the caller hasn't assign a requested number of requests
+        if DS_size <= 4000:
+            max_num_of_req = 400000
+        elif DS_size <= 16000:
+            max_num_of_req = 1000000
+        else:
+            max_num_of_req = int (float('inf'))
+    else:
+        max_num_of_req = max_num_of_req
+         
     num_of_DSs  = 3
     requests    = MyConfig.gen_requests (trace_file_name, max_num_of_req) # Generate a dataframe of requests from the input trace file
     num_of_req  = requests.shape[0]
@@ -304,7 +325,6 @@ def run_var_missp_sim (trace_file_name,
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
 
-traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
 
 # run_var_missp_sim(trace_file_name=wiki_trace_file_name, max_num_of_req=9999999, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
@@ -332,4 +352,4 @@ traces = [scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_t
     # run_var_missp_sim(trace_file_name=trace_file_name, DS_size=DS_size, modes=[mode], missp_vals=[300], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
 
 for trace_file_name in traces:
-    run_var_missp_sim (max_num_of_req = 400000, trace_file_name=trace_file_name, DS_size=10000, modes=['salsa2'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    run_var_missp_sim (max_num_of_req = 10000, trace_file_name=trace_file_name, DS_size=1000, modes=['fnaa'], missp_vals=[10], verbose=[MyConfig.VERBOSE_RES])

@@ -606,7 +606,7 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.plot_mr0(input_file_name='P3_C16K_U1600_mr0_by_staleness_0.res')
+my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 # for res_file in ['salsa.res', 'opt.res']:  #
 #     my_Res_file_parser.parse_file (res_file)
 # for cache_size in [4]: #[4, 16, 64]:

@@ -25,6 +25,17 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
+wiki_txt_file_name    = 'wiki/wiki1.1190448987.txt'
+wiki_csv_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
+gradle_txt_file_name  = 'gradle/gradle.build-cache.txt' 
+gradle_csv_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
+scarab_txt_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt' 
+scarab_csv_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv'
+F1_csv_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
+F2_csv_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
+WS1_csv_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
+P3_csv_file_name      = 'arc/P3.3912Kreq.csv'
+
 def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, read_locs_from_trace=False):
     """
     Reduces the memory print of the trace by using the smallest type that still supports the values in the trace
@@ -136,36 +147,57 @@ def calc_designed_fpr (cache_size, BF_size, num_of_hashes):
     """
     return pow (1 - pow (1 - 1/BF_size, num_of_hashes * cache_size), num_of_hashes)
 
+
+def gen_relative_path_trace_file_name (trace_file_name):
+    """
+    Given a trace's name, check whether the directory and the file exists.
+    If the file exists, return the relative path to it.
+    Else, print an appropriate error msg and exit.
+    """
+    traces_path = getTracesPath()
+    if not (os.path.exists (traces_path)):
+        error ('the traces directory {} does not exist' .format (traces_path))
+    relative_path_trace_file_name = traces_path + trace_file_name 
+    if not (os.path.isfile (relative_path_trace_file_name)):
+        error ('the trace {} was not found' .format (relative_path_trace_file_name))
+    return relative_path_trace_file_name
+
 def parse_list_of_keys (input_file_name,
-                        num_of_clients=1, # number of clients to choose from, when associating each request with a given client 
-                        kloc = 1,  # number of DSs with which each unique item will be associated  
-                        num_of_req = INF_INT, # maximum number of requests to be considered from the trace
-                        print_output_to_file=True, # When False, the func' returns the output as a dataframe, rather than printing it to a file
-                        print_num_of_uniques=False # When True, print the number of unique items in the trace to the standard output
+                        num_of_clients              = 1, # number of clients to choose from, when associating each request with a given client 
+                        kloc                        = 1,  # number of DSs with which each unique item will be associated  
+                        num_of_req                  = INF_INT, # maximum number of requests to be considered from the trace
+                        print_output_to_file        = True, # When False, the func' returns the output as a dataframe, rather than printing it to a file
+                        print_num_of_uniques        = False, # When True, print the number of unique items in the trace to the standard output
+                        only_calc_num_of_uniques    = False # When True, only print to the screen the number of uniques, and returns
                         ):
     """
     Parses a trace whose format is merely a list of keys (each key in a different line). 
     Output: 
-        if print_output_to_file==True, then the output is  a csv file, where:
+        if print_num_of_uniques:
+            - print to the screen the overall num of requests in the trace, and the num of uniques among them.
+        if only_calc_num_of_uniques:
+            - return without generating an output.
+        if print_output_to_file - generate an output is  a csv file, where:
             - the first col. is the keys,
             - If num_of_clients>1: add a 2nd col. containing the u.a.r.-generated id of the clients associated with this req.
-        Else, the output is a panda DataFrame, where:
+        else, return a panda DataFrame, where:
             - the first col. is the keys,
             - If num_of_clients>1: add a 2nd col. containing the u.a.r.-generated id of the clients associated with this req.
     """
 
-    traces_path = getTracesPath()
-    if not (os.path.exists (traces_path)):
-        error ('the traces directory {} does not exist' .format (traces_path))
-    if not (os.path.isfile (traces_path + input_file_name)):
-        error ('the trace {} was not found' .format (traces_path + input_file_name))
-    df = pd.read_csv (traces_path + input_file_name, sep=' ', header=None, nrows = num_of_req)
+    relative_path_trace_file_name = gen_relative_path_trace_file_name (input_file_name)
+    df = pd.read_csv (relative_path_trace_file_name, sep=' ', header=None, nrows = num_of_req)
         
     # associate each unique "url" in the input with a unique key 
     unique_urls = np.unique (df)
     url_lut_dict = dict(zip(unique_urls , range(unique_urls.size))) # generate dictionary to serve as a LUT of unique_key -> integer
     keys = np.array ([url_lut_dict[url] for url in df[0]]).astype('uint32')
     num_of_req = len(keys) 
+    if print_num_of_uniques:
+        print ('trace={}, {:.0f}K req, {:.0f}K uniques' .format (input_file_name.split('.')[0].split('/')[1], num_of_req/1000, len(unique_urls)/1000))
+
+    if only_calc_num_of_uniques:
+        return
     
     if (num_of_clients > 1):    # generate client assignments for each request
         client_assignment = np.random.RandomState(seed=42).randint(0 , num_of_clients , df.shape[0]).astype('uint8')
@@ -183,13 +215,32 @@ def parse_list_of_keys (input_file_name,
         full_trace_df = pd.DataFrame(np.transpose([keys]))
         full_trace_df.columns = ['key']
     
-    if print_num_of_uniques:
-        print ('{:.0f}K req, {:.0f}K uniques' .format (num_of_req/1000, len(unique_urls)/1000))
     if (print_output_to_file):
         full_trace_df.to_csv (traces_path + input_file_name.split (".txt")[0] + '_{:.0f}Kreq.csv' .format (num_of_req/1000), 
                               index=False, header=True)
     else:
         return full_trace_df
+
+def characterize_trace (csv_input_file_name, # a trace, given as a .csv file, containing the list of the keys requested.
+                        num_of_req=float ('inf')  
+                        ):
+    """
+    Finds the trace's characteristic. Currently, this is merely finding the # of uniques within a given num of requests (starting from the trace's beginning). 
+    """
+    relative_path_trace_file_name = gen_relative_path_trace_file_name (csv_input_file_name)
+    keys    = []
+    req_cnt = 0
+    
+    # with open (full_path_input_file_name,  "r") as input_file:
+    for line in open (relative_path_trace_file_name,  "r"): # as input_file: input_file:
+        keys.append(line)
+        req_cnt += 1
+        if req_cnt > num_of_req:
+            break
+    
+    uniq_keys       = np.unique(keys)
+    print ('trace={}, {:.0f}K req, {:.0f}K uniques' .format (csv_input_file_name.split('.')[0].split('/')[1], req_cnt/1000, len(uniq_keys)/1000))
+
 
 def get_trace_name (trace_file_name):
     """
@@ -205,3 +256,17 @@ def get_trace_name (trace_file_name):
     #for i in range(int(np.log2(count_df.max())) + 1):
     #    hist_array[i] = sum(count_df[(count_df >= 2**i) & (count_df < 2**(i+1))])
 # parse_list_of_keys (input_file_name='arc/P3.lis.txt', print_output_to_file=True, print_num_of_uniques=True)
+
+def main ():
+    num_of_req = 999999999
+    characterize_trace (csv_input_file_name = wiki_csv_file_name, 
+                        num_of_req                  = num_of_req
+                        )
+    parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
+                        num_of_req                  = num_of_req,
+                        print_output_to_file        = False,
+                        print_num_of_uniques        = True,
+                        only_calc_num_of_uniques    = True)
+    
+if __name__ == '__main__':
+    main ()

@@ -12,19 +12,10 @@ import python_simulator as sim
 from   tictoc import tic, toc
 # from builtins import None
 
-# trace_file_name = [{}]
-wiki_trace_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
-gradle_trace_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
-scarab_trace_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv'
-F1_trace_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
-F2_trace_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
-WS1_trace_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
-P3_trace_file_name      = 'arc/P3.3912Kreq.csv'
-
 DS_size = 16000
 mode    = 'salsa1'
 missp   = 10
-traces = [F1_trace_file_name, wiki_trace_file_name] #[scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
+traces  = [MyConfig.F1_trace_file_name, MyConfig.wiki_trace_file_name] #[scarab_trace_file_name, P3_trace_file_name, F1_trace_file_name, wiki_trace_file_name]
 
 def calc_homo_costs (num_of_DSs, num_of_clients):
     """

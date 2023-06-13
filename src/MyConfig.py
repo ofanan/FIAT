@@ -26,20 +26,16 @@ VERBOSE_CNT_FN_BY_STALENESS     = 10
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
 num_of_req = {'wiki'   : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 6000000},
-              'scarab' : {4000 : 200000, 10000 : 500000, 16000 : 700000,  64000 : 4000000}
+              'scarab' : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 : 4000000},
+              'F1'     : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 : 1800000},
+              'P3'     : {4000 : 250000, 10000 : 300000, 16000 : 400000,  64000 : 2500000},
              }
 
+
 # relative paths of the traces, under the directory 'traces' 
-wiki_txt_file_name    = 'wiki/wiki1.1190448987.txt'
-wiki_csv_file_name    = 'wiki/wiki1.1190448987_13007Kreq.csv'
-gradle_txt_file_name  = 'gradle/gradle.build-cache.txt' 
-gradle_csv_file_name  = 'gradle/gradle.build-cache.xz_2091Kreq.csv'
-scarab_txt_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt' 
-scarab_csv_file_name  = 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv'
-F1_csv_file_name      = 'umass/storage/F1.spc.bz2_5643Kreq.csv'
-F2_csv_file_name      = 'umass/storage/F2.spc.bz2_13883Kreq.csv'
-WS1_csv_file_name     = 'umass/storage/WS1.spc.bz2_31967Kreq.csv'
-P3_csv_file_name      = 'arc/P3.3912Kreq.csv'
+trace_txt_file_name = {'wiki'   : 'wiki/wiki1.1190448987.txt',
+                       'gradle' : 'gradle/gradle.build-cache.txt',
+                       'scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
 
 trace_csv_file_name = {'wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
                        'gradle' : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
@@ -48,7 +44,6 @@ trace_csv_file_name = {'wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
                        'WS1'    : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
                        'P3'     : 'arc/P3.3912Kreq.csv'
                        }
-
 
 def calc_num_of_req (trace, DS_size):
     """
@@ -253,13 +248,13 @@ def parse_list_of_keys (input_file_name,
     else:
         return full_trace_df
 
-def characterize_trace (csv_input_file_name, # a trace, given as a .csv file, containing the list of the keys requested.
+def characterize_trace (trace, 
                         num_of_req=float ('inf')  
                         ):
     """
     Finds the trace's characteristic. Currently, this is merely finding the # of uniques within a given num of requests (starting from the trace's beginning). 
     """
-    relative_path_trace_file_name = gen_relative_path_trace_file_name (csv_input_file_name)
+    relative_path_trace_file_name = gen_relative_path_trace_file_name (trace_csv_file_name[trace])
     keys    = []
     req_cnt = 0
     
@@ -271,7 +266,7 @@ def characterize_trace (csv_input_file_name, # a trace, given as a .csv file, co
             break
     
     uniq_keys       = np.unique(keys)
-    print ('trace={}, {:.0f}K req, {:.0f}K uniques' .format (csv_input_file_name.split('.')[0].split('/')[1], req_cnt/1000, len(uniq_keys)/1000))
+    print ('trace={}, {:.0f}K req, {:.0f}K uniques' .format (trace, req_cnt/1000, len(uniq_keys)/1000))
 
 
 def get_trace_name (trace_file_name):
@@ -291,8 +286,8 @@ def get_trace_name (trace_file_name):
 
 def main ():
     num_of_req = 999999999
-    for num_of_req in [700000]:
-        characterize_trace (csv_input_file_name = scarab_csv_file_name, 
+    for num_of_req in [2500000]:
+        characterize_trace (trace = 'P3', 
                             num_of_req                  = num_of_req
                             )
     # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 

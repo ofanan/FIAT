@@ -548,8 +548,7 @@ class Res_file_parser (object):
                     relevant_points = [item for item in self.list_of_dicts if
                                  item['trace']      == trace        and 
                                  item['cache_size'] == cache_size   and
-                                 item['num_of_DSs'] == 3            and
-                                 item['missp']      == missp] 
+                                 item['num_of_DSs'] == 3] 
                     opt_point = [item for item in relevant_points if item['alg_mode'] =='Opt'] 
                     if (opt_point==[]):
                         MyConfig.error ('no results Opt {}.C{}K.bpe{} M{}' .format (
@@ -557,7 +556,7 @@ class Res_file_parser (object):
                     opt_serviceCost = opt_point[0]['serviceCost']
                     
                     # remove all points of other mcdes
-                    relevant_points = [item for item in relevant_points if item['alg_mode'] == mode and item['bpe'] == bpe]
+                    relevant_points = [item for item in relevant_points if item['alg_mode'] == mode and item['bpe'] == bpe and item['missp'] == missp]
                     if uInterval!=None:
                         relevant_points = [item for item in relevant_points if item['min_uInterval'] == uInterval] 
                     if (relevant_points==[]): # no results for this settings  

@@ -52,13 +52,13 @@ def calc_num_of_req (trace, DS_size):
     We assue here 3 caches. Hence, the num of unqiues should be at least 2.5*3*DS_size. 
     """
     if DS_size <= 4000:
-        return num_of_req['wiki'][4000]
+        return num_of_req[trace][4000]
     elif DS_size <= 10000:
-        return num_of_req[10000]
+        return num_of_req[trace][10000]
     elif DS_size <= 16000:
-        return num_of_req[16000]
+        return num_of_req[trace][16000]
     elif DS_size <= 64000:
-        return num_of_req[64000]
+        return num_of_req[trace][64000]
     else:
         return INF_INT
     

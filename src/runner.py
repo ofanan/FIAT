@@ -17,7 +17,7 @@ def main ():
         for DS_size in [4000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
-            for mode in ['opt']:
+            for mode in ['fnaa']:
                 for missp in [10, 30, 100, 300]:
                     tic()
                     sm = sim.Simulator(

@@ -60,7 +60,7 @@ def calc_num_of_req (trace, DS_size):
     elif DS_size <= 64000:
         return num_of_req[64000]
     else:
-        return 999999999
+        return INF_INT
     
 
 def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, read_locs_from_trace=False):
@@ -84,8 +84,10 @@ def gen_requests (trace_file_name, max_num_of_req=INF_INT, k_loc=1, num_of_clien
     """
     Generates a trace of requests, given a trace file.
     """
-    if (len(trace_file_name.split ('.csv'))==2): # The input file is already a .csv parsed from the trace - no need to parse the trace
-        return reduce_trace_mem_print (pd.read_csv (getTracesPath() + trace_file_name).head(max_num_of_req))
+    relative_path_trace_file_name = gen_relative_path_trace_file_name (trace_file_name)
+    
+    if (len(relative_path_trace_file_name.split ('.csv'))==2): # The input file is already a .csv parsed from the trace - no need to parse the trace
+        return reduce_trace_mem_print (pd.read_csv (relative_path_trace_file_name).head(max_num_of_req))
     else: # need to parse the trace first
         return reduce_trace_mem_print (parse_list_of_keys (input_file_name=trace_file_name, num_of_req = max_num_of_req, print_output_to_file=False))
     # reduce_trace_mem_print (pd.read_csv (getTracesPath() + trace_file_name).head(max_num_of_req))
@@ -285,7 +287,7 @@ def get_trace_name (trace_file_name):
 # parse_list_of_keys (input_file_name='arc/P3.lis.txt', print_output_to_file=True, print_num_of_uniques=True)
 
 def main ():
-    num_of_req = 999999999
+    num_of_req = INF_INT
     for num_of_req in [2500000]:
         characterize_trace (trace = 'P3', 
                             num_of_req                  = num_of_req

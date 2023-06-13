@@ -25,6 +25,10 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
+num_of_req = {'wiki' : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 5000000}
+             }
+
+# relative paths of the traces, under the directory 'traces' 
 wiki_txt_file_name    = 'wiki/wiki1.1190448987.txt'
 wiki_csv_file_name    = 'wiki/wiki1.1190448987_4300Kreq.csv'
 gradle_txt_file_name  = 'gradle/gradle.build-cache.txt' 
@@ -259,14 +263,15 @@ def get_trace_name (trace_file_name):
 
 def main ():
     num_of_req = 999999999
-    characterize_trace (csv_input_file_name = wiki_csv_file_name, 
-                        num_of_req                  = num_of_req
-                        )
+    # for num_of_req in [5000000]:
+    #     characterize_trace (csv_input_file_name = wiki_csv_file_name, 
+    #                         num_of_req                  = num_of_req
+    #                         )
     parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
                         num_of_req                  = num_of_req,
-                        print_output_to_file        = False,
+                        print_output_to_file        = True,
                         print_num_of_uniques        = True,
-                        only_calc_num_of_uniques    = True)
+                        only_calc_num_of_uniques    = False)
     
 if __name__ == '__main__':
     main ()

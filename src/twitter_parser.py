@@ -28,7 +28,7 @@ def parse_IBN_trace (trace_file_name,
     req_cnt = 0
     
     with open (full_path_input_file_name,  "r") as input_file:
-        for line in open (full_path_input_file_name,  "r"): 
+        for line in input_file: 
             splitted_line = line.split (',')
             if not (splitted_line[5].startswith('get')):
                 continue

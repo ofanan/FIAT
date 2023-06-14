@@ -27,15 +27,15 @@ def parse_IBN_trace (trace_file_name,
     keys    = []
     req_cnt = 0
     
-    # with open (full_path_input_file_name,  "r") as input_file:
-    for line in open (full_path_input_file_name,  "r"): # as input_file: input_file:
-        splitted_line = line.split (',')
-        if not (splitted_line[5].startswith('get')):
-            continue
-        keys.append(splitted_line[1])
-        req_cnt += 1
-        if req_cnt > max_num_of_req:
-            break
+    with open (full_path_input_file_name,  "r") as input_file:
+        for line in open (full_path_input_file_name,  "r"): 
+            splitted_line = line.split (',')
+            if not (splitted_line[5].startswith('get')):
+                continue
+            keys.append(splitted_line[1])
+            req_cnt += 1
+            if req_cnt > max_num_of_req:
+                break
     
     uniq_keys       = np.unique(keys)
     keys_lut_dict   = dict(zip(uniq_keys , range(uniq_keys.size))) # dictionary serving as a LUT associating each unique_url with a unique integer
@@ -61,4 +61,4 @@ def parse_IBN_trace (trace_file_name,
     print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))    
     full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
     
-parse_IBN_trace ('cluster10.txt', max_num_of_req=10000) # cluster10.txt  memcached-sample.txt 
+parse_IBN_trace ('cluster45.txt', max_num_of_req=1000) 

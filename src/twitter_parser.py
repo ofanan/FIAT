@@ -61,4 +61,4 @@ def parse_IBN_trace (trace_file_name,
     print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))    
     full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
     
-parse_IBN_trace ('cluster45.txt', max_num_of_req=1000) 
+parse_IBN_trace ('cluster17.txt', max_num_of_req=14000000) 

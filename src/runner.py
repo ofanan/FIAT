@@ -13,7 +13,7 @@ from   tictoc import tic, toc
 
 def main ():
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['wiki', 'F1', 'scarab', 'P3']:
+    for trace in ['Wiki', 'F1', 'Scarab', 'P3']:
         for DS_size in [4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 

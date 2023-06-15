@@ -25,24 +25,26 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
-num_of_req = {'wiki'   : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 6000000},
-              'scarab' : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 : 4000000},
+num_of_req = {'Wiki'   : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 6000000},
+              'Scarab' : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 : 4000000},
               'F1'     : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 : 1800000},
               'P3'     : {4000 : 250000, 10000 : 300000, 16000 : 400000,  64000 : 2500000},
+              'Twitter': {4000 : 250000, 10000 : 600000, 16000 : 1200000, 64000 : 14000000},
              }
 
 
 # relative paths of the traces, under the directory 'traces' 
-trace_txt_file_name = {'wiki'   : 'wiki/wiki1.1190448987.txt',
-                       'gradle' : 'gradle/gradle.build-cache.txt',
-                       'scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
+trace_txt_file_name = {'Wiki'   : 'wiki/wiki1.1190448987.txt',
+                       'Gradle' : 'gradle/gradle.build-cache.txt',
+                       'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
 
-trace_csv_file_name = {'wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
-                       'gradle' : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
-                       'scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
+trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
+                       'Gradle' : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
+                       'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
                        'F1'     : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
                        'WS1'    : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
-                       'P3'     : 'arc/P3.3912Kreq.csv'
+                       'P3'     : 'arc/P3.3912Kreq.csv',
+                       'Twitter': 'snia/twitter/cluster17_14MReq_464Kreq.csv'
                        }
 
 def calc_num_of_req (trace, DS_size):
@@ -288,8 +290,8 @@ def get_trace_name (trace_file_name):
 
 def main ():
     num_of_req = INF_INT
-    for num_of_req in [2500000]:
-        characterize_trace (trace = 'P3', 
+    for num_of_req in [1200000]:
+        characterize_trace (trace = 'Twitter', 
                             num_of_req                  = num_of_req
                             )
     # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 

@@ -518,7 +518,7 @@ class Res_file_parser (object):
                                    uInterval        = None,
                                    uInterval_factor = 4, 
                                    bpe              = 14,
-                                   traces           = ['wiki1', 'scarab', 'F1', 'P3'],  
+                                   traces           = ['Wiki', 'Scarab', 'F1', 'P3'],  
                                    modes            = ['FNAA', 'SALSA1', 'SALSA2'], 
                                    cache_size       = 10):
         """

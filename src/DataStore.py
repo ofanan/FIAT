@@ -24,9 +24,9 @@ class DataStore (object):
          max_fnr = 0.03,max_fpr = 0.03,  # maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above mx_fpr, the DS sends an update.
                                          # fpr: False Positive Ratio, fnr: False Negative Ratio).
                                          # currently max_fnr, max_fpr are usually unused, 
-         num_of_insertions_between_estimations = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.
+         num_of_insertions_between_fpr_fnr_updates = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.
                                                                 # Each time a new indicator is published, the updated indicator contains a fresh estimation, and a counter is reset. 
-                                                                # Then, each time the counter reaches num_of_insertions_between_estimations. a new fpr and fnr estimation is published, and the counter is reset.
+                                                                # Then, each time the counter reaches num_of_insertions_between_fpr_fnr_updates. a new fpr and fnr estimation is published, and the counter is reset.
          verbose                    = [],# what output will be written. See macros in MyConfig.py 
          min_uInterval              = 100, # min num of insertions of new items into the cache before advertising again
          uInterval_factor           = 1, 
@@ -141,7 +141,7 @@ class DataStore (object):
             self.fnr                 = 0 # Initially, there are no false indications
             self.fpr                 = 0 # Initially, there are no false indications
         
-        self.num_of_insertions_between_estimations  = num_of_insertions_between_estimations
+        self.num_of_insertions_between_fpr_fnr_updates  = num_of_insertions_between_fpr_fnr_updates
         self.ins_since_last_fpr_fnr_estimation      = int (0)
         
         if self.consider_delta_updates and self.scale_ind_factor!=1: # if needed, pre-compute values for Lambert function (scaling of the ind' at delta mode)
@@ -232,7 +232,7 @@ class DataStore (object):
         self.cache[key] = key
         if (self.send_fpr_fnr_updates):
             self.ins_since_last_fpr_fnr_estimation += 1
-            if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_estimations):
+            if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_fpr_fnr_updates):
                 self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0

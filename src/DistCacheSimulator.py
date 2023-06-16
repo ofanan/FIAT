@@ -6,7 +6,7 @@ from   pathlib import Path
 import DataStore, Client, candidate, node, MyConfig 
 from   printf import printf
 
-class Simulator(object):
+class DistCacheSimulator(object):
     """
     A simulator that accepts system parameters (trace, number and size of caches, algorithm to run etc.), 
     runs a simulation, and outputs the results to a file.
@@ -103,7 +103,7 @@ class Simulator(object):
             use_fixed_uInterval     = self.use_fixed_uInterval,
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
-            num_of_insertions_between_estimations   = self.num_of_insertions_between_estimations,
+            num_of_insertions_between_fpr_fnr_updates   = self.num_of_insertions_between_fpr_fnr_updates,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
             use_CountingBloomFilter                 = self.mode in ['fno'],
         ) for i in range(self.num_of_DSs)]
@@ -116,7 +116,7 @@ class Simulator(object):
         self.client_list = [Client.Client(
                 ID          = i, 
                 num_of_DSs  = self.num_of_DSs, 
-                window_size = self.DS_size/10, 
+                window_size = int (self.min_uInterval/10), 
                 verbose     = self.verbose, 
                 k_loc       = self.k_loc, 
                 missp       = self.missp) 
@@ -178,7 +178,7 @@ class Simulator(object):
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
                  ):
         """
-        Return a Simulator object with the following attributes:
+        Return a DistCacheSimulator object with the following attributes:
             mode:               e.g. 'opt', 'fnaa', 'fno'
             client_DS_cost:     2D array of costs. entry (i,j) is the cost from client i to DS j
             missp:               miss penalty
@@ -231,7 +231,6 @@ class Simulator(object):
             MyConfig.error ('k_loc must be at most num_of_DSs')
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
-        self.ewma_window_size   = int (self.DS_size/10) # window for parameters' estimation 
         self.max_fnr            = max_fnr
         self.max_fpr            = max_fpr
                 
@@ -259,6 +258,7 @@ class Simulator(object):
         # Else, calculate uInterval by the given bw parameter.
         self.use_global_uInerval = use_global_uInerval
         self.min_uInterval       = min_uInterval
+        self.ewma_window_size   = int(self.min_uInterval/10) #int (self.DS_size/10) # window for parameters' estimation 
         self.uInterval_factor    = uInterval_factor 
         if self.use_global_uInerval:
             self.do_not_advertise_upon_insert = True # Disallow each cache-initiated advertisement; instead, self will decide when to advertise, based on self counters.
@@ -268,7 +268,7 @@ class Simulator(object):
             self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
         self.cur_updating_DS = 0
         self.use_only_updated_ind = True if (self.min_uInterval == 1 and self.uInterval_factor==1) else False
-        self.num_of_insertions_between_estimations = np.uint8 (50)
+        self.num_of_insertions_between_fpr_fnr_updates = int (self.min_uInterval/10)
         if (self.num_of_clients == 1):
             self.use_given_client_per_item = False # if there's only 1 client, all requests belong to this client, disregarding what was pre-computed in the trace file.
         else:
@@ -286,11 +286,6 @@ class Simulator(object):
             simulate a single DS, with a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
             """
-            # self.tn_cnt                         = 0
-            # self.neg_ind_cnt                    = 0
-            # self.ins_cnt                        = 0
-            # self.num_of_DSs                     = 1
-            # self.mr0_by_staleness_res_file      = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval),  "w")
             self.print_detailed_output          = False
             self.num_of_DSs                     = 3            
             self.tn_cnt                         = np.zeros (self.num_of_DSs)
@@ -442,7 +437,7 @@ class Simulator(object):
         printf (res_file, '// estimation window = {}\n' .format (self.ewma_window_size))
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         if (self.mode == 'fnaa' and not(self.calc_mr_by_hist)):
-            printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_estimations))
+            printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_fpr_fnr_updates))
             printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
 

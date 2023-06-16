@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import os
 import MyConfig
 from printf import printf 
 from _ast import If
@@ -66,11 +67,6 @@ class Res_file_parser (object):
                           'SALSA3'    : 'SALSA3'
                            }
         
-        self.strOfTrace = {'F2'     : 'F2',
-                          'gradle'  : 'Gradle',
-                          'wiki1'   : 'Wiki',
-                          'scarab'  : 'Scarab'
-                           }
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : 'blue',
@@ -95,7 +91,7 @@ class Res_file_parser (object):
                             'Tetra dyn' : 'X',
                             'CEDAR'     : '<',
                             'Morris'    : '>'}
-        self.list_of_dicts  = []
+        self.list_of_dicts  = [] # list of dictionaries, that will hold all the data parsed from .res files.
         self.add_plot_opt   = '\t\t\\addplot [color = green, mark=+, line width = \\plotLineWidth] coordinates {\n\t\t'
         self.add_plot_str1  = '\t\t\\addplot [color = blue, mark=square, line width = \\plotLineWidth] coordinates {\n\t\t'
         self.add_plot_fno1  = '\t\t\\addplot [color = purple, mark=o, line width = \\plotLineWidth] coordinates {\n\t\t'
@@ -114,6 +110,9 @@ class Res_file_parser (object):
 
 
     def parse_line (self, line):
+        """
+        Parse a single line of a .res file.
+        """
         splitted_line = line.split ("|")
          
         settings      = splitted_line[0]
@@ -160,7 +159,8 @@ class Res_file_parser (object):
 
         if not(mode.startswith('SALSA')):
             return 
-            
+        
+        # Now we know that the mode is one of the flavors of SALSA, and hence need to parse SALSA's specific fields    
         if len(uInterval_val)>1: # a single uInterval val is given
             self.dict['max_uInterval'] = int(uInterval_val[1]) # for backward compatibility, keep also this field
 
@@ -266,7 +266,6 @@ class Res_file_parser (object):
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, cache_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
-                        
                         MyConfig.error ('no results for opt for trace={}, missp={}' .format (trace_to_print, missp))
                     opt_serviceCost = point[0]['serviceCost']
                     uInterval = 1000
@@ -449,28 +448,30 @@ class Res_file_parser (object):
                                          add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
             
                     
-    def parse_file (self, input_file_name):
-    
-        self.input_file         = open ("../res/" + input_file_name,  "r")
-        # self.output_file        = open ("../res/" + input_file_name.split(".")[0] + ".dat", "w")
-        lines               = (line.rstrip() for line in self.input_file) # "lines" contains all lines in input file
-        lines               = (line for line in lines if line)       # Discard blank lines
-        
-        for line in lines:
-        
-            # Discard lines with comments / verbose data
-            if (line.split ("//")[0] == ""):
-                continue
-           
-            self.parse_line(line)
-            if ( not(self.dict in self.list_of_dicts)):
-                self.list_of_dicts.append(self.dict)
-                
-
-        cache_size = 10 # cache size to plot, in units of [K] entries        
-        uInterval  = 1000
-        alg_modes = ['FNAA', 'FNOA']
-        self.input_file.close
+    def parse_files (self, input_file_names):
+        """
+        Parse each file in the list input_file_names, and save the parsed data in self.list_of_dicts
+        """
+        for input_file_name in input_file_names:
+            relative_path_to_input_file = f'../res/{input_file_name}'
+            if not (os.path.isfile (relative_path_to_input_file)):
+                MyConfig.error (f'the input file {relative_path_to_input_file} does not exist')
+            self.input_file         = open (relative_path_to_input_file,  "r")
+            # self.output_file        = open ("../res/" + input_file_name.split(".")[0] + ".dat", "w")
+            lines               = (line.rstrip() for line in self.input_file) # "lines" contains all lines in input file
+            lines               = (line for line in lines if line)       # Discard blank lines
+            
+            for line in lines:
+            
+                # Discard lines with comments / verbose data
+                if (line.split ("//")[0] == ""):
+                    continue
+               
+                self.parse_line(line)
+                if ( not(self.dict in self.list_of_dicts)):
+                    self.list_of_dicts.append(self.dict)
+                        
+            self.input_file.close
 
     def print_num_of_caches_plot_normalized (self):
         """
@@ -510,24 +511,24 @@ class Res_file_parser (object):
                 self.print_single_tikz_plot (filtered_list, key_to_sort = 'num_of_DSs', addplot_str = self.add_plot_str_dict[alg_mode], 
                                              add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
        
-        
-       
-    def plot_bars_by_missp_python (self, 
-                                   mr0_th           = 0.88, 
-                                   mr1_th           = 0.01, 
-                                   uInterval        = None,
-                                   uInterval_factor = 4, 
-                                   bpe              = 14,
-                                   traces           = ['Wiki', 'Scarab', 'F1', 'P3'],  
-                                   modes            = ['FNAA', 'SALSA1', 'SALSA2'], 
-                                   cache_size       = 10):
+    def plot_bars (self,
+                   mr0_th           = 0.88,
+                   mr1_th           = 0.01,
+                   uInterval        = None,
+                   uInterval_factor = 4,
+                   bpe              = 14,
+                   traces           = ['Wiki'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   modes            = ['SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   cache_size       = 64,
+                   missp_vals       = [],
+                   plot_serviceCost = True, 
+                   plot_bwCost      = True
+                   ):
         """
-        Generate and save a bar-plot of the service cost and BW for varying modes, traces, and missp values.  
+        Generate and save a Python's bar-plot of the service cost and BW for varying modes, traces, and missp values.  
         """
 
         self.set_plt_params ()
-
-        missp_vals = [10, 30, 100, 300]
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
 
@@ -536,7 +537,7 @@ class Res_file_parser (object):
         else:
             mid_x_positions = [((len(modes)+1)*x+2)*BAR_WIDTH for x in range(len(traces))]
         plt.subplots_adjust(wspace=0.4)
-        for missp in missp_vals: #range(len(missp_vals)):
+        for missp in missp_vals: 
             x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
             for mode in modes:
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
@@ -551,11 +552,11 @@ class Res_file_parser (object):
                                  item['num_of_DSs'] == 3] 
                     opt_point = [item for item in relevant_points if item['alg_mode'] =='Opt'] 
                     if (opt_point==[]):
-                        MyConfig.error ('no results Opt {}.C{}K.bpe{} M{}' .format (
-                                        trace, cache_size, bpe, missp, mode))
+                        MyConfig.error ('no results for Opt {}.C{}K M{}' .format (
+                                        trace, cache_size, missp))
                     opt_serviceCost = opt_point[0]['serviceCost']
                     
-                    # remove all points of other mcdes
+                    # remove all points of other modes
                     relevant_points = [item for item in relevant_points if item['alg_mode'] == mode and item['bpe'] == bpe and item['missp'] == missp]
                     if uInterval!=None:
                         relevant_points = [item for item in relevant_points if item['min_uInterval'] == uInterval] 
@@ -570,32 +571,42 @@ class Res_file_parser (object):
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost
                     mode_bwCost     [traceIdx] = point['bwCost']
 
-                plt.subplot (1, 2, 1)
-                plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
-                plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                plt.xticks (mid_x_positions, traces_to_print)
-                plt.legend ()
-                plt.subplot (1, 2, 2)
-                plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
-                plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
-                x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                plt.xticks (mid_x_positions, traces_to_print)
-                plt.legend ()
-            plt.savefig ('../res/C_{}K_M{}.pdf' .format (cache_size, missp), bbox_inches='tight', dpi=100)
+                if plot_serviceCost:
+                    if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
+                        plt.subplot (1, 2, 1)
+                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                    plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
+                    plt.xticks (mid_x_positions, traces_to_print)
+                    plt.legend ()
+                if plot_bwCost:
+                    if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
+                        plt.subplot (1, 2, 2)
+                    plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                    plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
+                    x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
+                    plt.xticks (mid_x_positions, traces_to_print)
+                    plt.legend ()
+            if plot_serviceCost and not(plot_bwCost):
+                sub_plot_str = '_sCost'
+            elif not (plot_serviceCost) and plot_bwCost:
+                sub_plot_str = '_bCost'
+            else:
+                sub_plot_str = ''
+            plt.savefig (f'../res/C_{cache_size}K_M{missp}{sub_plot_str}.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
+
     def plot_mr0 (self, input_file_name):
         """
-        generate a plot, showing the mr0 as a func' of time (manifested by # of requests).
+        generate and save a Python plot, showing the mr0 as a func' of time (manifested by # of requests).
         Input: input_file_name - a file containing the 'mr0' values, in one line, comma-separated.
-        output: input_file_name.jpg = plot of the mr0 as a func' of time.
+        output: input_file_name.pdf = plot of the mr0 as a func' of time.
         
         """
         for line in open ('../res/{}' .format (input_file_name),  "r"):
             splitted_line = line.split (',')
             mr0 = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
             mr0 = mr0[:31]
-        # print (f'mr0 len={len(mr0)}')
         plt.xlim (0, 160*(len(mr0)-1))
         plt.ylim (0.8, 1.02)
         plt.plot ([160*i for i in range(len(mr0))], mr0, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
@@ -605,9 +616,6 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-# for res_file in ['salsa.res', 'opt.res']:  #
-#     my_Res_file_parser.parse_file (res_file)
-# for cache_size in [4]: #[4, 16, 64]:
-#     my_Res_file_parser.plot_bars_by_missp_python (cache_size=cache_size)
-
+# my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
+my_Res_file_parser.parse_files(['salsa2.res', 'opt.res'])
+my_Res_file_parser.plot_bars (plot_serviceCost=False, missp_vals=[10, 30, 100, 300])

@@ -517,8 +517,8 @@ class Res_file_parser (object):
                    uInterval        = None,
                    uInterval_factor = 4,
                    bpe              = 14,
-                   traces           = ['Wiki'], #['Wiki', 'Scarab', 'F1', 'P3'],
-                   modes            = ['SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   traces           = ['Wiki', 'Scarab', 'F1', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   modes            = ['FNAA', 'SALSA1', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    cache_size       = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -532,14 +532,15 @@ class Res_file_parser (object):
         
         fig = plt.subplots(figsize =(12, 8)) # set width of bar 
 
-        if len(traces)==2:
-            mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
-        else:
-            mid_x_positions = [((len(modes)+1)*x+2)*BAR_WIDTH for x in range(len(traces))]
         plt.subplots_adjust(wspace=0.4)
         for missp in missp_vals: 
-            x_positions     = [((len(modes)+1)*x)*BAR_WIDTH for x in range(len(traces))]
-            for mode in modes:
+            if len(traces)==2:
+                mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+            else:
+                mid_x_positions = [((len(modes))*x+1)*BAR_WIDTH for x in range(len(traces))]
+            for mode_idx in range(len(modes)):
+                mode            = modes[mode_idx]
+                x_positions     = [((len(modes)+1)*x + mode_idx)*BAR_WIDTH for x in range(len(traces))]
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 traces_to_print = []
@@ -566,7 +567,9 @@ class Res_file_parser (object):
                         relevant_points = [item for item in relevant_points if
                                            item['mr0_th'] == mr0_th and
                                            item['mr1_th'] == mr1_th and
-                                           item['uInterval_factor']==uInterval_factor]     
+                                           item['uInterval_factor']==uInterval_factor]
+                        if len(relevant_points)==0: # no results for this setting
+                            continue     
                     point = relevant_points[0]
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost
                     mode_bwCost     [traceIdx] = point['bwCost']
@@ -617,5 +620,5 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['salsa2.res', 'opt.res'])
-my_Res_file_parser.plot_bars (plot_serviceCost=False, missp_vals=[10, 30, 100, 300])
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
+my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], cache_size=4)

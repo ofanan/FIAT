@@ -380,6 +380,17 @@ class DataStore (object):
 
     def advertise_ind_full_mode (self, called_by_str):
         
+        """
+        Advertise an indicator while in the "full indicator" mode.
+        - Write to log files, if requested by the self.verbose.
+        - If required, scale the indicator. We assume that only SBF (Simple Bloom Filter) can scale. Counting Bloom Filter doesnn't scale. 
+        - Assign self.stale_indicator to the list of current cached items. 
+          At this very moment self.stale_indicator will be fresh, but from now and on, until the next advertisement, it will gradually become stale again.
+        - Later, if needed, analyzes the number of set bits in the self.stale_indicator.
+        - Update counters.
+        
+        """
+        
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 

@@ -396,7 +396,6 @@ class DataStore (object):
         
         """
         
-        print ('advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str)) #$$$
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
@@ -409,6 +408,8 @@ class DataStore (object):
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.ind_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
+        else:
+            print ('advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str)) #$$$
         
         if self.collect_mr_stat:
             if self.ins_cnt_in_this_period >= self.period: 

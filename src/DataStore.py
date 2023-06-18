@@ -318,6 +318,9 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
                         (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
+            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
+                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
 
     def handle_ind_full_mode (self):
         """
@@ -377,7 +380,7 @@ class DataStore (object):
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, f'switching to delta mode. advertising ad_size={self.delta_ad_size}\n')
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
-            printf (self.q_output_file, f'switching to delta mode. advertising ad_size={self.delta_ad_size}\n')
+            printf (self.mr_output_file, f'switching to delta mode. advertising ad_size={self.delta_ad_size}\n')
         self.stale_indicator = self.updated_sbf  
 
     def advertise_ind_full_mode (self, called_by_str):

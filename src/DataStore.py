@@ -190,7 +190,7 @@ class DataStore (object):
                 self.mr0_cur = float(self.tn_events_cnt) / float (self.spec_accs_cnt)
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                    printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
+                    printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n')
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
@@ -303,7 +303,7 @@ class DataStore (object):
             if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                 printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period ={}\n' .format (self.ins_cnt_since_last_full_ad))                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period={}\n' .format (self.ins_cnt_since_last_full_ad))                     
+                printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}\n')                     
             self.num_of_advertisements  += 1
             return # finished advertising an indicator
         
@@ -466,7 +466,7 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur
         # self.updated_mr0 = True 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
-            printf (self.mr_output_file, 'tn cnt={}, spec accs cnt={}, mr0={:.4f}\n' .format (self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur))
+            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n')
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 

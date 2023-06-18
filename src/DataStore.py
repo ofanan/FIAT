@@ -372,15 +372,15 @@ class DataStore (object):
         - Assign self.stale_indicator <-- self.updated_sbf (update Simple Bloom Filter)  
         - If requested by self.verbose, print to log files.
         """
+        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+            printf (self.q_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
+        if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            printf (self.mr_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
         self.in_delta_mode                 = True
         self.ins_cnt_since_last_full_ad    = 0
         self.total_ad_size_in_this_period  = 0
         self.num_of_advertisements        += 1
         self.overall_ad_size              += self.delta_ad_size  
-        if MyConfig.VERBOSE_LOG_Q in self.verbose:
-            printf (self.q_output_file, f'switching to delta mode. advertising ad_size={self.delta_ad_size}\n')
-        if MyConfig.VERBOSE_LOG_MR in self.verbose:
-            printf (self.mr_output_file, f'switching to delta mode. advertising ad_size={self.delta_ad_size}\n')
         self.stale_indicator = self.updated_sbf  
 
     def advertise_ind_full_mode (self, called_by_str):

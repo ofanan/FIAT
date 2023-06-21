@@ -169,7 +169,7 @@ class Res_file_parser (object):
             return # no further data in this .res entry
         self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
         self.dict['mr1_th'] = float ('0.' + splitted_line [mr1th_idx+1])
-        self.dict['uIntfact'] = float (splitted_line [uIntfact_idx].split("uIntFact")[1])
+        self.dict['uIntFact'] = float (splitted_line [uIntfact_idx].split("uIntFact")[1])
          
     def print_tbl (self):
         """
@@ -517,7 +517,6 @@ class Res_file_parser (object):
                    mr0_th           = 0.88,
                    mr1_th           = 0.01,
                    uInterval        = None,
-                   uIntfact = 4,
                    bpe              = 14,
                    traces           = ['Wiki', 'Scarab', 'F1', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    cache_size       = 64,
@@ -543,8 +542,7 @@ class Res_file_parser (object):
                            item['mode']             == mode   and
                            item['bpe']              == bpe    and
                            item['mr0_th']           == mr0_th and
-                           item['mr1_th']           == mr1_th and
-                           item['min_uInterval']    == uInterval]
+                           item['mr1_th']           == mr1_th]
         
         for missp in missp_vals: 
             opt_points_w_this_missp   = [item for item in opt_points   if item['missp']==missp]  
@@ -555,19 +553,19 @@ class Res_file_parser (object):
                 mid_x_positions = [((len(uIntFactVals))*x+1)*BAR_WIDTH for x in range(len(traces))]
             for uIntFact_idx in range(len(uIntFactVals)):
                 uIntFact        = uIntFactVals[uIntFact_idx]
-                salsa_points_w_this_missp_n_uIntFact = [item for item in salsa_points_w_this_missp if item['uIntFac']== uIntFact]
-                x_positions     = [((len(uIntFactVals)+1)*x + uIntFact_idx)*BAR_WIDTH for x in range(len(traces))]
-                serviceCost     = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
-                bwCost          = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
-                if salsa_points_w_this_missp_n_uIntFact==[]: # no results for this settings
-                    print (f'no points for {mode}, M{missp}, uIntFact={uIntFact}')  
-                    continue
-                traces_to_print = []
+                salsa_points_w_this_missp_n_uIntFact = [item for item in salsa_points_w_this_missp if item['uIntFact']== uIntFact]
+                x_positions      = [((len(uIntFactVals)+1)*x + uIntFact_idx)*BAR_WIDTH for x in range(len(traces))]
+                mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
+                mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
+                traces_to_print  = []
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
                     traces_to_print.append(trace)
                     opt_points      = [item for item in opt_points_w_this_missp   if item['trace'] == trace]
                     salsa_points    = [item for item in salsa_points_w_this_missp if item['trace'] == trace]
+                    if salsa_points==[]: # no results for this settings
+                        print (f'no points for {trace}.C{cache_size}K M{missp}, uIntFact={uIntFact}')  
+                        continue
                     if (opt_points==[]):
                         MyConfig.error ('no results for Opt {trace}.C{cache_size}K M{missp}')
                     opt_serviceCost = opt_points[0]['serviceCost']
@@ -659,7 +657,7 @@ class Res_file_parser (object):
                         mode_trace_points = [item for item in mode_trace_points if
                                              item['mr0_th'] == mr0_th and
                                              item['mr1_th'] == mr1_th and
-                                             item['uIntfact']==uIntfact]
+                                             item['uIntFact']==uIntfact]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]

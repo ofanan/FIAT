@@ -22,7 +22,7 @@ uInterval_idx           = 8
 alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: Opt, FNAA, SALSA
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
 mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
-uInterval_factor_idx    = 14 # mr0 th for SALSA's advertisement decision
+uIntfact_idx    = 14 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH = 0.25
@@ -168,7 +168,7 @@ class Res_file_parser (object):
             return # no further data in this .res entry
         self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
         self.dict['mr1_th'] = float ('0.' + splitted_line [mr1th_idx+1])
-        self.dict['uInterval_factor'] = float (splitted_line [uInterval_factor_idx].split("uIntFact")[1])
+        self.dict['uIntfact'] = float (splitted_line [uIntfact_idx].split("uIntFact")[1])
          
     def print_tbl (self):
         """
@@ -515,7 +515,7 @@ class Res_file_parser (object):
                    mr0_th           = 0.88,
                    mr1_th           = 0.01,
                    uInterval        = None,
-                   uInterval_factor = 4,
+                   uIntfact = 4,
                    bpe              = 14,
                    traces           = ['Wiki', 'Scarab', 'F1', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    modes            = ['FNAA', 'SALSA1', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
@@ -550,7 +550,7 @@ class Res_file_parser (object):
                     relevant_points = [item for item in self.list_of_dicts if
                                  item['trace']      == trace        and 
                                  item['cache_size'] == cache_size   and
-                                 item['num_of_DSs'] == 3] 
+                                 item['num_of_DSs'] == 3]
                     opt_point = [item for item in relevant_points if item['alg_mode'] =='Opt'] 
                     if (opt_point==[]):
                         MyConfig.error ('no results for Opt {}.C{}K M{}' .format (
@@ -567,7 +567,7 @@ class Res_file_parser (object):
                         relevant_points = [item for item in relevant_points if
                                            item['mr0_th'] == mr0_th and
                                            item['mr1_th'] == mr1_th and
-                                           item['uInterval_factor']==uInterval_factor]
+                                           item['uIntfact']==uIntfact]
                         if len(relevant_points)==0: # no results for this setting
                             continue     
                     point = relevant_points[0]
@@ -620,5 +620,5 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
-my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], cache_size=4)
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
+my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], cache_size=64)

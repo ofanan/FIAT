@@ -537,16 +537,16 @@ class Res_file_parser (object):
         relevant_points = [item for item in self.list_of_dicts if  
                            item['cache_size'] == cache_size   and
                            item['num_of_DSs'] == 3] 
-        opt_points      = [item for item in relevant_points if item['mode'] == 'Opt']
-        salsa_points    = [item for item in relevant_points if 
+        all_opt_points   = [item for item in relevant_points if item['mode'] == 'Opt']
+        all_salsa_points = [item for item in relevant_points if 
                            item['mode']             == mode   and
                            item['bpe']              == bpe    and
                            item['mr0_th']           == mr0_th and
                            item['mr1_th']           == mr1_th]
         
         for missp in missp_vals: 
-            opt_points_w_this_missp   = [item for item in opt_points   if item['missp']==missp]  
-            salsa_points_w_this_missp = [item for item in salsa_points if item['missp']== missp]
+            opt_points_w_this_missp   = [item for item in all_opt_points   if item['missp']==missp]  
+            salsa_points_w_this_missp = [item for item in all_salsa_points if item['missp']== missp]
             if len(traces)==2:
                 mid_x_positions = [((len(uIntFactVals)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
             else:
@@ -561,8 +561,8 @@ class Res_file_parser (object):
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
                     traces_to_print.append(trace)
-                    opt_points      = [item for item in opt_points_w_this_missp   if item['trace'] == trace]
-                    salsa_points    = [item for item in salsa_points_w_this_missp if item['trace'] == trace]
+                    opt_points      = [item for item in opt_points_w_this_missp              if item['trace'] == trace]
+                    salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if item['trace'] == trace]
                     if salsa_points==[]: # no results for this settings
                         print (f'no points for {trace}.C{cache_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
@@ -713,4 +713,4 @@ my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], cache_size=4)
 my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
-my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 100, 300], cache_size=4)
+my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 300], cache_size=4)

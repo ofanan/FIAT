@@ -600,7 +600,7 @@ class Res_file_parser (object):
                    mr0_th           = 0.88,
                    mr1_th           = 0.01,
                    uInterval        = None,
-                   uIntFact         = 4,
+                   uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F1', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
@@ -652,8 +652,9 @@ class Res_file_parser (object):
                     if mode.startswith('SALSA'):
                         mode_trace_points = [item for item in mode_trace_points if
                                              item['mr0_th'] == mr0_th and
-                                             item['mr1_th'] == mr1_th] # and
-                                             # item['uIntFact']==uIntfact]
+                                             item['mr1_th'] == mr1_th] 
+                        if uIntFact!=None:
+                            mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntfact]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
@@ -706,7 +707,7 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
-my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], cache_size=64)
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_w_init_after_each_ad.res', 'salsa1.res'])
+my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 300], cache_size=4)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], cache_size=4)

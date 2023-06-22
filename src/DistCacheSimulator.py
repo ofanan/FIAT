@@ -88,7 +88,7 @@ class DistCacheSimulator(object):
             use_indicator           = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
-            initial_mr0             = 1 - 1.1*(self.client_DS_cost[0][i]/self.missp),
+            initial_mr0             = (1 - 1.1*(self.client_DS_cost[0][i]/self.missp)) if self.re_init_after_each_ad else 0.88,
             # initial_mr1 is set by the DS to its designed fpr.
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,
@@ -98,8 +98,8 @@ class DistCacheSimulator(object):
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
             scale_ind_factor        = self.scale_ind_factor,
-            init_mr0_after_each_ad  = False,               
-            init_mr1_after_each_ad  = False,               
+            init_mr0_after_each_ad  = self.re_init_after_each_ad,               
+            init_mr1_after_each_ad  = self.re_init_after_each_ad,               
             use_fixed_uInterval     = self.use_fixed_uInterval,
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
@@ -175,7 +175,8 @@ class DistCacheSimulator(object):
                  uInterval_factor   = float('inf'),  
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = False, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
-                 use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)  
+                 use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)
+                 re_init_after_each_ad = False,  
                  ):
         """
         Return a DistCacheSimulator object with the following attributes:
@@ -195,6 +196,7 @@ class DistCacheSimulator(object):
             use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
+        self.re_init_after_each_ad = re_init_after_each_ad
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01

@@ -22,6 +22,7 @@ def parse_IBM_trace (trace_file_name,
      
     keys                = []
     discarded_line_cntr = 0  
+    req_cnt             = 0
     
     with open (full_path_input_file_name,  "r") as input_file:
         for line in input_file: 
@@ -71,4 +72,4 @@ def parse_IBM_trace (trace_file_name,
     print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))    
     full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
     
-parse_IBM_trace ('IBMObjectStoreTrace004Part0.txt')
+parse_IBM_trace ('IBMObjectStoreTrace005Part0.txt', max_num_of_req=20000000)

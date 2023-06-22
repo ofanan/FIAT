@@ -58,7 +58,9 @@ class DataStore (object):
             For the DataStore's see documentation within the __init__ function.
         """
         self.ID                      = ID
-        self.verbose                 = verbose 
+        self.verbose                 = verbose
+        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
+            self.verbose.append (MyConfig.VERBOSE_LOG_MR) # Detailed mr log should include also "basic" mr log.
         self.cache_size              = size
         self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str            = settings_str
@@ -318,7 +320,7 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
                         (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
-            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
                         (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
 
@@ -374,7 +376,7 @@ class DataStore (object):
         """
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
-        if MyConfig.VERBOSE_LOG_MR in self.verbose:
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
         self.in_delta_mode                 = True
         self.ins_cnt_since_last_full_ad    = 0
@@ -417,11 +419,14 @@ class DataStore (object):
                 self.tn_events_cnt, self.spec_accs_cnt = 0,0
                 self.ins_cnt_in_this_period = 0 
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
-                if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                    printf (self.q_output_file, 'RE-INIT MR0. mr0={}\n' .format (self.mr0_cur))
+                if MyConfig.VERBOSE_LOG_MR in self.verbose:
+                    printf (self.mr_output_file, 'RE-INIT MR0. mr0={}\n' .format (self.mr0_cur))
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
                 self.fp_events_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 
+            if self.init_mr0_after_each_ad and not(self.in_delta_mode):
+                self.tn_events_cnt, self.spec_accs_cnt = 0,0
+                self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
         
         if self.scale_ind_factor!=1: # consider scaling the indicator and the uInterval
             scale_ind_by = 1
@@ -431,8 +436,8 @@ class DataStore (object):
                 scale_ind_by = min(self.scale_ind_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
-                if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                    printf (self.q_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
+                if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                    printf (self.mr_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
 
         if not (self.use_CountingBloomFilter):
             self.stale_indicator = self.genNewSBF ()

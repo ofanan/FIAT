@@ -13,12 +13,12 @@ from   tictoc import tic, toc
 
 def main ():
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['P3']: #['Wiki', 'F1', 'Scarab', 'P3']:   
-        for DS_size in [64000]: #[4000, 16000, 64000]:
+    for trace in ['F1']: #['Wiki', 'F1', 'Scarab', 'P3']:   
+        for DS_size in [4000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
-            for mode in ['fnaa']:
-                for missp in [10] if mode=='opt' else [100]: #[10, 30, 100, 300]:
+            for mode in ['salsa1']:
+                for missp in [10] if mode=='opt' else [300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         res_file_name = mode,
@@ -29,8 +29,8 @@ def main ():
                         missp            = missp,
                         DS_size          = DS_size,
                         min_uInterval    = DS_size/10,
-                        uInterval_factor = 2 if mode.startswith('salsa') else 1,
-                        verbose          = [MyConfig.VERBOSE_RES])
+                        uInterval_factor = 1 if mode.startswith('salsa') else 1,
+                        verbose          = [MyConfig.VERBOSE_RES]) #[MyConfig.VERBOSE_DETAILED_LOG_MR])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()
 

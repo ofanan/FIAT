@@ -642,8 +642,12 @@ class Res_file_parser (object):
                 mode_points_w_this_missp  = [item for item in points_w_this_missp if item['mode']==mode]
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
-                    mode_trace_points = [item for item in mode_points_w_this_missp if item['trace']==trace]
-                    opt_trace_points  = [item for item in opt_points_w_this_missp  if item['trace']==trace]
+                    mode_trace_points = [item for item in mode_points_w_this_missp if 
+                                         item['trace']      == trace and
+                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)] 
+                    opt_trace_points  = [item for item in opt_points_w_this_missp  if 
+                                         item['trace']      == trace and
+                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)] 
                     if (opt_trace_points==[]):
                         MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
                     opt_serviceCost = opt_trace_points[0]['serviceCost']
@@ -712,6 +716,6 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_re_init_after_each_ad.res', 'salsa1.res'])
-my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 300], DS_size=4)
+my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 300], DS_size=4, uIntfFact=2)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

@@ -61,8 +61,8 @@ class DataStore (object):
         self.verbose                 = verbose
         if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
             self.verbose.append (MyConfig.VERBOSE_LOG_MR) # Detailed mr log should include also "basic" mr log.
-        self.cache_size              = size
-        self.cache                   = mod_pylru.lrucache(self.cache_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
+        self.DS_size              = size
+        self.cache                   = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str            = settings_str
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
             self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
@@ -89,7 +89,7 @@ class DataStore (object):
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
-        self.ind_size                = self.bpe * self.cache_size
+        self.ind_size                = self.bpe * self.DS_size
         self.lg_ind_size             = np.log2 (self.ind_size) 
         self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
         self.use_CountingBloomFilter = use_CountingBloomFilter
@@ -120,7 +120,7 @@ class DataStore (object):
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
-        self.designed_fpr            = MyConfig.calc_designed_fpr (self.cache_size, self.ind_size, self.num_of_hashes)
+        self.designed_fpr            = MyConfig.calc_designed_fpr (self.DS_size, self.ind_size, self.num_of_hashes)
         self.initial_mr1             = self.designed_fpr
         self.send_fpr_fnr_updates    = send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
@@ -150,10 +150,10 @@ class DataStore (object):
             bpe                         = self.min_bpe
             self.potential_indSize      = []
             while bpe <= self.max_bpe:
-                self.potential_indSize.append (int (bpe * self.cache_size))
+                self.potential_indSize.append (int (bpe * self.DS_size))
                 bpe *= self.scale_ind_factor
-            self.potential_indSize.append (self.max_bpe*self.cache_size)
-            self.potential_indSize.append (self.bpe*self.cache_size)
+            self.potential_indSize.append (self.max_bpe*self.DS_size)
+            self.potential_indSize.append (self.bpe*self.DS_size)
             self.potential_indSize.sort()
             self.potential_indSize_lg_indSize = np.array ([item*np.log2(item) for item in self.potential_indSize])
             
@@ -465,7 +465,7 @@ class DataStore (object):
         new_ind_size                = self.potential_indSize[idx]
         if new_ind_size!=self.ind_size: 
             self.ind_size               = new_ind_size
-            self.bpe                    = int (self.ind_size / self.cache_size)
+            self.bpe                    = int (self.ind_size / self.DS_size)
             self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 printf (self.q_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))

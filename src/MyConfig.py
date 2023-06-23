@@ -25,11 +25,12 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
-num_of_req = {'Wiki'   : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 : 6000000},
-              'Scarab' : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 : 4000000},
-              'F1'     : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 : 1800000},
-              'P3'     : {4000 : 250000, 10000 : 300000, 16000 : 400000,  64000 : 2500000},
-              'Twitter': {4000 : 250000, 10000 : 600000, 16000 : 1200000, 64000 : 14000000},
+num_of_req = {'Wiki'    : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
+              'Scarab'  : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 :  4000000},
+              'F1'      : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 :  1800000},
+              'P3'      : {4000 : 250000, 10000 : 300000, 16000 : 400000,  64000 :  2500000},
+              'Twitter' : {4000 : 250000, 10000 : 600000, 16000 : 1200000, 64000 : 14000000},
+              'IBM'     : {4000 : 250000, 10000 : 650000, 16000 : 800000,  64000 :  4006000}
              }
 
 
@@ -44,7 +45,8 @@ trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
                        'F1'     : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
                        'WS1'    : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
                        'P3'     : 'arc/P3.3912Kreq.csv',
-                       'Twitter': 'snia/twitter/cluster17_14MReq_464Kreq.csv'
+                       'Twitter': 'snia/Twitter.cluster17_14MReq_464Kuniqes.csv',
+                       'IBM'    : 'snia/IBM/IBM.ObjectStoreTrace007Part0.txt.csv'
                        }
 
 def calc_num_of_req (trace, DS_size):
@@ -172,11 +174,11 @@ def error (str):
     exit ()
 
 
-def calc_designed_fpr (cache_size, BF_size, num_of_hashes):
+def calc_designed_fpr (DS_size, BF_size, num_of_hashes):
     """
     returns the designed (inherent) fpr of a BF, based on the given cache size, BF size, and number of hash functions used by the BF.
     """
-    return pow (1 - pow (1 - 1/BF_size, num_of_hashes * cache_size), num_of_hashes)
+    return pow (1 - pow (1 - 1/BF_size, num_of_hashes * DS_size), num_of_hashes)
 
 
 def gen_relative_path_trace_file_name (trace_file_name):
@@ -290,8 +292,8 @@ def get_trace_name (trace_file_name):
 
 def main ():
     num_of_req = INF_INT
-    for num_of_req in [1200000]:
-        characterize_trace (trace = 'Twitter', 
+    for num_of_req in [250000]:
+        characterize_trace (trace = 'IBM', 
                             num_of_req                  = num_of_req
                             )
     # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 

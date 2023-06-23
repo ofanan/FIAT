@@ -12,8 +12,9 @@ import mmh3, sys, hashlib
 import MyConfig
 
 def parse_IBM_trace (trace_file_name, 
-                     max_num_of_req       = MyConfig.INF_INT, # maximum number of requests to be parsed, starting from the beginning of the trace
-                     num_of_clients       = 1 # when larger than 1, the output will contain also the client u.a.r.-associated with each req. 
+                     max_num_of_req         = MyConfig.INF_INT, # maximum number of requests to be parsed, starting from the beginning of the trace
+                     num_of_clients         = 1, # when larger than 1, the output will contain also the client u.a.r.-associated with each req.
+                     saveToFile             = True 
                      ):
 
     traces_path                 = MyConfig.getTracesPath()
@@ -69,7 +70,8 @@ def parse_IBM_trace (trace_file_name,
         full_trace_df         = pd.DataFrame(np.transpose([keys]))
         full_trace_df.columns = ['key']
     
-    print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))    
-    full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
+    print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))
+    if saveToFile:    
+        full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
     
-parse_IBM_trace ('IBMObjectStoreTrace005Part0.txt', max_num_of_req=20000000)
+parse_IBM_trace ('IBMObjectStoreTrace007Part0.txt', max_num_of_req=2000000, saveToFile = False)

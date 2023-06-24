@@ -23,7 +23,7 @@ uInterval_idx           = 8
 alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: Opt, FNAA, SALSA
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
 mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
-uIntfact_idx    = 14 # mr0 th for SALSA's advertisement decision
+uIntFact_idx    = 14 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH = 0.25
@@ -169,7 +169,7 @@ class Res_file_parser (object):
             return # no further data in this .res entry
         self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
         self.dict['mr1_th'] = float ('0.' + splitted_line [mr1th_idx+1])
-        self.dict['uIntFact'] = float (splitted_line [uIntfact_idx].split("uIntFact")[1])
+        self.dict['uIntFact'] = float (splitted_line [uIntFact_idx].split("uIntFact")[1])
          
     def print_tbl (self):
         """
@@ -630,10 +630,11 @@ class Res_file_parser (object):
         for missp in missp_vals: 
             points_w_this_missp      = [item for item in all_points     if item['missp']==missp]
             opt_points_w_this_missp  = [item for item in all_opt_points if item['missp']==missp]
+            # Calculate the positions of the trace label
             if len(traces)==2:
                 mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
             else:
-                mid_x_positions = [((len(modes))*x+1)*BAR_WIDTH for x in range(len(traces))]
+                mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
             for mode_idx in range(len(modes)):
                 mode            = modes[mode_idx]
                 x_positions     = [((len(modes)+1)*x + mode_idx)*BAR_WIDTH for x in range(len(traces))]
@@ -643,11 +644,13 @@ class Res_file_parser (object):
                 for traceIdx in range(len(traces)):
                     trace = traces[traceIdx]
                     mode_trace_points = [item for item in mode_points_w_this_missp if 
-                                         item['trace']      == trace and
-                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)] 
+                                         item['trace']      == trace] 
+                                         # and
+                                         # item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)] 
                     opt_trace_points  = [item for item in opt_points_w_this_missp  if 
-                                         item['trace']      == trace and
-                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)] 
+                                         item['trace']      == trace]
+                     # and #$$$
+                                         # item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)] 
                     if (opt_trace_points==[]):
                         MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
                     opt_serviceCost = opt_trace_points[0]['serviceCost']
@@ -662,7 +665,7 @@ class Res_file_parser (object):
                                              item['mr0_th'] == mr0_th and
                                              item['mr1_th'] == mr1_th] 
                         if uIntFact!=None:
-                            mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntfact]
+                            mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
@@ -716,6 +719,6 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_re_init_after_each_ad.res', 'salsa1.res'])
-my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 300], DS_size=4, uIntfFact=2)
+my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[300], DS_size=4)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

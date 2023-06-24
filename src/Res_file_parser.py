@@ -643,8 +643,7 @@ class Res_file_parser (object):
                                          item['trace']      == trace and
                                          item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000] 
                     if (opt_trace_points==[]):
-                        opt_serviceCost = 1 #$$$$
-                        # MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                        MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
                     else:
                         opt_serviceCost = opt_trace_points[0]['serviceCost']
                     
@@ -671,7 +670,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_labels_positions, traces)
-                    plt.legend ()
+                    plt.legend (frameon=False)
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 2)
@@ -679,7 +678,7 @@ class Res_file_parser (object):
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_labels_positions, traces)
-                    plt.legend ()
+                    plt.legend (frameon=False)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
             elif not (plot_serviceCost) and plot_bwCost:

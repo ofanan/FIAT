@@ -47,7 +47,7 @@ trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
                        'F2'     : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
                        'WS1'    : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
                        'P3'     : 'arc/P3.3912Kreq.csv',
-                       'Twitter': 'snia/Twitter.cluster17_14MReq_464Kuniqes.csv',
+                       'Twitter': 'snia/twitter/Twitter.cluster17_14MReq_464Kuniqes.csv',
                        'IBM'    : 'snia/IBM/IBM.ObjectStoreTrace007Part0.txt.csv'
                        }
 
@@ -115,12 +115,12 @@ def optimal_BF_size_per_DS_size ():
 
 
 def calc_service_cost_of_opt (accs_cost, comp_miss_cnt, missp, req_cnt):
-	"""
-	Opt's behavior is not depended upon parameters such as the indicaror's size, and miss penalty.
-	Hence, it suffices to run Opt only once per trace and network, and then calculate its service cost for other 
-	parameters' values using this func'
-	"""
-	return (accs_cost + comp_miss_cnt * missp) / req_cnt
+    """
+    Opt's behavior is not depended upon parameters such as the indicaror's size, and miss penalty.
+    Hence, it suffices to run Opt only once per trace and network, and then calculate its service cost for other 
+    parameters' values using this func'
+    """
+    return (accs_cost + comp_miss_cnt * missp) / req_cnt
 
 def getTracesPath():
     """
@@ -131,17 +131,17 @@ def getTracesPath():
 #   #return 'C:/Users/' + os.getcwd().split ("\\")[2] + '/Documents/traces/' if (os.getcwd().split ("\\")[0] == "C:") else '/home/icohen/traces/'
 
 def calcOvhDsCost ():
-	"""
-	Returns the loads of the 19-nodes OVH network, based on the distances and BWs	
-	"""
-	full_path_to_rsrc   = os.getcwd() + "\\..\\resources\\"
-	client_DS_dist_df   = pd.read_csv (full_path_to_rsrc + 'ovh_dist.csv',index_col=0)
-	client_DS_dist      = np.array(client_DS_dist_df)
-	client_DS_BW_df     = pd.read_csv (full_path_to_rsrc + 'ovh_bw.csv',index_col=0)
-	client_DS_BW        = np.array(client_DS_BW_df)
-	bw_regularization   = np.max(np.tril(client_DS_BW,-1)) 
-	alpha = 0.5
-	return 1 + alpha * client_DS_dist + (1 - alpha) * (bw_regularization / client_DS_BW) # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
+    """
+    Returns the loads of the 19-nodes OVH network, based on the distances and BWs    
+    """
+    full_path_to_rsrc   = os.getcwd() + "\\..\\resources\\"
+    client_DS_dist_df   = pd.read_csv (full_path_to_rsrc + 'ovh_dist.csv',index_col=0)
+    client_DS_dist      = np.array(client_DS_dist_df)
+    client_DS_BW_df     = pd.read_csv (full_path_to_rsrc + 'ovh_bw.csv',index_col=0)
+    client_DS_BW        = np.array(client_DS_BW_df)
+    bw_regularization   = np.max(np.tril(client_DS_BW,-1)) 
+    alpha = 0.5
+    return 1 + alpha * client_DS_dist + (1 - alpha) * (bw_regularization / client_DS_BW) # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
 
 
 def exponential_window (old_estimate, new_val, alpha):
@@ -151,13 +151,13 @@ def exponential_window (old_estimate, new_val, alpha):
     return alpha * new_val + (1 - alpha) * old_estimate 
 
 def bw_to_uInterval (DS_size, bpe, num_of_DSs, bw):
-	"""
-	Given a requested bw [bits / system request], returns the per-cache uInterval, namely, the avg num of events this cache has to count before sending an update.
-	An "event" here is either a user access to the cache, or an insertion to that cache.
-	The simulator calculates the number of events implicitly, by assuming that each user request causes an event to a single cache -- 
-	and hence, each cache sees an event once in num_of_DSs user requests on average. 
-	"""
-	return int (round (DS_size * bpe * num_of_DSs) / bw)
+    """
+    Given a requested bw [bits / system request], returns the per-cache uInterval, namely, the avg num of events this cache has to count before sending an update.
+    An "event" here is either a user access to the cache, or an insertion to that cache.
+    The simulator calculates the number of events implicitly, by assuming that each user request causes an event to a single cache -- 
+    and hence, each cache sees an event once in num_of_DSs user requests on average. 
+    """
+    return int (round (DS_size * bpe * num_of_DSs) / bw)
  
 def uInterval_to_Bw (DS_size, bpe, num_of_DSs, uInerval):
     """
@@ -167,7 +167,7 @@ def uInterval_to_Bw (DS_size, bpe, num_of_DSs, uInerval):
 
 def get_optimal_num_of_hashes (bpe):
     """
-	Returns the optimal number of hash functions for a given number of Bits Per Element (actually, cntrs per element) in a Bloom filter
+    Returns the optimal number of hash functions for a given number of Bits Per Element (actually, cntrs per element) in a Bloom filter
     """
     return int (bpe * np.log (2))
 
@@ -305,5 +305,6 @@ def main ():
     #                     only_calc_num_of_uniques    = False)
     
 if __name__ == '__main__':
+    parse_list_of_keys (input_file_name='wiki/wiki1.1190448987.txt', num_of_req=6000000)
     # print (calc_num_of_req ('wiki', 1000))
-    main ()
+    # main ()

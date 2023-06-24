@@ -547,10 +547,7 @@ class Res_file_parser (object):
         for missp in missp_vals: 
             opt_points_w_this_missp   = [item for item in all_opt_points   if item['missp']==missp]  
             salsa_points_w_this_missp = [item for item in all_salsa_points if item['missp']== missp]
-            if len(traces)==2:
-                mid_x_positions = [((len(uIntFactVals)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
-            else:
-                mid_x_positions = [((len(uIntFactVals))*x+1)*BAR_WIDTH for x in range(len(traces))]
+            trace_label_positions = [((len(uIntFactVals)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
             for uIntFact_idx in range(len(uIntFactVals)):
                 uIntFact        = uIntFactVals[uIntFact_idx]
                 salsa_points_w_this_missp_n_uIntFact = [item for item in salsa_points_w_this_missp if item['uIntFact']== uIntFact]
@@ -580,7 +577,7 @@ class Res_file_parser (object):
                         plt.subplot (1, 2, 1)
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=f'uIntFact={uIntFact}') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                    plt.xticks (mid_x_positions, traces)
+                    plt.xticks (trace_label_positions, traces)
                     plt.legend ()
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
@@ -588,7 +585,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                    plt.xticks (mid_x_positions, traces)
+                    plt.xticks (trace_label_positions, traces)
                     plt.legend ()
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
@@ -630,11 +627,7 @@ class Res_file_parser (object):
         for missp in missp_vals: 
             points_w_this_missp      = [item for item in all_points     if item['missp']==missp]
             opt_points_w_this_missp  = [item for item in all_opt_points if item['missp']==missp]
-            # Calculate the positions of the trace label
-            if len(traces)==2:
-                mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
-            else:
-                mid_x_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+            trace_labels_positions = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
             for mode_idx in range(len(modes)):
                 mode            = modes[mode_idx]
                 x_positions     = [((len(modes)+1)*x + mode_idx)*BAR_WIDTH for x in range(len(traces))]
@@ -677,7 +670,7 @@ class Res_file_parser (object):
                         plt.subplot (1, 2, 1)
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                    plt.xticks (mid_x_positions, traces)
+                    plt.xticks (trace_labels_positions, traces)
                     plt.legend ()
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
@@ -685,7 +678,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                    plt.xticks (mid_x_positions, traces)
+                    plt.xticks (trace_labels_positions, traces)
                     plt.legend ()
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
@@ -719,6 +712,6 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_re_init_after_each_ad.res', 'salsa1.res'])
-my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[300], DS_size=4)
+my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[300], DS_size=4, uIntFact=2)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

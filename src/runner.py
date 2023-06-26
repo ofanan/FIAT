@@ -14,7 +14,7 @@ from   tictoc import tic, toc
 def main ():
     re_init_after_each_ad = False
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Wiki', 'Scarab', 'Twitter', 'IBM']: #['F2', 'P3', 'Wiki', 'F1', 'Scarab', 'P3']:   
+    for trace in ['Wiki', 'Scarab', 'Twitter', 'IBM', 'F2']:   
         for DS_size in [64000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
@@ -31,7 +31,7 @@ def main ():
                         DS_size          = DS_size,
                         min_uInterval    = DS_size/10,
                         re_init_after_each_ad = re_init_after_each_ad,
-                        uInterval_factor = 2 if mode.startswith('salsa') else 1,
+                        uInterval_factor = 8 if mode.startswith('salsa') else 1,
                         verbose          = [MyConfig.VERBOSE_RES]) #[MyConfig.VERBOSE_DETAILED_LOG_MR])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()

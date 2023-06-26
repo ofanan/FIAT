@@ -15,10 +15,10 @@ def main ():
     re_init_after_each_ad = False
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     for trace in ['Wiki', 'Scarab', 'Twitter', 'IBM']: #['F2', 'P3', 'Wiki', 'F1', 'Scarab', 'P3']:   
-        for DS_size in [4000]: #[4000, 16000, 64000]:
+        for DS_size in [64000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size)
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
-            for mode in ['opt']:
+            for mode in ['salsa2']:
                 for missp in [30, 100, 300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(

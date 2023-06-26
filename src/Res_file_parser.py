@@ -604,12 +604,13 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['F2'], #['Wiki', 'Scarab', 'F2', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['F2', 'Wiki', 'Scarab', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    modes            = ['FNAA', 'SALSA1', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
-                   DS_size       = 64,
+                   DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
-                   plot_bwCost      = True
+                   plot_bwCost      = True,
+                   normalize_by_Opt = True, # When true, normalize the service cost by that of Opt 
                    ):
         """
         Generate and save a Python's bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -642,11 +643,13 @@ class Res_file_parser (object):
                     opt_trace_points  = [item for item in opt_points_w_this_missp  if 
                                          item['trace']      == trace and
                                          item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000] 
-                    if (opt_trace_points==[]):
-                        MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                    if normalize_by_Opt:
+                        if (opt_trace_points==[]):
+                            MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                        else:
+                            opt_serviceCost = opt_trace_points[0]['serviceCost']
                     else:
-                        opt_serviceCost = opt_trace_points[0]['serviceCost']
-                    
+                        opt_serviceCost = 1
                     # remove all points of other modes
                     if uInterval!=None:
                         mode_trace_points = [item for item in mode_trace_points if item['min_uInterval'] == uInterval] 
@@ -661,7 +664,7 @@ class Res_file_parser (object):
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
-                    mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
+                    mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost  
                     mode_bwCost     [traceIdx] = point['bwCost']
 
                 if plot_serviceCost:
@@ -711,6 +714,7 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
-my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], DS_size=4, uIntFact=2)
+for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

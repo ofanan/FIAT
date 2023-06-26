@@ -40,7 +40,7 @@ trace_txt_file_name = {'Wiki'   : 'wiki/wiki1.1190448987.txt',
                        'Gradle' : 'gradle/gradle.build-cache.txt',
                        'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
 
-trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_13007Kreq.csv',
+trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_6000Kreq.csv',
                        'Gradle' : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
                        'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
                        'F1'     : 'umass/storage/F1.spc.bz2_5643Kreq.csv',

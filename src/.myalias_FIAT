@@ -11,7 +11,7 @@ alias aliaser="source .myalias"
 alias h=history
 alias commit='c; git add -A; git commit'
 alias na='nano'
-alias qs='qsub runner.sh'
+alias qs='qsub PBS_runner.sh'
 alias qq='c; qstat -a | g itamarc'
 source ../../.alias_pusher_FIAT.txt
 alias compush='c; commit; pusher'

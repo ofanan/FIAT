@@ -34,7 +34,6 @@ num_of_req = {'Wiki'    : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000
               'IBM'     : {4000 : 250000, 10000 : 650000, 16000 : 800000,  64000 :  4006000}
              }
 
-
 # relative paths of the traces, under the directory 'traces' 
 trace_txt_file_name = {'Wiki'   : 'wiki/wiki1.1190448987.txt',
                        'Gradle' : 'gradle/gradle.build-cache.txt',
@@ -55,7 +54,8 @@ def calc_num_of_req (trace, DS_size):
     """
     Given a trace and caches size, calculate the number of requests for having a substantial sim.
     A substantial simulation contains a num of uniques which is at least 2.5 times the overall caches' size.
-    We assue here 3 caches. Hence, the num of unqiues should be at least 2.5*3*DS_size. 
+    We assue here 3 caches. Hence, the num of unqiues should be at least 2.5*3*DS_size.
+    if rtrn_num_req_for_64, we always return the # of request for DS_size==64K. 
     """
     if DS_size <= 4000:
         return num_of_req[trace][4000]

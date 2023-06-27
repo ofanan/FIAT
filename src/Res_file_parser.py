@@ -26,7 +26,7 @@ mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
 uIntFact_idx    = 14 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
-BAR_WIDTH = 0.25
+BAR_WIDTH               = 0.25
 MARKER_SIZE             = 16
 MARKER_SIZE_SMALL       = 1
 LINE_WIDTH              = 3 
@@ -547,7 +547,7 @@ class Res_file_parser (object):
         for missp in missp_vals: 
             opt_points_w_this_missp   = [item for item in all_opt_points   if item['missp']==missp]  
             salsa_points_w_this_missp = [item for item in all_salsa_points if item['missp']== missp]
-            trace_label_positions = [((len(uIntFactVals)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+            trace_label_positions = self.bar_xlabel_positions (num_groups=len(traces), num_bars_per_group=len(uIntFactVals)) 
             for uIntFact_idx in range(len(uIntFactVals)):
                 uIntFact        = uIntFactVals[uIntFact_idx]
                 salsa_points_w_this_missp_n_uIntFact = [item for item in salsa_points_w_this_missp if item['uIntFact']== uIntFact]
@@ -595,8 +595,7 @@ class Res_file_parser (object):
                 sub_plot_str = ''
             plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}_uIntFact.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
-    
-    
+                
     def plot_bars (self,
                    mr0_th           = 0.88,
                    mr1_th           = 0.01,
@@ -605,7 +604,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['F2', 'Wiki', 'Scarab', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
-                   modes            = ['FNAA', 'SALSA1', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -628,10 +627,10 @@ class Res_file_parser (object):
         for missp in missp_vals: 
             points_w_this_missp      = [item for item in all_points     if item['missp']==missp]
             opt_points_w_this_missp  = [item for item in all_opt_points if item['missp']==missp]
-            trace_labels_positions   = [((len(modes)+1)*x+1)*BAR_WIDTH for x in range(len(traces))]
+            trace_label_positions = self.bar_xlabel_positions (num_groups=len(traces), num_bars_per_group=len(modes)) 
             for mode_idx in range(len(modes)):
                 mode            = modes[mode_idx]
-                x_positions     = [((len(modes)+1)*x + mode_idx)*BAR_WIDTH for x in range(len(traces))]
+                x_positions     = self.bar_positions (idx_in_group=mode_idx, num_groups=len(traces), num_bars_per_group=len(modes))
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 mode_points_w_this_missp  = [item for item in points_w_this_missp if item['mode']==mode]
@@ -672,7 +671,7 @@ class Res_file_parser (object):
                         plt.subplot (1, 2, 1)
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                    plt.xticks (trace_labels_positions, traces)
+                    plt.xticks (trace_label_positions, traces)
                     plt.legend (frameon=False)
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
@@ -680,7 +679,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                    plt.xticks (trace_labels_positions, traces)
+                    plt.xticks (trace_label_positions, traces)
                     plt.legend (frameon=False)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
@@ -691,7 +690,22 @@ class Res_file_parser (object):
             plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
+    def bar_xlabel_positions (self, num_groups, num_bars_per_group):
+        """
+        Returns the positions of the x labels in a bar plot with several groups, given the number of groups and the number of bars in each group
+        """ 
+        if num_bars_per_group==2:
+            return [((num_bars_per_group+1)*x+1)*BAR_WIDTH for x in range(num_groups)]
+        return [((num_bars_per_group+1)*x+1)*BAR_WIDTH for x in range(num_groups)]
+    
 
+    def bar_positions (self, idx_in_group, num_groups, num_bars_per_group):
+        """
+        Returns the positions of the bars associated with this idx in a bar plot with several groups, given the number of groups and the number of bars in each group
+        """ 
+        return [((num_bars_per_group+1)*x + idx_in_group)*BAR_WIDTH for x in range(num_groups)]
+
+    
     def plot_mr0 (self, input_file_name):
         """
         generate and save a Python plot, showing the mr0 as a func' of time (manifested by # of requests).
@@ -714,7 +728,7 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
-for DS_size in [4, 16, 64]: 
+for DS_size in [4]: 
     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

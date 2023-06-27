@@ -27,6 +27,7 @@ uIntFact_idx    = 14 # mr0 th for SALSA's advertisement decision
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH               = 0.25
+BAR_WIDTH_BETWEEN_GRPS  = 0.25
 MARKER_SIZE             = 16
 MARKER_SIZE_SMALL       = 1
 LINE_WIDTH              = 3 
@@ -694,16 +695,16 @@ class Res_file_parser (object):
         """
         Returns the positions of the x labels in a bar plot with several groups, given the number of groups and the number of bars in each group
         """ 
-        if num_bars_per_group==2:
-            return [((num_bars_per_group+1)*x+1)*BAR_WIDTH for x in range(num_groups)]
-        return [((num_bars_per_group+1)*x+1)*BAR_WIDTH for x in range(num_groups)]
+        # if num_bars_per_group==2:
+        #     return [((num_bars_per_group+1)*x+1)*BAR_WIDTH for x in range(num_groups)]
+        return [(num_bars_per_group*x + 0.5 + BAR_WIDTH_BETWEEN_GRPS*(x+1))*BAR_WIDTH for x in range(num_groups)]
     
 
     def bar_positions (self, idx_in_group, num_groups, num_bars_per_group):
         """
         Returns the positions of the bars associated with this idx in a bar plot with several groups, given the number of groups and the number of bars in each group
         """ 
-        return [((num_bars_per_group+1)*x + idx_in_group)*BAR_WIDTH for x in range(num_groups)]
+        return [(idx_in_group + num_bars_per_group*x + BAR_WIDTH_BETWEEN_GRPS*(x+1))*BAR_WIDTH for x in range(num_groups)]
 
     
     def plot_mr0 (self, input_file_name):
@@ -729,6 +730,6 @@ my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
 for DS_size in [4]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
+    my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

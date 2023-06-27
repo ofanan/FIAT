@@ -550,9 +550,9 @@ class Res_file_parser (object):
             salsa_points_w_this_missp = [item for item in all_salsa_points if item['missp']== missp]
             trace_label_positions = self.bar_xlabel_positions (num_groups=len(traces), num_bars_per_group=len(uIntFactVals)) 
             for uIntFact_idx in range(len(uIntFactVals)):
-                uIntFact        = uIntFactVals[uIntFact_idx]
+                uIntFact         = uIntFactVals[uIntFact_idx]
                 salsa_points_w_this_missp_n_uIntFact = [item for item in salsa_points_w_this_missp if item['uIntFact']== uIntFact]
-                x_positions      = [((len(uIntFactVals)+1)*x + uIntFact_idx)*BAR_WIDTH for x in range(len(traces))]
+                x_positions      = self.bar_positions(idx_in_group=uIntFact_idx, num_groups=len(traces), num_bars_per_group=len(uIntFactVals))
                 mode_serviceCost = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done 
                 mode_bwCost      = np.zeros (len(traces)) # default values for generating partial plots, before all experiments are done
                 for traceIdx in range(len(traces)):

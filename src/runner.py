@@ -22,7 +22,7 @@ def main ():
                 for missp in [30, 100, 300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
-                        res_file_name    = mode + ('_re_init_after_each_ad' if re_init_after_each_ad else ''), 
+                        res_file_name    = 'salsa2_minFU3', #mode + ('_re_init_after_each_ad' if re_init_after_each_ad else ''), 
                         trace_name       = trace,
                         mode             = mode,
                         req_df           = requests,

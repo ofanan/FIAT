@@ -305,7 +305,7 @@ class DataStore (object):
             if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                 printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period ={}\n' .format (self.ins_cnt_since_last_full_ad))                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0}, spec_cnt={self.spec_cnt}\n')                     
+                printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_cnt}\n')                     
             self.num_of_advertisements  += 1
             return # finished advertising an indicator
         
@@ -322,7 +322,7 @@ class DataStore (object):
                         (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0, self.spec_accs_cnt)) 
+                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt)) 
 
     def handle_ind_full_mode (self):
         """

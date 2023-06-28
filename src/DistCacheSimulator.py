@@ -61,7 +61,7 @@ class DistCacheSimulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = '{}.mr0th{}.mr1th{}.uIntFact{}' .format (settings_str, self.mr0_ad_th, self.mr1_ad_th, self.uInterval_factor) 
+            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}' 
         return settings_str
     
     def init_DS_list(self):
@@ -101,6 +101,7 @@ class DistCacheSimulator(object):
             init_mr0_after_each_ad  = self.re_init_after_each_ad,               
             init_mr1_after_each_ad  = self.re_init_after_each_ad,               
             use_fixed_uInterval     = self.use_fixed_uInterval,
+            min_feasible_uInterval  = self.min_feasible_uInterval,
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_fpr_fnr_updates   = self.num_of_insertions_between_fpr_fnr_updates,
@@ -258,10 +259,11 @@ class DistCacheSimulator(object):
                
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
-        self.use_global_uInerval = use_global_uInerval
-        self.min_uInterval       = min_uInterval
-        self.ewma_window_size   = int(self.min_uInterval/10) #int (self.DS_size/10) # window for parameters' estimation 
-        self.uInterval_factor    = uInterval_factor 
+        self.use_global_uInerval    = use_global_uInerval
+        self.min_feasible_uInterval = 3
+        self.min_uInterval          = min_uInterval
+        self.ewma_window_size       = int(self.min_uInterval/10) #int (self.DS_size/10) # window for parameters' estimation 
+        self.uInterval_factor       = uInterval_factor 
         if self.use_global_uInerval:
             self.do_not_advertise_upon_insert = True # Disallow each cache-initiated advertisement; instead, self will decide when to advertise, based on self counters.
             self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, self.bw)

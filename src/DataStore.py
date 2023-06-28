@@ -51,7 +51,8 @@ class DataStore (object):
          init_mr1_after_each_ad     = False,
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
-         do_not_advertise_upon_insert = True
+         min_feasible_uInterval     = 10,
+         do_not_advertise_upon_insert = True,
          ):
         """
         Return a DataStore object. 
@@ -130,7 +131,7 @@ class DataStore (object):
         self.ins_cnt_in_this_period = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
         self.min_uInterval           = min_uInterval
-        self.min_feasible_uInterval  = 10
+        self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
         self.period                  = 10 * self.min_uInterval  
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]

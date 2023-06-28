@@ -50,7 +50,7 @@ trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_6000Kreq.csv',
                        'IBM'    : 'snia/IBM/IBM.ObjectStoreTrace007Part0.txt.csv'
                        }
 
-def calc_num_of_req (trace, DS_size):
+def calc_num_of_req (trace, DS_size=64000):
     """
     Given a trace and caches size, calculate the number of requests for having a substantial sim.
     A substantial simulation contains a num of uniques which is at least 2.5 times the overall caches' size.

@@ -604,7 +604,7 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['F2', 'Wiki', 'Scarab', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['F2', 'Wiki', 'Scarab', 'IBM', 'Twitter'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
@@ -639,10 +639,11 @@ class Res_file_parser (object):
                     trace = traces[traceIdx]
                     mode_trace_points = [item for item in mode_points_w_this_missp if 
                                          item['trace']      == trace and
-                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000] 
+                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000]
+                    
                     opt_trace_points  = [item for item in opt_points_w_this_missp  if 
                                          item['trace']      == trace and
-                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000] 
+                                         item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000] 
                     if normalize_by_Opt:
                         if (opt_trace_points==[]):
                             MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
@@ -661,12 +662,18 @@ class Res_file_parser (object):
                                              item['mr1_th'] == mr1_th] 
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
+                        # if trace=='Twitter': #$$$
+                        #     MyConfig.error (mode_trace_points) #$$$  
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
+                    # if trace=='Twitter': #$$$
+                    #     MyConfig.error (traceIdx) #$$$
+                        # MyConfig.error (point['serviceCost'] / opt_serviceCost) #$$$  
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost  
                     mode_bwCost     [traceIdx] = point['bwCost']
 
+                    # print (mode_serviceCost) #$$$
                 if plot_serviceCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 1)
@@ -688,6 +695,7 @@ class Res_file_parser (object):
                 sub_plot_str = '_bCost'
             else:
                 sub_plot_str = ''
+            # plt.show () #$$$
             plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
@@ -728,8 +736,8 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res', 'salsa1.res'])
-for DS_size in [4]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
+for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

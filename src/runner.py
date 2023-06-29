@@ -35,7 +35,7 @@ def main ():
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor = 32 if mode.startswith('salsa') else 1,
                         verbose          = [MyConfig.VERBOSE_FULL_RES])
-                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/300)
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/3000)
                     toc()
 
 def calc_DS_homo_costs (num_of_DSs, num_of_clients):

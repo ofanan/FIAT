@@ -736,7 +736,7 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_minFU3.res'])
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
 for DS_size in [16]: 
     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, normalize_by_Opt=False)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])

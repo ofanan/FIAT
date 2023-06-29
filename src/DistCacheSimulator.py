@@ -879,8 +879,6 @@ class DistCacheSimulator(object):
         Run the PGM alg' detailed in the paper: Access Strategies for Network Caching, Journal version.
         Run PGM in its FNO (false negative oblivious) variant, namely, consider only caches with positive indications. 
         """ 
-        # Now we know that there exists at least one positive indication
-        #self.pos_ind_list = [int(i) for i in self.pos_ind_list] # cast pos_ind_list to int
 
         # Partition stage
         ###############################################################################################################

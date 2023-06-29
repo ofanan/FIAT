@@ -32,7 +32,7 @@ def main ():
                         min_uInterval    = DS_size/10,
                         re_init_after_each_ad = re_init_after_each_ad,
                         uInterval_factor = 32 if mode.startswith('salsa') else 1,
-                        verbose          = [MyConfig.VERBOSE_FULL_RES]) #[MyConfig.VERBOSE_DETAILED_LOG_MR])
+                        verbose          = [MyConfig.VERBOSE_DEBUG])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/100)
                     toc()
 

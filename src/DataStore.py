@@ -66,7 +66,7 @@ class DataStore (object):
         self.cache                   = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str            = settings_str
         if (MyConfig.VERBOSE_DEBUG in self.verbose):
-            self.debug_file = open ('../res/fna_{}.txt' .format (self.settings_str), "w")
+            self.debug_file = open (f'../res/{self.settings_str}_debug.txt', "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             self.q_output_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
         self.collect_mr_stat         = collect_mr_stat
@@ -296,18 +296,18 @@ class DataStore (object):
 
             if self.scale_ind_factor!=1:                                          
                 self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
-            self.ins_cnt_since_last_full_ad     = 0
-            self.total_ad_size_in_this_period   = 0
             self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:
                 self.stale_indicator            = self.genNewSBF ()
             if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                printf (self.q_output_file, 'advertising delta. ins_cnt_in_this_period ={}\n' .format (self.ins_cnt_since_last_full_ad))                     
+                printf (self.q_output_file, f'advertising delta. ins_cnt_in_this_period ={self.ins_cnt_since_last_full_ad}\n')                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_cnt}\n')                     
             self.num_of_advertisements  += 1
+            self.ins_cnt_since_last_full_ad     = 0
+            self.total_ad_size_in_this_period   = 0
             return # finished advertising an indicator
         
         if self.ins_cnt_since_last_full_ad % self.min_feasible_uInterval == 0:
@@ -316,7 +316,12 @@ class DataStore (object):
             ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
             self.total_ad_size_in_this_period  += ad_size
             self.overall_ad_size               += ad_size                              
-            self.stale_indicator                = self.updated_sbf 
+            self.stale_indicator                = self.updated_sbf
+            if MyConfig.VERBOSE_DEBUG in self.verbose and self.ID==0:
+                print (f'cache {self.ID} is checking the stale BF')
+                for key in self.cache:
+                    if (self.min_feasible_uInterval==1) and (not (key in self.stale_indicator)):
+                        MyConfig.error (f'FN although uInterval==1, cached key {key} not found in the indicator')  
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
@@ -544,7 +549,7 @@ class DataStore (object):
         generate an updated Simple Bloom Filter, that lists the items currenlty cahched.
         """
         if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
-            self.updated_sbf                     = self.updated_indicator.gen_SimpleBloomFilter ()
+            self.updated_sbf = self.updated_indicator.gen_SimpleBloomFilter ()
         else: # Generate a new SBF
             self.updated_sbf = self.genNewSBF () 
         

@@ -17,7 +17,7 @@ def main ():
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     for trace in ['Twitter']: #, 'IBM', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki',     
         for DS_size in [16000]: #[4000, 16000, 64000]:
-            max_num_of_req = MyConfig.calc_num_of_req (trace) # give DS_size===64000 to get the longest relevant trace
+            max_num_of_req = MyConfig.calc_num_of_req (trace, DS_size) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
             for mode in ['salsa2']:
                 for missp in [30, 100, 300]: #[10, 30, 100, 300]:
@@ -35,7 +35,7 @@ def main ():
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor = 32 if mode.startswith('salsa') else 1,
                         verbose          = [MyConfig.VERBOSE_FULL_RES])
-                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/1000)
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/10000)
                     toc()
 
 def calc_DS_homo_costs (num_of_DSs, num_of_clients):

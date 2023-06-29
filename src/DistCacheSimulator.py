@@ -408,7 +408,7 @@ class DistCacheSimulator(object):
         Accumulates and organizes the stat collected during the sim' run.
         This func' is usually called once at the end of each run of the python_simulator.
         """
-        if not (MyConfig.VERBOSE_RES in self.verbose):
+        if not (MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES in self.verbose):
             return
         
         res_file = res_file if (res_file!=None) else self.res_file
@@ -678,7 +678,7 @@ class DistCacheSimulator(object):
         This algorithm is FNA: False-Negative Aware, namely, it may access a cache despite a negative indication.
         """
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
-        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+        for self.req_cnt in range(self.trace_len): # for each request in the trace...
             if self.use_global_uInerval:
                 self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  

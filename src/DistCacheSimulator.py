@@ -177,7 +177,8 @@ class DistCacheSimulator(object):
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = False, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)
-                 re_init_after_each_ad = False,  
+                 re_init_after_each_ad = False, 
+                 min_feasible_uInterval = 10 
                  ):
         """
         Return a DistCacheSimulator object with the following attributes:
@@ -260,7 +261,7 @@ class DistCacheSimulator(object):
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
         self.use_global_uInerval    = use_global_uInerval
-        self.min_feasible_uInterval = 1
+        self.min_feasible_uInterval = min_feasible_uInterval
         self.min_uInterval          = min_uInterval
         self.ewma_window_size       = int(self.min_uInterval/10) #int (self.DS_size/10) # window for parameters' estimation 
         self.uInterval_factor       = uInterval_factor 

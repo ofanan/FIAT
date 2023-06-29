@@ -260,7 +260,7 @@ class DistCacheSimulator(object):
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
         self.use_global_uInerval    = use_global_uInerval
-        self.min_feasible_uInterval = 3
+        self.min_feasible_uInterval = 1
         self.min_uInterval          = min_uInterval
         self.ewma_window_size       = int(self.min_uInterval/10) #int (self.DS_size/10) # window for parameters' estimation 
         self.uInterval_factor       = uInterval_factor 

@@ -660,10 +660,10 @@ class Res_file_parser (object):
                         mode_trace_points = [item for item in mode_trace_points if
                                              item['mr0_th'] == mr0_th and
                                              item['mr1_th'] == mr1_th] 
-                        if uIntFact!=None:
-                            mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
                         # if trace=='Twitter': #$$$
                         #     MyConfig.error (mode_trace_points) #$$$  
+                        if uIntFact!=None:
+                            mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
@@ -736,8 +736,8 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
-for DS_size in [4, 16, 64]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=False, missp_vals=[30, 100, 300], DS_size=DS_size, uIntFact=2, normalize_by_Opt=False)
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_minFU3.res'])
+for DS_size in [16]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, normalize_by_Opt=False)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)

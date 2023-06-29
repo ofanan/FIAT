@@ -14,15 +14,15 @@ from   tictoc import tic, toc
 def main ():
     re_init_after_each_ad = False
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Twitter', 'IBM', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki',     
-        for DS_size in [4000]: #[4000, 16000, 64000]:
+    for trace in ['Twitter']: #, 'IBM', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki',     
+        for DS_size in [16000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) # give DS_size===64000 to get the longest relevant trace
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
             for mode in ['salsa2']:
                 for missp in [30, 100, 300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
-                        res_file_name    = 'salsa2_minFU3', #mode + ('_re_init_after_each_ad' if re_init_after_each_ad else ''), 
+                        res_file_name    = 'salsa2_minFU1', #mode + ('_re_init_after_each_ad' if re_init_after_each_ad else ''), 
                         trace_name       = trace,
                         mode             = mode,
                         req_df           = requests,

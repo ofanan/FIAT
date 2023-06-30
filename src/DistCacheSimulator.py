@@ -34,7 +34,7 @@ class DistCacheSimulator(object):
     # Check whether it's time for a mid-report, and if so - output a mid-report
     mid_report = lambda self : self.gather_statistics(self.full_res_file) if (self.req_cnt % self.interval_between_mid_reports == 0 and self.req_cnt>0) else None
 
-    def gen_settings_string (self, num_of_req=None):
+    def gen_settings_str (self, num_of_req=None):
         """
         Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_name, update intervals etc.). 
         """
@@ -92,7 +92,7 @@ class DistCacheSimulator(object):
             # initial_mr1 is set by the DS to its designed fpr.
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,
-            settings_str            = self.gen_settings_string (num_of_req=self.trace_len), 
+            settings_str            = self.gen_settings_str (num_of_req=self.trace_len), 
             mr1_ewma_window_size    = self.ewma_window_size,
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
@@ -364,13 +364,17 @@ class DistCacheSimulator(object):
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
 
         self.init_DS_list() #DS_list is the list of DSs
+        if MyConfig.VERBOSE_DEBUG in self.verbose:
+            self.debug_file = open (f'../res/{self.gen_settings_str(num_of_req=0)}_debug.txt', "w")
+            MyConfig.error ('er') #$$
+
 
     def init_mr_output_files (self):
         """
         Init per-DS output file, to which the simulator writes data about the estimated mr (conditional miss rates, namely pr of a miss given a negative ind (mr0), or a positive ind (mr1)).
         The simulator also writes to this data (via Datastore.py) about each access whether it results in a True Positive, True Negative, False Positive, or False negative.
         """
-        settings_str = self.gen_settings_string (num_of_req=self.trace_len)
+        settings_str = self.gen_settings_str (num_of_req=self.trace_len)
         for ds in range (self.num_of_DSs):
             self.mr_output_file[ds] = open ('../res/{}_ds{}.mr' .format (settings_str, ds), 'w')
 
@@ -431,7 +435,7 @@ class DistCacheSimulator(object):
             bw = 0
         else:
             bw = np.sum([DS.overall_ad_size for DS in self.DS_list]) / float (self.req_cnt)
-        settings_str            = self.gen_settings_string (num_of_req=self.req_cnt)
+        settings_str            = self.gen_settings_str (num_of_req=self.req_cnt)
         printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
 
         printf (res_file, '// tot_access_cost = {:.0f}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
@@ -683,17 +687,19 @@ class DistCacheSimulator(object):
                 self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
-            for i in range (self.num_of_DSs):
-                self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
-            if self.calc_mr_by_hist:
+            # for i in range (self.num_of_DSs):
+            #     self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
+            self.indications = [self.cur_req.key in self.DS_list[i].stale_indicator for i in range (self.num_of_DSs)]
+            if self.calc_mr_by_hist: # SALSA
                 if self.use_perfect_hist:
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
                 else:
-                    for ds_id in range(self.num_of_DSs): #$$$ assume here there exists only a single client
-                        self.DS_list[ds_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id] 
+                    if self.hit_ratio_based_uInterval:
+                        for ds_id in range(self.num_of_DSs): #$$$ we assume here there exists only a single client
+                            self.DS_list[ds_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id]     
                     self.handle_single_req_pgm_fna_mr_by_practical_hist ()
 
-            else: # Use analysis to estimate mr0, mr1 
+            else: # Use analysis to estimate mr0, mr1  (FNAA)
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
                 self.access_pgm_fna_hetro ()
             if (MyConfig.VERBOSE_FULL_RES in self.verbose):
@@ -707,7 +713,7 @@ class DistCacheSimulator(object):
         for ds in range (self.num_of_DSs):            
             self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
-        if all([DS.num_of_advertisements>0 for DS in self.DS_list]): # all the DSs have already advertised at least one indicator
+        if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
             for client in self.client_list:
                 client.update_q (self.indications)
 
@@ -783,7 +789,7 @@ class DistCacheSimulator(object):
         np.random.seed(self.rand_seed)
         num_of_req = self.trace_len
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
-        print ('running', self.gen_settings_string (num_of_req=num_of_req))
+        print ('running', self.gen_settings_str (num_of_req=num_of_req))
         
         if (self.mode == 'measure_mr0'):
             self.run_trace_measure_mr0()
@@ -825,6 +831,8 @@ class DistCacheSimulator(object):
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
+        if MyConfig.VERBOSE_DEBUG in self.verbose:
+            printf (self.de)
         self.insert_key_to_DSs ()
         if (MyConfig.VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
             MyConfig.error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))

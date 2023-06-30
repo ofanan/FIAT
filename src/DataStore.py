@@ -65,8 +65,6 @@ class DataStore (object):
         self.DS_size              = size
         self.cache                   = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str            = settings_str
-        if (MyConfig.VERBOSE_DEBUG in self.verbose):
-            self.debug_file = open (f'../res/{self.settings_str}_debug.txt', "w")
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             self.q_output_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
         self.collect_mr_stat         = collect_mr_stat
@@ -317,11 +315,6 @@ class DataStore (object):
             self.total_ad_size_in_this_period  += ad_size
             self.overall_ad_size               += ad_size                              
             self.stale_indicator                = self.updated_sbf
-            if MyConfig.VERBOSE_DEBUG in self.verbose and self.ID==0:
-                print (f'cache {self.ID} is checking the stale BF')
-                for key in self.cache:
-                    if (self.min_feasible_uInterval==1) and (not (key in self.stale_indicator)):
-                        MyConfig.error (f'FN although uInterval==1, cached key {key} not found in the indicator')  
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_Q in self.verbose:
                 printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 

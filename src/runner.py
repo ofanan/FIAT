@@ -12,7 +12,6 @@ import DistCacheSimulator as sim
 from   tictoc import tic, toc
 
 def main ():
-    re_init_after_each_ad = False
     min_feasible_uInterval = 3
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     for trace in ['Twitter']: #, 'IBM', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki',     
@@ -20,7 +19,7 @@ def main ():
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
             for mode in ['salsa2']:
-                for missp in [30, 100, 300]: #[10, 30, 100, 300]:
+                for missp in [30]: #, 100, 300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         res_file_name           = f'salsa2_minFU{min_feasible_uInterval}' if mode=='salsa2' else mode, 
@@ -31,11 +30,11 @@ def main ():
                         missp                   = missp,
                         DS_size                 = DS_size,
                         min_uInterval           = DS_size/10,
-                        re_init_after_each_ad   = re_init_after_each_ad,
+                        re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor = 32 if mode.startswith('salsa') else 1,
-                        verbose          = [MyConfig.VERBOSE_FULL_RES])
-                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/3000)
+                        verbose          = [MyConfig.VERBOSE_DEBUG])
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/100)
                     toc()
 
 def calc_DS_homo_costs (num_of_DSs, num_of_clients):

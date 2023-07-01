@@ -475,8 +475,8 @@ class DataStore (object):
         """
         report the status of the various counters and estimators. Used for logging and debugging.
         """
-        print ('ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}')
-        print ('fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+        print ('DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}')
+        print ('DS{self.ID}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
     
     def update_mr0(self):
         """

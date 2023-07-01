@@ -832,7 +832,8 @@ class DistCacheSimulator(object):
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         if MyConfig.VERBOSE_DEBUG in self.verbose:
-            if sum(self.indications)>0: 
+            if sum(self.indications)>0:
+                print ('rec cnt={self.req_cnt}') 
                 for DS in self.DS_list:
                     DS.report_mr ()
             if all([self.DS_list[ds].in_delta_mode for ds in range(self.num_of_DSs)]):

@@ -475,8 +475,8 @@ class DataStore (object):
         """
         report the status of the various counters and estimators. Used for logging and debugging.
         """
-        print ('DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}')
-        print ('DS{self.ID}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+        print (f'DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}')
+        print ('DS{}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.ID, self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
     
     def update_mr0(self):
         """
@@ -486,7 +486,7 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur
         # self.updated_mr0 = True 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
-            printf (self.mr_output_file, 'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}') 
+            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 

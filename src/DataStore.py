@@ -36,7 +36,7 @@ class DataStore (object):
          designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
          use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
          initial_mr0                = 0.88, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
-         initial_mr0                = 0, # initial value of mr1, before we have first statistics of the indications after the lastly advertised indicator.  
+         initial_mr1                = 0, # initial value of mr1, before we have first statistics of the indications after the lastly advertised indicator.  
          non_comp_miss_th           = 0.15, # if (!use_fixed_uInterval) AND hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
          non_comp_accs_th           = 0.02, # if (!use_fixed_uInterval) AND hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
          mr0_ad_th                  = 0.9,
@@ -471,6 +471,13 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 printf (self.q_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))
                    
+    def report_mr (self):
+        """
+        report the status of the various counters and estimators. Used for logging and debugging.
+        """
+        print ('ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}')
+        print ('fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+    
     def update_mr0(self):
         """
         update mr0 (the miss-probability in case of a negative indication), using an exponential moving average.
@@ -479,8 +486,7 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha) * self.mr0_cur
         # self.updated_mr0 = True 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
-            printf (self.mr_output_file, 'in update mr0: ins cnt since last full ad={}, tn cnt={}, spec accs cnt={}, mr0={:.3f}\n'
-                    .format (self.ins_cnt_since_last_full_ad, self.tn_events_cnt, self.spec_accs_cnt, self.mr0_cur)) 
+            printf (self.mr_output_file, 'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 

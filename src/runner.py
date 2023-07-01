@@ -12,7 +12,7 @@ import DistCacheSimulator as sim
 from   tictoc import tic, toc
 
 def main ():
-    min_feasible_uInterval = 1
+    min_feasible_uInterval = 3
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     for trace in ['Twitter']: #, 'IBM', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki',     
         for DS_size in [16000]: #[4000, 16000, 64000]:

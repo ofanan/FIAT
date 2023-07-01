@@ -831,9 +831,12 @@ class DistCacheSimulator(object):
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
-        if MyConfig.VERBOSE_DEBUG in self.verbose and all([self.DS_list[ds].in_delta_mode for ds in range(self.num_of_DSs)]):
-            # all_in_delta_mode = [self.DS_list[ds].in_delta_mode for ds in range(self.num_of_DSs)].all()
-            printf (self.debug_file, f'num_pos_ind={sum(self.indications)}]\n')
+        if MyConfig.VERBOSE_DEBUG in self.verbose:
+            if sum(self.indications)>0: 
+                for DS in self.DS_list:
+                    DS.report_mr ()
+            if all([self.DS_list[ds].in_delta_mode for ds in range(self.num_of_DSs)]):
+                printf (self.debug_file, f'num_pos_ind={sum(self.indications)}]\n')
         self.insert_key_to_DSs ()
         if (MyConfig.VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
             MyConfig.error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))

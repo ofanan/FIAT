@@ -200,7 +200,7 @@ class DistCacheSimulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.re_init_after_each_ad = re_init_after_each_ad
-        self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
+        self.EWMA_alpha         = 0.85  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.88 

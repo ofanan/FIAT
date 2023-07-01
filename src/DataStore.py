@@ -102,7 +102,7 @@ class DataStore (object):
             self.stale_indicator     = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         self.initial_mr0             = initial_mr0
-        self.initial_mr0             = initial_mr1
+        self.initial_mr1             = initial_mr1
         self.mr0_cur                 = self.initial_mr0
         self.mr1_cur                 = self.initial_mr1
         self.mr1_ewma_window_size    = mr1_ewma_window_size

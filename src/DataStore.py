@@ -35,7 +35,8 @@ class DataStore (object):
          analyse_ind_deltas         = True, # analyze the differences between the stale (last advertised) and the current, updated, indicator
          designed_mr1               = 0.001, # inherent mr1, stemmed from the inherent FP of a Bloom filter.
          use_EWMA                   = False, # when true, collect historical statistics using an Exp' Weighted Moving Avg.
-         initial_mr0                = 0.85, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
+         initial_mr0                = 0.88, # initial value of mr0, before we have first statistics of the indications after the lastly advertised indicator.  
+         initial_mr0                = 0, # initial value of mr1, before we have first statistics of the indications after the lastly advertised indicator.  
          non_comp_miss_th           = 0.15, # if (!use_fixed_uInterval) AND hit_ratio_based_uInterval, advertise an indicator each time (1-q)*(1-mr0) > non_comp_miss_th.
          non_comp_accs_th           = 0.02, # if (!use_fixed_uInterval) AND hit_ratio_based_uInterval, advertise an indicator each time q*mr1 > non_comp_accs_th.
          mr0_ad_th                  = 0.9,
@@ -101,8 +102,9 @@ class DataStore (object):
             self.stale_indicator     = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha              = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
         self.initial_mr0             = initial_mr0
+        self.initial_mr0             = initial_mr1
         self.mr0_cur                 = self.initial_mr0
-        self.mr1_cur                 = 0
+        self.mr1_cur                 = self.initial_mr1
         self.mr1_ewma_window_size    = mr1_ewma_window_size
         self.mr0_ewma_window_size    = mr1_ewma_window_size
         self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace

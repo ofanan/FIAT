@@ -89,6 +89,7 @@ class DistCacheSimulator(object):
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
             initial_mr0             = (1 - 1.1*(self.client_DS_cost[0][i]/self.missp)) if self.re_init_after_each_ad else 0.88,
+            initial_mr1             = 0,
             # initial_mr1 is set by the DS to its designed fpr.
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,

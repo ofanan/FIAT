@@ -208,7 +208,7 @@ class DistCacheSimulator(object):
         self.verbose            = verbose # Defines the log/res data printed out to files       
         self.use_perfect_hist   = use_perfect_hist       
         
-        if (MyConfig.VERBOSE_RES in self.verbose):
+        if (MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES):
             self.res_file = self.init_res_file (res_file_name)
         if (MyConfig.VERBOSE_FULL_RES in self.verbose):
             self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
@@ -833,9 +833,10 @@ class DistCacheSimulator(object):
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         if MyConfig.VERBOSE_DEBUG in self.verbose:
             if sum(self.indications)>0:
-                print ('rec cnt={self.req_cnt}') 
-                for DS in self.DS_list:
-                    DS.report_mr ()
+                print (f'req_cnt={self.req_cnt}')
+                if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
+                    for DS in self.DS_list:
+                        DS.report_mr ()
             if all([self.DS_list[ds].in_delta_mode for ds in range(self.num_of_DSs)]):
                 printf (self.debug_file, f'num_pos_ind={sum(self.indications)}]\n')
         self.insert_key_to_DSs ()

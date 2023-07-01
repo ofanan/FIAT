@@ -304,7 +304,7 @@ class DataStore (object):
             if (MyConfig.VERBOSE_LOG_Q in self.verbose):
                 printf (self.q_output_file, f'advertising delta. ins_cnt_in_this_period ={self.ins_cnt_since_last_full_ad}\n')                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_cnt}\n')                     
+                printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
             self.num_of_advertisements  += 1
             self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
@@ -475,8 +475,8 @@ class DataStore (object):
         """
         report the status of the various counters and estimators. Used for logging and debugging.
         """
-        print (f'DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}')
-        print ('DS{}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.ID, self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+        printf (self.mr_output_file, f'DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}, ')
+        printf (self.mr_output_file, 'DS{}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.ID, self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
     
     def update_mr0(self):
         """

@@ -14,7 +14,7 @@ from   tictoc import tic, toc
 def main ():
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Twitter17', 'IBM7', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki', 'Twitter45', 'F1', 'IBM1'      
+    for trace in ['IBM1', 'Twitter17', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki', 'Twitter45', 'F1', 'IBM1'      
         for DS_size in [4000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 

@@ -50,8 +50,8 @@ trace_csv_file_name = {'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
                        'P3'         : 'arc/P3.3912Kreq.csv',
                        'Twitter17'  : 'snia/twitter/Twitter17.cluster17_14MReq_464Kuniqes.csv',
                        'Twitter45'  : 'snia/twitter/Twitter45.cluster45.txt.csv',
-                       'IBM1'       : 'snia/IBM/IBMObjectStoreTrace001Part0.txt.csv',
-                       'IBM7'       : 'snia/IBM/IBM.ObjectStoreTrace007Part0.txt.csv'
+                       'IBM1'       : 'snia/IBM/IBM1.ObjectStoreTrace001Part0.txt.csv',
+                       'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
                        }
 
 def calc_num_of_req (trace, DS_size=64000):

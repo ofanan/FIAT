@@ -19,7 +19,7 @@ def main ():
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
             for mode in ['salsa2']:
-                for missp in [30]: #, 100, 300]: #[10, 30, 100, 300]:
+                for missp in [30, 100, 300]: #, 100, 300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         res_file_name           = f'salsa2_minFU{min_feasible_uInterval}' if mode=='salsa2' else mode, 

@@ -12,7 +12,7 @@ import DistCacheSimulator as sim
 from   tictoc import tic, toc
 
 def main ():
-    min_feasible_uInterval = 3
+    min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     for trace in ['Twitter']: #, 'IBM', 'Scarab','F2', 'Wiki']: #['Twitter', 'IBM', 'Scarab','F2', 'Wiki',     
         for DS_size in [16000]: #[4000, 16000, 64000]:
@@ -32,8 +32,8 @@ def main ():
                         min_uInterval           = DS_size/10,
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
-                        uInterval_factor = 32 if mode.startswith('salsa') else 1,
-                        verbose          = [MyConfig.VERBOSE_DEBUG, MyConfig.VERBOSE_DETAILED_LOG_MR])
+                        uInterval_factor        = 32 if mode.startswith('salsa') else 1,
+                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/100)
                     toc()
 

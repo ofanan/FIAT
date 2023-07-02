@@ -689,7 +689,7 @@ class DistCacheSimulator(object):
             self.client_id = self.calc_client_id ()
             # for i in range (self.num_of_DSs):
             #     self.indications[i] = True if (self.cur_req.key in self.DS_list[i].stale_indicator) else False #self.indication[i] holds the indication of DS i for the cur request
-            self.indications = [self.cur_req.key in self.DS_list[i].stale_indicator for i in range (self.num_of_DSs)]
+            self.indications = [(self.cur_req.key in self.DS_list[i].stale_indicator) for i in range (self.num_of_DSs)]
             if self.calc_mr_by_hist: # SALSA
                 if self.use_perfect_hist:
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()

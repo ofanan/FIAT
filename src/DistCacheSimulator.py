@@ -156,6 +156,8 @@ class DistCacheSimulator(object):
 
 
     def __init__(self, 
+                 EWMA_alpha_mr0 = 0.85,
+                 EWMA_alpha_mr1 = 0.85,
                  res_file_name  = '_', 
                  trace_name     = '_', 
                  mode           = None, 
@@ -203,8 +205,8 @@ class DistCacheSimulator(object):
         """
         self.re_init_after_each_ad = re_init_after_each_ad
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
-        self.EWMA_alpha_mr0     = 0.25  # exp' window's moving average's alpha parameter
-        self.EWMA_alpha_mr1     = 0.25  # exp' window's moving average's alpha parameter
+        self.EWMA_alpha_mr0     = EWMA_alpha_mr0  # exp' window's moving average's alpha parameter
+        self.EWMA_alpha_mr1     = EWMA_alpha_mr1  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.88 

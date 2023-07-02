@@ -22,7 +22,9 @@ def main ():
                 for missp in [30, 100, 300]: #, 100, 300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
-                        res_file_name           = f'salsa2_minFU{min_feasible_uInterval}' if mode=='salsa2' else mode, 
+                        res_file_name           = f'salsa2_minFU{min_feasible_uInterval}' if mode=='salsa2' else mode,
+                        EWMA_alpha_mr0          = 0.85, 
+                        EWMA_alpha_mr1          = 0.85, 
                         trace_name              = trace,
                         mode                    = mode,
                         req_df                  = requests,

@@ -383,8 +383,9 @@ class DataStore (object):
         self.ins_cnt_since_last_full_ad    = 0
         self.total_ad_size_in_this_period  = 0
         self.num_of_advertisements        += 1
-        self.overall_ad_size              += self.delta_ad_size  
-        self.stale_indicator               = self.gen_updated_sbf()  
+        self.overall_ad_size              += self.delta_ad_size
+        self.gen_updated_sbf () # generate a new self.updated_sbf  
+        self.stale_indicator               = self.updated_sbf
 
     def advertise_ind_full_mode (self, called_by_str):
         

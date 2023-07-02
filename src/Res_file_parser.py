@@ -36,6 +36,7 @@ FONT_SIZE               = 20
 FONT_SIZE_SMALL         = 5
 LEGEND_FONT_SIZE        = 16
 LEGEND_FONT_SIZE_SMALL  = 5 
+ROTATION_ANGLE          = 45 
 
 class Res_file_parser (object):  
 
@@ -578,7 +579,7 @@ class Res_file_parser (object):
                         plt.subplot (1, 2, 1)
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=f'uIntFact={uIntFact}') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                    plt.xticks (trace_label_positions, traces)
+                    plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend ()
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
@@ -586,7 +587,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                    plt.xticks (trace_label_positions, traces)
+                    plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend ()
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
@@ -679,7 +680,7 @@ class Res_file_parser (object):
                         plt.subplot (1, 2, 1)
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                    plt.xticks (trace_label_positions, traces)
+                    plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend (frameon=False)
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
@@ -687,7 +688,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                    plt.xticks (trace_label_positions, traces)
+                    plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend (frameon=False)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
@@ -737,7 +738,7 @@ class Res_file_parser (object):
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
-for DS_size in [4, 16, 64]: 
+for DS_size in [64]: 
     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
-# my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)
+# my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE

@@ -38,6 +38,7 @@ LEGEND_FONT_SIZE        = 16
 LEGEND_FONT_SIZE_SMALL  = 5 
 ROTATION_ANGLE          = 45
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
+WSAPCE_BETWEEN_SUBPLOTS = 0.28
 
 class Res_file_parser (object):  
 
@@ -612,7 +613,7 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['F2', 'Wiki', 'Scarab', 'IBM', 'Twitter'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['F2','F2', 'F2', 'F2', 'Wiki', 'Scarab', 'IBM', 'Twitter'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
@@ -675,13 +676,9 @@ class Res_file_parser (object):
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
-                    # if trace=='Twitter': #$$$
-                    #     MyConfig.error (traceIdx) #$$$
-                        # MyConfig.error (point['serviceCost'] / opt_serviceCost) #$$$  
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost  
                     mode_bwCost     [traceIdx] = point['bwCost']
 
-                    # print (mode_serviceCost) #$$$
                 if plot_serviceCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 1)
@@ -703,6 +700,8 @@ class Res_file_parser (object):
                     plt.legend (frameon=False)
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
+                if plot_sCost and plot_bwCost:
+                    plt.subplots_adjust(wspace=WSAPCE_BETWEEN_SUBPLOTS)
 
                     # plt.box(on=None)
             if plot_serviceCost and not(plot_bwCost):

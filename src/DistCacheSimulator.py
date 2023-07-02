@@ -61,7 +61,7 @@ class DistCacheSimulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}' 
+            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}' 
         return settings_str
     
     def init_DS_list(self):
@@ -84,6 +84,8 @@ class DistCacheSimulator(object):
             collect_mr_stat         = self.collect_mr_stat,  
             analyse_ind_deltas      = not (self.calc_mr_by_hist),
             EWMA_alpha              = self.EWMA_alpha,
+            EWMA_alpha_mr0          = self.EWMA_alpha_mr0,
+            EWMA_alpha_mr1          = self.EWMA_alpha_mr1,
             use_EWMA                = self.use_EWMA,
             use_indicator           = not (self.mode=='opt'), # Opt doesn't really use indicators - it "knows" the actual contents of the DSs
             non_comp_miss_th        = self.non_comp_miss_th,
@@ -200,7 +202,9 @@ class DistCacheSimulator(object):
             use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
         """
         self.re_init_after_each_ad = re_init_after_each_ad
-        self.EWMA_alpha         = 0.85  # exp' window's moving average's alpha parameter
+        self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter
+        self.EWMA_alpha_mr0     = 0.25  # exp' window's moving average's alpha parameter
+        self.EWMA_alpha_mr1     = 0.25  # exp' window's moving average's alpha parameter
         self.non_comp_miss_th   = 0.1
         self.non_comp_accs_th   = 0.01
         self.mr0_ad_th          = 0.88 

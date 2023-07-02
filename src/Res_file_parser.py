@@ -581,6 +581,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=f'uIntFact={uIntFact}', edgecolor='none') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
+                    plt.tick_params(bottom = False)
                     plt.legend ()
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
@@ -591,6 +592,7 @@ class Res_file_parser (object):
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
+                    plt.tick_params(bottom = False)
                     plt.legend ()
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
@@ -686,6 +688,7 @@ class Res_file_parser (object):
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
+                    plt.tick_params(bottom = False)
                     plt.legend (frameon=False)
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
@@ -696,6 +699,7 @@ class Res_file_parser (object):
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
+                    plt.tick_params(bottom = False)
                     plt.legend (frameon=False)
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)

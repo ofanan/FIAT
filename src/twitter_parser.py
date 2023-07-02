@@ -11,7 +11,7 @@ from numpy import infty
 import mmh3, sys, hashlib
 import MyConfig
 
-def parse_IBN_trace (trace_file_name, 
+def parse_Twitter_trace (trace_file_name, 
                      max_num_of_req       = MyConfig.INF_INT, # maximum number of requests to be parsed, starting from the beginning of the trace
                      num_of_clients       = 1 # when larger than 1, the output will contain also the client u.a.r.-associated with each req. 
                      ):
@@ -61,4 +61,4 @@ def parse_IBN_trace (trace_file_name,
     print ('trace_file_name={}, {:.0f}K req, {:.0f}K uniques' .format (trace_file_name, num_of_req/1000, len(uniq_keys)/1000))    
     full_trace_df.to_csv (full_path_input_file_name + '.csv', index=False, header=True)
     
-parse_IBN_trace ('cluster17.txt', max_num_of_req=14000000) 
+parse_Twitter_trace ('cluster45', max_num_of_req=140000000) 

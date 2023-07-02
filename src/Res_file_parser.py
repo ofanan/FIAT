@@ -34,7 +34,7 @@ LINE_WIDTH              = 3
 LINE_WIDTH_SMALL        = 1 
 FONT_SIZE               = 20
 FONT_SIZE_SMALL         = 5
-LEGEND_FONT_SIZE        = 16
+LEGEND_FONT_SIZE        = 20
 LEGEND_FONT_SIZE_SMALL  = 5 
 ROTATION_ANGLE          = 45
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
@@ -46,9 +46,9 @@ class Res_file_parser (object):
                                                                              'legend.fontsize': LEGEND_FONT_SIZE,
                                                                              'xtick.labelsize':FONT_SIZE,
                                                                              'ytick.labelsize':FONT_SIZE,
-                                                                             'axes.labelsize': FONT_SIZE,
-                                                                             'axes.titlesize':FONT_SIZE,}) if (size=='large') else matplotlib.rcParams.update({
-                                                                             'font.size': FONT_SIZE_SMALL, 
+                                                                             'axes.labelsize' : FONT_SIZE,
+                                                                             'axes.titlesize' :FONT_SIZE,}) if (size=='large') else matplotlib.rcParams.update({
+                                                                             'font.size'     : FONT_SIZE_SMALL, 
                                                                              'legend.fontsize': LEGEND_FONT_SIZE_SMALL,
                                                                              'xtick.labelsize':FONT_SIZE_SMALL,
                                                                              'ytick.labelsize':FONT_SIZE_SMALL,

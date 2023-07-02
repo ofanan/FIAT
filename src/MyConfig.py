@@ -25,13 +25,15 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 
-num_of_req = {'Wiki'    : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
-              'Scarab'  : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 :  4000000},
-              'F1'      : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 :  1800000},
-              'F2'      : {4000 : 150000, 10000 : 350000, 16000 : 500000,  64000 : 10000000},
-              'P3'      : {4000 : 250000, 10000 : 300000, 16000 : 400000,  64000 :  2500000},
-              'Twitter' : {4000 : 250000, 10000 : 600000, 16000 : 1200000, 64000 : 14000000},
-              'IBM'     : {4000 : 250000, 10000 : 650000, 16000 : 800000,  64000 :  4006000}
+num_of_req = {'Wiki'      : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
+              'Scarab'    : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 :  4000000},
+              'F1'        : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 :  2500000},
+              'F2'        : {4000 : 150000, 10000 : 350000, 16000 : 500000,  64000 : 10000000},
+              'P3'        : {4000 : 250000, 10000 : 300000, 16000 : 400000,  64000 :  2500000},
+              'Twitter17' : {4000 : 250000, 10000 : 600000, 16000 : 1200000, 64000 : 14000000},
+              'Twitter45' : {4000 : 200000, 10000 : 200000, 16000 : 300000,  64000 :  2000000},
+              'IBM1'      : {4000 : 200000, 10000 : 300000, 16000 : 300000,  64000 :  948000},
+              'IBM7'      : {4000 : 250000, 10000 : 650000, 16000 : 800000,  64000 :  4006000}
              }
 
 # relative paths of the traces, under the directory 'traces' 
@@ -39,15 +41,17 @@ trace_txt_file_name = {'Wiki'   : 'wiki/wiki1.1190448987.txt',
                        'Gradle' : 'gradle/gradle.build-cache.txt',
                        'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
 
-trace_csv_file_name = {'Wiki'   : 'wiki/wiki1.1190448987_6000Kreq.csv',
-                       'Gradle' : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
-                       'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
-                       'F1'     : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
-                       'F2'     : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
-                       'WS1'    : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
-                       'P3'     : 'arc/P3.3912Kreq.csv',
-                       'Twitter': 'snia/twitter/Twitter.cluster17_14MReq_464Kuniqes.csv',
-                       'IBM'    : 'snia/IBM/IBM.ObjectStoreTrace007Part0.txt.csv'
+trace_csv_file_name = {'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
+                       'Gradle'     : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
+                       'Scarab'     : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
+                       'F1'         : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
+                       'F2'         : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
+                       'WS1'        : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
+                       'P3'         : 'arc/P3.3912Kreq.csv',
+                       'Twitter17'  : 'snia/twitter/Twitter17.cluster17_14MReq_464Kuniqes.csv',
+                       'Twitter45'  : 'snia/twitter/Twitter45.cluster45.txt.csv',
+                       'IBM1'       : 'snia/IBM/IBMObjectStoreTrace001Part0.txt.csv',
+                       'IBM7'       : 'snia/IBM/IBM.ObjectStoreTrace007Part0.txt.csv'
                        }
 
 def calc_num_of_req (trace, DS_size=64000):
@@ -294,8 +298,8 @@ def get_trace_name (trace_file_name):
 
 def main ():
     num_of_req = INF_INT
-    for num_of_req in [10000000]:
-        characterize_trace (trace = 'F2', 
+    for num_of_req in [300000]:
+        characterize_trace (trace = 'IBM1', 
                             num_of_req                  = num_of_req
                             )
     # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
@@ -305,6 +309,6 @@ def main ():
     #                     only_calc_num_of_uniques    = False)
     
 if __name__ == '__main__':
-    parse_list_of_keys (input_file_name='wiki/wiki1.1190448987.txt', num_of_req=6000000)
+    # parse_list_of_keys (input_file_name='wiki/wiki1.1190448987.txt', num_of_req=6000000)
     # print (calc_num_of_req ('wiki', 1000))
-    # main ()
+    main ()

@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib
+import matplotlib, seaborn
 import matplotlib.pyplot as plt
 import os
 import MyConfig
@@ -36,7 +36,8 @@ FONT_SIZE               = 20
 FONT_SIZE_SMALL         = 5
 LEGEND_FONT_SIZE        = 16
 LEGEND_FONT_SIZE_SMALL  = 5 
-ROTATION_ANGLE          = 45 
+ROTATION_ANGLE          = 45
+USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
 
 class Res_file_parser (object):  
 
@@ -72,10 +73,10 @@ class Res_file_parser (object):
         
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
-                            'FNAA'      : 'blue',
+                            'FNAA'      : 'navy',
                             'SALSA'     : 'cyan',
                             'SALSA1'    : 'cyan',
-                            'SALSA2'    : 'black',
+                            'SALSA2'    : 'teal',
                             'SALSA285'  : 'magenta',
                             'SALSA085'  : 'purple',
                             # 'SALSA29'   : 'red',
@@ -577,18 +578,22 @@ class Res_file_parser (object):
                 if plot_serviceCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 1)
-                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=f'uIntFact={uIntFact}') 
+                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=f'uIntFact={uIntFact}', edgecolor='none') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend ()
+                    if not(USE_FRAME):
+                        seaborn.despine(left=True, bottom=True, right=True)
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 2)
-                    plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                    plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none')
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend ()
+                    if not(USE_FRAME):
+                        seaborn.despine(left=True, bottom=True, right=True)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
             elif not (plot_serviceCost) and plot_bwCost:
@@ -618,7 +623,7 @@ class Res_file_parser (object):
         """
 
         self.set_plt_params ()
-        fig = plt.subplots(figsize =(12, 8)) # set width of bar 
+        fig, ax = plt.subplots(figsize =(12, 8)) # set width of bar 
         plt.subplots_adjust(wspace=0.4)
         
         all_points      = [item for item in self.list_of_dicts if # relevant_points will hold the relevant data parsed from the input files.  
@@ -678,18 +683,24 @@ class Res_file_parser (object):
                 if plot_serviceCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 1)
-                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend (frameon=False)
+                    if not(USE_FRAME):
+                        seaborn.despine(left=True, bottom=True, right=True)
                 if plot_bwCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
                         plt.subplot (1, 2, 2)
-                    plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode]) 
+                    plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.legend (frameon=False)
+                    if not(USE_FRAME):
+                        seaborn.despine(left=True, bottom=True, right=True)
+
+                    # plt.box(on=None)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
             elif not (plot_serviceCost) and plot_bwCost:
@@ -739,6 +750,6 @@ my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
 my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
 for DS_size in [64]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 100, 300], DS_size=DS_size, normalize_by_Opt=True)
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE

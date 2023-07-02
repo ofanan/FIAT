@@ -687,6 +687,7 @@ class Res_file_parser (object):
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.tick_params(bottom = False)
                     plt.legend (frameon=False)
+                    plt.ylim (1)
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
                 if plot_bwCost:
@@ -700,7 +701,7 @@ class Res_file_parser (object):
                     plt.legend (frameon=False)
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
-                if plot_sCost and plot_bwCost:
+                if plot_serviceCost and plot_bwCost:
                     plt.subplots_adjust(wspace=WSAPCE_BETWEEN_SUBPLOTS)
 
                     # plt.box(on=None)

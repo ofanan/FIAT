@@ -106,7 +106,7 @@ def gen_requests (trace_file_name, max_num_of_req=INF_INT, k_loc=1, num_of_clien
     Generates a trace of requests, given a trace file.
     """
     relative_path_trace_file_name = gen_relative_path_trace_file_name (trace_file_name)
-    check_if_input_file_exists(relative_path_to_input_file=relative_path_to_input_file)
+    check_if_input_file_exists(relative_path_to_input_file=relative_path_trace_file_name)
     
     if (len(relative_path_trace_file_name.split ('.csv'))==2): # The input file is already a .csv parsed from the trace - no need to parse the trace
         return reduce_trace_mem_print (pd.read_csv (relative_path_trace_file_name).head(max_num_of_req))

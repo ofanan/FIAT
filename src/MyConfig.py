@@ -54,6 +54,17 @@ trace_csv_file_name = {'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
                        'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
                        }
 
+
+def check_if_input_file_exists (relative_path_to_input_file):
+    """
+    Check whether an input file, given by its relative path, exists.
+    If the file doesn't exist - exit with a proper error msg.
+    """
+    if not (os.path.isfile (relative_path_to_input_file)):
+        error (f'the input file {relative_path_to_input_file} does not exist')
+
+
+
 def calc_num_of_req (trace, DS_size=64000):
     """
     Given a trace and caches size, calculate the number of requests for having a substantial sim.
@@ -95,6 +106,7 @@ def gen_requests (trace_file_name, max_num_of_req=INF_INT, k_loc=1, num_of_clien
     Generates a trace of requests, given a trace file.
     """
     relative_path_trace_file_name = gen_relative_path_trace_file_name (trace_file_name)
+    check_if_input_file_exists(relative_path_to_input_file=relative_path_to_input_file)
     
     if (len(relative_path_trace_file_name.split ('.csv'))==2): # The input file is already a .csv parsed from the trace - no need to parse the trace
         return reduce_trace_mem_print (pd.read_csv (relative_path_trace_file_name).head(max_num_of_req))

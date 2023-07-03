@@ -36,7 +36,7 @@ FONT_SIZE               = 20
 FONT_SIZE_SMALL         = 5
 LEGEND_FONT_SIZE        = 20
 LEGEND_FONT_SIZE_SMALL  = 5 
-ROTATION_ANGLE          = 45
+ROTATION_ANGLE          = 90
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
 WSAPCE_BETWEEN_SUBPLOTS = 0.28
 
@@ -459,8 +459,7 @@ class Res_file_parser (object):
         """
         for input_file_name in input_file_names:
             relative_path_to_input_file = f'../res/{input_file_name}'
-            if not (os.path.isfile (relative_path_to_input_file)):
-                MyConfig.error (f'the input file {relative_path_to_input_file} does not exist')
+            MyConfig.check_if_input_file_exists (relative_path_to_input_file=relative_path_to_input_file)
             self.input_file         = open (relative_path_to_input_file,  "r")
             # self.output_file        = open ("../res/" + input_file_name.split(".")[0] + ".dat", "w")
             lines               = (line.rstrip() for line in self.input_file) # "lines" contains all lines in input file
@@ -613,7 +612,7 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['F2','F2', 'F2', 'F2', 'Wiki', 'Scarab', 'IBM', 'Twitter'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['F1','F2', 'IBM1', 'IBM7', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
@@ -752,7 +751,7 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2.res'])
+my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_minFU10.res'])#, 'fnaa.res', 'salsa2.res'])
 for DS_size in [64]: 
     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])

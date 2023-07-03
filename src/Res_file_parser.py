@@ -522,7 +522,7 @@ class Res_file_parser (object):
                    uInterval        = None,
                    bpe              = 14,
                    traces           = ['Wiki', 'Scarab', 'F1', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
-                   DS_size       = 64,
+                   DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
                    plot_bwCost      = True,
@@ -631,10 +631,11 @@ class Res_file_parser (object):
         all_points      = [item for item in self.list_of_dicts if # relevant_points will hold the relevant data parsed from the input files.  
                            item['DS_size'] == DS_size   and
                            item['num_of_DSs'] == num_of_DSs]
+        non_opt_points  = [item for item in all_points if item['mode']!='Opt']
         all_opt_points  = [item for item in all_points if item['mode']=='Opt']
 
         for missp in missp_vals: 
-            points_w_this_missp      = [item for item in all_points     if item['missp']==missp]
+            points_w_this_missp      = [item for item in non_opt_points if item['missp']==missp]
             opt_points_w_this_missp  = [item for item in all_opt_points if item['missp']==missp]
             trace_label_positions = self.bar_xlabel_positions (num_groups=len(traces), num_bars_per_group=len(modes)) 
             for mode_idx in range(len(modes)):
@@ -653,7 +654,7 @@ class Res_file_parser (object):
                                          item['trace']      == trace and
                                          item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000] 
                     if normalize_by_Opt:
-                        if (opt_trace_points==[]):
+                        if (opt_trace_points==[]): 
                             MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
                         else:
                             opt_serviceCost = opt_trace_points[0]['serviceCost']
@@ -667,9 +668,7 @@ class Res_file_parser (object):
                     if mode.startswith('SALSA'):
                         mode_trace_points = [item for item in mode_trace_points if
                                              item['mr0_th'] == mr0_th and
-                                             item['mr1_th'] == mr1_th] 
-                        # if trace=='Twitter': #$$$
-                        #     MyConfig.error (mode_trace_points) #$$$  
+                                             item['mr1_th'] == mr1_th]
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
                         if mode_trace_points==[]: # no results for this setting
@@ -686,7 +685,7 @@ class Res_file_parser (object):
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.tick_params(bottom = False)
                     plt.legend (frameon=False)
-                    plt.ylim (1)
+                    # plt.ylim (1)
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
                 if plot_bwCost:
@@ -751,8 +750,8 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.plot_mr0(input_file_name='scarab_C16K_U1600_mr0_by_staleness_0.res')
-my_Res_file_parser.parse_files(['opt.res', 'fnaa.res', 'salsa2_minFU10.res'])#, 'fnaa.res', 'salsa2.res'])
-for DS_size in [64]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True)
+my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res'])#, 'fnaa.res', 'salsa2.res', 'salsa2_minFU10.res'])
+for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE

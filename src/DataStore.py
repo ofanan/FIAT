@@ -419,6 +419,7 @@ class DataStore (object):
         # if (not (self.analyse_ind_deltas)) and self.consider_delta_updates: # This is a SALSA2 running, where we'd like to inform about any full-ind update  
         #     print ('advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str)) #$$$
         
+        
         if self.collect_mr_stat:
             if self.ins_cnt_in_this_period >= self.period: 
             #self.init_mr0_after_each_ad:

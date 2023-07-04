@@ -615,7 +615,7 @@ class DistCacheSimulator(object):
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
 
-            hit                     = False # default value - didn't retrieve the requested key from any DS
+            hit             = False # default value - didn't retrieve the requested key from any DS
             pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
             # if pos_indications!=[]: # t positive indications --> miss (this mode doesn't accss DSs with negative ind')
             for ds in pos_indications:
@@ -624,7 +624,7 @@ class DistCacheSimulator(object):
                     hit = True
                 else: # FP
                     self.fp_cnt[ds] += 1
-                self.DS_list[ds2accs].access (key=self.cur_req.key, is_speculative_accs = False)
+                self.DS_list[ds].access (key=self.cur_req.key, is_speculative_accs = False)
                     
             if not(hit): # miss --> need to insert the key to a cache
                 DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
@@ -632,7 +632,8 @@ class DistCacheSimulator(object):
                 self.ins_cnt[DS2insert.ID] += 1
             
             for ds in range(self.num_of_DSs):
-                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr1_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr1_measure_window==0 and \
+                last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # avoid duplicated prints of the same result when ins_cnt[ds] doesn't change
                     if num_of_ads[ds] > self.DS_size/self.min_uInterval: # start printing only after a warm-up period
                         if self.print_detailed_output:
                             printf (self.mr1_by_staleness_res_file[ds], f'\nins_cnt={self.ins_cnt[ds]}, pos_ind_cnt={self.pos_ind_cnt[ds]}, fp_cnt={self.fp_cnt[ds]}')

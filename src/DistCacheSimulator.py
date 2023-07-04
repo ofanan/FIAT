@@ -526,7 +526,7 @@ class DistCacheSimulator(object):
 
     def run_trace_measure_mr0 (self):
         """
-        Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
+        Run a trace only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
         The accs strat' using in the trace is FN-oblivious Cheapest, namely: 
         - it there're positive indications - accs the cheapest among them.
         - else, do not accs any cahce.

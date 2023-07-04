@@ -14,11 +14,15 @@ from   tictoc import tic, toc
 def main ():
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    # for trace in ['Twitter45', 'F2', 'IBM7']: 
-    for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
+    for trace in ['Twitter45']: #, 'F2', 'IBM7']:     # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
+    # for trace in ['F2']: 
+    # for trace in ['IBM7']: 
+    # for trace in ['F1', 'IBM1']:        
+    # for trace in ['Scarab']:       
+    # for trace in ['Wiki', 'Twitter17']:       
         for DS_size in [64000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
-            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req) 
+            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=100000) #max_num_of_req) #$$$ 
             for mode in ['salsa2']:
                 for missp in [30]: #[10, 30, 100, 300]:
                     tic()
@@ -35,9 +39,9 @@ def main ():
                         min_uInterval           = DS_size/10,
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
-                        uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/100)
+                        uInterval_factor        = 2 if mode.startswith('salsa') else 1,
+                        verbose                 = [MyConfig.VERBOSE_RES])
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()
 
 def calc_DS_homo_costs (num_of_DSs, num_of_clients):

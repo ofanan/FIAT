@@ -295,7 +295,7 @@ class DistCacheSimulator(object):
 
         if self.mode=='measure_mr0':
             """
-            simulate a single DS, with a trivial cache-selection alg', that always relies on the indicator.
+            simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
             """
             self.print_detailed_output          = False
@@ -311,6 +311,26 @@ class DistCacheSimulator(object):
             self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
                 self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
+
+        elif self.mode=='measure_mr1':
+            """
+            simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that accesses for each request all the DSs with pos ind' (if exist)..
+            periodically measure the mr1, (aka "the positive exclusion probability" - namely, the prob' that an item isn't in the DS, given a positive indication).  
+            """
+            self.print_detailed_output          = False
+            self.num_of_DSs                     = 3            
+            self.fp_cnt                         = np.zeros (self.num_of_DSs)
+            self.pos_ind_cnt                    = np.zeros (self.num_of_DSs)
+            self.ins_cnt                        = np.zeros (self.num_of_DSs)
+            self.use_fixed_uInterval            = True
+            self.do_not_advertise_upon_insert   = True
+            self.hit_ratio_based_uInterval      = False
+            self.collect_mr_stat                = False
+            self.mr1_measure_window             = self.min_uInterval/10
+            self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
+            for ds in range (self.num_of_DSs):
+                self.mr1_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr1_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  's')
+
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
@@ -535,7 +555,6 @@ class DistCacheSimulator(object):
         num_of_ads           = np.zeros (self.num_of_DSs)   
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
-            # positive_indications = [self.cur_req.key in self.DS_list[ds].stale_indicator for ds in range(self.num_of_DSs)]
 
             hit                     = False # default value - didn't retrieve the requested key from any DS
             ds2accs                 = None  # default value: don't accs any DS            
@@ -584,6 +603,60 @@ class DistCacheSimulator(object):
                     num_of_ads[ds]      += 1
 
 
+    def run_trace_measure_mr1 (self):
+        """
+        Run a trace only to measure mr1, namely, the prob' that the requested item isn't in the cache, given a positive ind'.
+        The accs strat' using in the trace is FN-oblivious All, namely: 
+        - it there're positive indications - accs all the caches with positive indications.
+        - else, do not accs any cahce.
+        """
+        last_printed_ins_cnt = np.zeros (self.num_of_DSs)
+        num_of_ads           = np.zeros (self.num_of_DSs)   
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req = self.req_df.iloc[self.req_cnt]  
+
+            hit                     = False # default value - didn't retrieve the requested key from any DS
+            pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
+            # if pos_indications!=[]: # t positive indications --> miss (this mode doesn't accss DSs with negative ind')
+            for ds in pos_indications:
+                self.pos_ind_cnt[ds] += 1
+                if self.cur_req.key in self.DS_list[ds]: # hit 
+                    hit = True
+                else: # FP
+                    self.fp_cnt[ds] += 1
+                self.DS_list[ds2accs].access (key=self.cur_req.key, is_speculative_accs = False)
+                    
+            if not(hit): # miss --> need to insert the key to a cache
+                DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
+                DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
+                self.ins_cnt[DS2insert.ID] += 1
+            
+            for ds in range(self.num_of_DSs):
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr1_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]:
+                    if num_of_ads[ds] > self.DS_size/self.min_uInterval: # start printing only after a warm-up period
+                        if self.print_detailed_output:
+                            printf (self.mr1_by_staleness_res_file[ds], f'\nins_cnt={self.ins_cnt[ds]}, pos_ind_cnt={self.pos_ind_cnt[ds]}, fp_cnt={self.fp_cnt[ds]}')
+                            if self.pos_ind_cnt[ds]>0:
+                                printf (self.mr1_by_staleness_res_file[ds], '{:.4f}' .format (self.fp_cnt[ds]/self.pos_ind_cnt[ds]))
+                            else:
+                                printf (self.mr1_by_staleness_res_file[ds], 'NaN')
+                        else:
+                            if self.pos_ind_cnt[ds]>0:
+                                printf (self.mr1_by_staleness_res_file[ds], '{:.5f},' .format (self.fp_cnt[ds]/self.pos_ind_cnt[ds]))
+                    last_printed_ins_cnt[ds] = self.ins_cnt[ds]
+                    self.pos_ind_cnt[ds]     = 0
+                    self.fp_cnt[ds]          = 0
+                    if num_of_ads[ds] > int (1.5 *self.DS_size/self.min_uInterval):
+                        return
+
+                if self.ins_cnt[ds] == self.min_uInterval:
+                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    self.ins_cnt[ds]     = 0 
+                    self.pos_ind_cnt[ds] = 0
+                    self.fp_cnt[ds]      = 0
+                    num_of_ads[ds]      += 1
+
+    
     def run_trace_opt_hetro (self):
         """
         Run a full trace as Opt access strat' when the DS costs are heterogeneous
@@ -797,6 +870,8 @@ class DistCacheSimulator(object):
         
         if (self.mode == 'measure_mr0'):
             self.run_trace_measure_mr0()
+        elif (self.mode == 'measure_mr0'):
+            self.run_trace_measure_mr1()
         elif (self.mode == 'measure fp fn'):
             self.run_trace_measure_fp_fn ()
         elif self.mode == 'opt':

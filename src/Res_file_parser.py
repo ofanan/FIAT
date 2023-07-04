@@ -612,7 +612,7 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['F1','F2', 'IBM1', 'IBM7', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['IBM1', 'IBM7', 'F1','F2', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], #['Wiki', 'Scarab', 'F1', 'P3'],
                    modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],

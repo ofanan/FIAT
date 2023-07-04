@@ -87,7 +87,7 @@ class DataStore (object):
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
         self.total_ad_size_in_this_period = 0 # the ind' may be scaled, so need to measure the overall ind' size
-        self.min_bpe                 = 5
+        self.min_bpe                 = 10
         self.max_bpe                 = 15
         self.mr_output_file          = mr_output_file
         self.bpe                     = bpe
@@ -386,8 +386,8 @@ class DataStore (object):
         self.in_delta_mode                 = True
         self.ins_cnt_since_last_full_ad    = 0
         self.total_ad_size_in_this_period  = 0
+        self.overall_ad_size              += self.delta_ad_size 
         self.num_of_advertisements        += 1
-        self.overall_ad_size              += self.delta_ad_size
         self.gen_updated_sbf () # generate a new self.updated_sbf  
         self.stale_indicator               = self.updated_sbf
 
@@ -492,7 +492,7 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha_mr0 * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha_mr0) * self.mr0_cur
         # self.updated_mr0 = True 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
-            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}') 
+            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 

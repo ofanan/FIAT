@@ -476,8 +476,7 @@ class DistCacheSimulator(object):
             printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
                                 .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
 
-        if (self.mode!='opt'):
-            printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}\n' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
+        printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}\n' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
         printf (res_file, '// num of ads per DS={}. ' .format ([DS.num_of_advertisements for DS in self.DS_list]))
         avg_num_of_ads = np.average([DS.num_of_advertisements for DS in self.DS_list])
         if (avg_num_of_ads==0): # deter division by 0
@@ -488,6 +487,8 @@ class DistCacheSimulator(object):
             printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
+        if self.mode=='salsa2':
+            printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
         printf (res_file, '\n')
         
     def run_trace_measure_fp_fn (self):

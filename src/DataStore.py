@@ -86,6 +86,8 @@ class DataStore (object):
         self.in_delta_mode           = False
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
+        self.num_of_full_ads         = 0
+        self.num_of_periods_in_delta_ads  = 0
         self.total_ad_size_in_this_period = 0 # the ind' may be scaled, so need to measure the overall ind' size
         self.min_bpe                 = 10
         self.max_bpe                 = 15
@@ -298,6 +300,7 @@ class DataStore (object):
         
         if self.ins_cnt_since_last_full_ad>=self.period: # time to consider scaling, or at least send a keep-alive full ind'
 
+            self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_factor!=1:                                          
                 self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
             self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
@@ -449,8 +452,9 @@ class DataStore (object):
         if not (self.use_CountingBloomFilter):
             self.stale_indicator = self.genNewSBF ()
 
-        self.num_of_advertisements += 1
-        self.overall_ad_size       += self.ind_size
+        self.num_of_advertisements  += 1
+        self.num_of_full_ads        += 1
+        self.overall_ad_size        += self.ind_size
 
     def scale_ind_delta_mode (self, bw_in_cur_interval):
         """

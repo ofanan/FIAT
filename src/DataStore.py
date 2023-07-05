@@ -83,7 +83,7 @@ class DataStore (object):
         self.do_not_advertise_upon_insert = do_not_advertise_upon_insert
         # self.updated_mr0           = False # indicates whether mr0 wasn't updated since the last advertisement 
         # self.updated_mr1           = False # indicates whether mr1 wasn't updated since the last advertisement
-        self.in_delta_mode           = False
+        self.in_delta_mode           = True
         self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
         self.num_of_full_ads         = 0

@@ -23,9 +23,9 @@ def main ():
     # for trace in ['Wiki', 'Twitter17']:       
     for trace in ['F1']:       
         for DS_size in [4000]: #[4000, 16000, 64000]:
-            max_num_of_req = 10000 #MyConfig.calc_num_of_req (trace) 
+            max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa2']:
+            for mode in ['salsa1']:
                 for missp in [30]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
@@ -42,7 +42,7 @@ def main ():
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor        = 2 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_FULL_RES])
+                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()
 

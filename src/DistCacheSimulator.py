@@ -1127,7 +1127,12 @@ class DistCacheSimulator(object):
             # insert the prefix at this prefix_len to the current leaf
             for pref_len in range (1, num_of_DSs_in_cur_leaf+1):
                 cur_mr *= df_of_DSs_in_cur_leaf.iloc[pref_len - 1]['mr']
+                if MyConfig.VERBOSE_DEBUG in self.verbose and cur_mr>1 or cur_mr<0:
+                    MyConfig.error (f'cur_mr={cur_mr}')                     
                 cur_ac += df_of_DSs_in_cur_leaf.iloc[pref_len - 1]['ac']
+                # if self.req_cnt==19406: #$$$
+                #     cand = candidate.candidate(df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_mr, cur_ac)
+                #     print (f'candidate: DSs={cand.DSs_IDs}, ac={cand.ac}, mr={cand.mr}, cost={cand.phi(self.missp)}') # .format (df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_ac, cur_mr)) #$$$
                 leaf[leaf_num].append(candidate.candidate(df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_mr, cur_ac))
 
         # Merge stage
@@ -1153,6 +1158,9 @@ class DistCacheSimulator(object):
 
         min_final_candidate_phi = self.missp + 1 # Will hold the total cost among by all final sols checked so far
         for final_candidate in cur_lvl_node[0]:  # for each of the candidate full solutions
+            # if self.req_cnt==19406: #$$$
+            #     cand = final_candidate
+            #     print (f'final candidate: DSs={cand.DSs_IDs}, ac={cand.ac}, mr={cand.mr}, cost={cand.phi(self.missp)}') # .format (df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_ac, cur_mr)) #$$$
             final_candidate_phi = final_candidate.phi(self.missp)
             if (final_candidate_phi < min_final_candidate_phi): # if this sol' is cheaper than any other sol' found so far', take this new sol'
                 final_sol = final_candidate
@@ -1172,6 +1180,10 @@ class DistCacheSimulator(object):
         for DS_id in final_sol.DSs_IDs:
             is_speculative_accs = not (self.indications[DS_id])
             if (is_speculative_accs): #A speculative accs 
+                mr0 = self.DS_list[DS_id].mr0_cur
+                    # print (f'final sol={final_sol.DSs_IDs}, ac={final_sol.ac}, mr={final_sol.mr}, cost={final_sol.phi(self.missp)}')
+                    # print (f'MRs are {[self.mr_of_DS[ds] for ds in final_sol.DSs_IDs]}') 
+                    # MyConfig.error (f'req_cnt={self.req_cnt}. performing spec accs to DS{DS_id}. DS[{DS_id}].mr0_cur={mr0}') #$$$
                 self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the whole system's data (used for statistics)
                 self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the relevant client's data (used for adaptive / learning alg') 
             if (self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs)): # hit

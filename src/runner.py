@@ -17,16 +17,16 @@ def main ():
     # for trace in ['F1', 'F2', 'IBM7', 'IBM1']:     
     # for trace in ['Scarab', 'Wiki', 'Twitter17', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
     # for trace in ['F2']: 
-    # for trace in ['IBM7']: 
+    for trace in ['IBM7']: 
     # for trace in ['F1', 'IBM1']:        
     # for trace in ['Scarab']:       
     # for trace in ['Wiki', 'Twitter17']:       
-    for trace in ['F1']:       
+    # for trace in ['F1']:       
         for DS_size in [4000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa1']:
-                for missp in [30]: #[10, 30, 100, 300]:
+            for mode in ['fnaa']:
+                for missp in [300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         res_file_name           = 'salsa2_minBpe10' if mode=='salsa2' else mode,
@@ -42,7 +42,7 @@ def main ():
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor        = 2 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR])
+                        verbose                 = [MyConfig.VERBOSE_RES])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()
 
@@ -94,6 +94,10 @@ def calc_opt_service_cost_in_loop ():
             calc_opt_service_cost (accs_cost=65151, comp_miss_cnt=367426, missp=missp, num_of_req=400000)
 
 if __name__ == '__main__':
+    # missp=30 #$$$
+    # print (f'cost of accs_only_0={1 + 0.9973*missp}')  
+    # print (f'cost of accs_only_1={2 + 0.00467484375*missp}')  
+    # print (f'cost of accsing both={3 + 0.00467484375*0.9973*missp}')  
     # calc_opt_service_cost_in_loop ()
     main ()
     

@@ -329,7 +329,7 @@ class DistCacheSimulator(object):
             self.mr1_measure_window             = self.min_uInterval/10
             self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
-                self.mr1_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr1_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  's')
+                self.mr1_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr1_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  'w')
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
@@ -872,7 +872,7 @@ class DistCacheSimulator(object):
         
         if (self.mode == 'measure_mr0'):
             self.run_trace_measure_mr0()
-        elif (self.mode == 'measure_mr0'):
+        elif (self.mode == 'measure_mr1'):
             self.run_trace_measure_mr1()
         elif (self.mode == 'measure fp fn'):
             self.run_trace_measure_fp_fn ()
@@ -887,8 +887,7 @@ class DistCacheSimulator(object):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
         else: 
-            printf (self.res_file, 'Wrong mode: {}\n' .format (self.mode))
-            print  ('Wrong mode: {}\n' .format (self.mode))
+            MyConfig.error  ('Wrong mode: {}\n' .format (self.mode))
 
         
     def estimate_mr1_by_history (self):

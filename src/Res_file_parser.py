@@ -729,29 +729,35 @@ class Res_file_parser (object):
         return [(idx_in_group + num_bars_per_group*x + BAR_WIDTH_BETWEEN_GRPS*(x+1))*BAR_WIDTH for x in range(num_groups)]
 
     
-    def plot_mr0 (self, input_file_name):
+    def plot_mr (self, input_file_name, type=0):
         """
-        generate and save a Python plot, showing the mr0 as a func' of time (manifested by # of requests).
-        Input: input_file_name - a file containing the 'mr0' values, in one line, comma-separated.
-        output: input_file_name.pdf = plot of the mr0 as a func' of time.
+        generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
+        Inputs: 
+        input_file_name - a file containing the 'mr' values, in one line, comma-separated.
+        type - 0 for mr0, 1 for mr1.
+        output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
         for line in open ('../res/{}' .format (input_file_name),  "r"):
             splitted_line = line.split (',')
-            mr0 = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
-            mr0 = mr0[:31]
-        plt.xlim (0, 160*(len(mr0)-1))
-        plt.ylim (0.8, 1.02)
-        plt.plot ([160*i for i in range(len(mr0))], mr0, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
+            mr = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
+            mr = mr[:31]
+        plt.xlim (0, 160*(len(mr)-1))
+        plt.plot ([160*i for i in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
         plt.xlabel ('Insertion Count')
-        plt.ylabel (r'$\nu$')
+        if type==0:
+            plt.ylim (0.8, 1.02)
+            plt.ylabel (r'$\nu$')
+        else:
+            plt.ylim (0, 0.2)
+            plt.ylabel (r'$\pi$')
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         
                     
 my_Res_file_parser = Res_file_parser ()
-# my_Res_file_parser.plot_mr0(input_file_name='Twitter45_C16K_U1600_mr0_by_staleness_2.res')
-my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa2_minBpe10.res'])#, 'fnaa.res', 'salsa2.res', 'salsa2_minFU10.res'])
-for DS_size in [16, 64]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
+my_Res_file_parser.plot_mr(input_file_name='Scarab_C16K_U1600_mr1_by_staleness_1.res', type=0)
+# my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa2_minBpe10.res'])#, 'fnaa.res', 'salsa2.res', 'salsa2_minFU10.res'])
+# for DS_size in [16, 64]: 
+#     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE

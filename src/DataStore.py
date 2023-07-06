@@ -386,7 +386,7 @@ class DataStore (object):
             printf (self.q_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
-        self.in_delta_mode                 = True
+        self.in_delta_mode                 = False
         self.ins_cnt_since_last_full_ad    = 0
         self.total_ad_size_in_this_period  = 0
         self.overall_ad_size              += self.delta_ad_size 

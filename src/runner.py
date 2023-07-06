@@ -17,21 +17,21 @@ def main ():
     # for trace in ['F1', 'F2', 'IBM7', 'IBM1']:     
     # for trace in ['Scarab', 'Wiki', 'Twitter17', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
     # for trace in ['F2']: 
-    # for trace in ['IBM7']: 
+    for trace in ['IBM7']: 
     # for trace in ['Twitter45']:
     # for trace in ['F1', 'IBM1']:        
-    for trace in ['Scarab', 'Wiki', 'Twitter45']:       
+    # for trace in ['Scarab', 'Wiki', 'Twitter45']:       
     # for trace in ['Wiki', 'Twitter17']:       
     # for trace in ['F1']:       
     # for trace in ['Wiki']: #, 'Twitter17']:       
-        for DS_size in [16000]: #[4000, 16000, 64000]:
+        for DS_size in [4000]: #[4000, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['measure_mr1']:
-                for missp in [30]: #[10, 30, 100, 300]:
+            for mode in ['fnaa']:
+                for missp in [300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
-                        res_file_name           = 'salsa2_minBpe10_begin_in_delta' if mode=='salsa2' else mode,
+                        res_file_name           = f'{mode}_HPC',
                         EWMA_alpha_mr0          = 0.85, 
                         EWMA_alpha_mr1          = 0.25, 
                         trace_name              = trace,

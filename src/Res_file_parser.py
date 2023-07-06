@@ -738,24 +738,30 @@ class Res_file_parser (object):
         output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
+        num_of_points = 31
         for line in open ('../res/{}' .format (input_file_name),  "r"):
             splitted_line = line.split (',')
             mr = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
-            mr = mr[:31]
+            mr = mr[:num_of_points]
         plt.xlim (0, 160*(len(mr)-1))
+        # print (f'x={[160*i for i in range(len(mr))]}') #$$$
+        # print (f'mr={mr}') #$$$
         plt.plot ([160*i for i in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
         plt.xlabel ('Insertion Count')
         if type==0:
             plt.ylim (0.8, 1.02)
             plt.ylabel (r'$\nu$')
         else:
-            plt.ylim (0, 0.2)
+            plt.ylim (0, 0.1)
             plt.ylabel (r'$\pi$')
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
+        plt.clf ()
         
                     
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.plot_mr(input_file_name='Scarab_C16K_U1600_mr1_by_staleness_1.res', type=0)
+type = 1
+for ds in range (3): 
+    my_Res_file_parser.plot_mr(input_file_name=f'Scarab_C16K_U1600_mr{type}_by_staleness_{ds}.res', type=type)
 # my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa2_minBpe10.res'])#, 'fnaa.res', 'salsa2.res', 'salsa2_minFU10.res'])
 # for DS_size in [16, 64]: 
 #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)

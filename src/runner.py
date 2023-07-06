@@ -14,6 +14,7 @@ from   tictoc import tic, toc
 def main ():
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    for trace in ['F1', 'IBM1', 'Twitter45']:
     # for trace in ['F1', 'F2', 'IBM7', 'IBM1']:     
     # for trace in ['Scarab', 'Wiki', 'Twitter17', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
     # for trace in ['F1']:        
@@ -22,13 +23,13 @@ def main ():
     # for trace in ['IBM7']: 
     # for trace in ['Twitter17']:
     # for trace in ['Twitter45']:
-    for trace in ['Scarab']:       
+    # for trace in ['Scarab']:       
     # for trace in ['Wiki']:       
-        for DS_size in [16000]: #[4000, 16000, 64000]:
+        for DS_size in [4000]: #[, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa2']:
-                for missp in [30, 300]: #[10, 30, 100, 300]:
+                for missp in [10]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         res_file_name           = f'{mode}_HPC',
@@ -96,10 +97,5 @@ def calc_opt_service_cost_in_loop ():
             calc_opt_service_cost (accs_cost=65151, comp_miss_cnt=367426, missp=missp, num_of_req=400000)
 
 if __name__ == '__main__':
-    # missp=30 #$$$
-    # print (f'cost of accs_only_0={1 + 0.9973*missp}')  
-    # print (f'cost of accs_only_1={2 + 0.00467484375*missp}')  
-    # print (f'cost of accsing both={3 + 0.00467484375*0.9973*missp}')  
-    # calc_opt_service_cost_in_loop ()
     main ()
     

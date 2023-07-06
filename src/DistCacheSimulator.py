@@ -635,7 +635,7 @@ class DistCacheSimulator(object):
             for ds in range(self.num_of_DSs):
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr1_measure_window==0 and \
                 last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # avoid duplicated prints of the same result when ins_cnt[ds] doesn't change
-                    if num_of_ads[ds] > self.DS_size/self.min_uInterval: # start printing only after a warm-up period
+                    if num_of_ads[ds] > 2*self.DS_size/self.min_uInterval: # start printing only after a warm-up period
                         if self.print_detailed_output:
                             printf (self.mr1_by_staleness_res_file[ds], f'\nins_cnt={self.ins_cnt[ds]}, pos_ind_cnt={self.pos_ind_cnt[ds]}, fp_cnt={self.fp_cnt[ds]}')
                             if self.pos_ind_cnt[ds]>0:
@@ -648,7 +648,7 @@ class DistCacheSimulator(object):
                     last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                     self.pos_ind_cnt[ds]     = 0
                     self.fp_cnt[ds]          = 0
-                    if num_of_ads[ds] > int (1.5 *self.DS_size/self.min_uInterval):
+                    if num_of_ads[ds] > int (2.5 *self.DS_size/self.min_uInterval):
                         return
 
                 if self.ins_cnt[ds] == self.min_uInterval:

@@ -20,7 +20,7 @@ def main ():
     # for trace in ['IBM7']: 
     # for trace in ['Twitter45']:
     # for trace in ['F1', 'IBM1']:        
-    for trace in ['Scarab']:       
+    for trace in ['Scarab', 'Wiki', 'Twitter45']:       
     # for trace in ['Wiki', 'Twitter17']:       
     # for trace in ['F1']:       
     # for trace in ['Wiki']: #, 'Twitter17']:       

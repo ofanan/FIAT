@@ -752,7 +752,7 @@ class Res_file_parser (object):
             plt.ylim (0.8, 1.02)
             plt.ylabel (r'$\nu$')
         else:
-            plt.ylim (0, 0.1)
+            plt.ylim (0, 0.25)
             plt.ylabel (r'$\pi$')
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
@@ -760,8 +760,8 @@ class Res_file_parser (object):
                     
 my_Res_file_parser = Res_file_parser ()
 type = 1
-for ds in range (3): 
-    my_Res_file_parser.plot_mr(input_file_name=f'Scarab_C16K_U1600_mr{type}_by_staleness_{ds}.res', type=type)
+for ds in range (1): 
+    my_Res_file_parser.plot_mr(input_file_name=f'Scarab_C16K_U1600_mr1_by_staleness_{ds}.res', type=type)
 # my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa2_minBpe10.res'])#, 'fnaa.res', 'salsa2.res', 'salsa2_minFU10.res'])
 # for DS_size in [16, 64]: 
 #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)

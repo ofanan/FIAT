@@ -214,7 +214,7 @@ class DistCacheSimulator(object):
         self.verbose            = verbose # Defines the log/res data printed out to files       
         self.use_perfect_hist   = use_perfect_hist       
         
-        if (MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES):
+        if MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES in self.verbose:
             self.res_file = self.init_res_file (res_file_name)
         if (MyConfig.VERBOSE_FULL_RES in self.verbose):
             self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
@@ -521,43 +521,6 @@ class DistCacheSimulator(object):
                 self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt)
         printf (self.res_file, '({}, {})' .format (self.min_uInterval, self.FN_miss_cnt/self.hit_cnt))               
 
-    def run_trace_measure_mr0_on_a_single_ds (self):
-        """
-        Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
-        Run the trace and measure for a sys' with a single $.
-        """
-        self.min_uInterval = 2000
-        print (f'note: fixing min_iInterval={self.min_uInterval}')
-        last_printed_ins_cnt = 0
-        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
-            self.cur_req = self.req_df.iloc[self.req_cnt]  
-            positive_indication = self.cur_req.key in self.DS_list[0].stale_indicator
-            if positive_indication:
-                if self.DS_list[0].access(self.cur_req.key): # TP  
-                    self.hit_cnt += 1
-                else: # miss (FP)
-                    self.ins_cnt += 1 # Assuming LRU policy, a miss necessary results in an insertion of a new item to the cache
-                    self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
-            else:
-                self.neg_ind_cnt += 1
-                if not(self.cur_req.key in self.DS_list[0]): # TN  
-                    self.tn_cnt += 1
-                    self.ins_cnt += 1 
-                    self.DS_list[0].insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
-            if self.ins_cnt>0 and self.ins_cnt % self.mr0_measure_window==0 and last_printed_ins_cnt != self.ins_cnt:
-                printf (self.mr0_by_staleness_res_file, '\nins_cnt={}, neg_ind_cnt={}, tn_cnt={}, mr0=' .format (self.ins_cnt, self.neg_ind_cnt, self.tn_cnt))
-                if self.neg_ind_cnt>0:
-                    printf (self.mr0_by_staleness_res_file, '{:.4f} ,' .format (self.tn_cnt/self.neg_ind_cnt))
-                else:
-                    printf (self.mr0_by_staleness_res_file, 'NaN, ')
-                last_printed_ins_cnt = self.ins_cnt
-                self.neg_ind_cnt = 0
-                self.tn_cnt      = 0
-            if self.ins_cnt == self.min_uInterval:
-                self.DS_list[0].advertise_ind_full_mode (called_by_str='simulator')
-                self.ins_cnt     = 0 
-                self.neg_ind_cnt = 0
-                self.tn_cnt      = 0
 
     def run_trace_measure_mr0 (self):
         """
@@ -655,7 +618,7 @@ class DistCacheSimulator(object):
             pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
             # resolutions     = [True for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds]]
             for ds in range(self.num_of_DSs):
-                if self.cur_req.key in pos_indications: # self.DS_list[ds].stale_indicator: # positive indication
+                if ds in pos_indications: # self.DS_list[ds].stale_indicator: # positive indication
                     pos_ind_cnt[ds] += 1
                     if self.cur_req.key in self.DS_list[ds]: # TP 
                         hit = True 
@@ -720,12 +683,13 @@ class DistCacheSimulator(object):
                all([len(salsa_estimated_mr1[ds]) for ds in range(self.num_of_DSs)]):
                 
                 arrays2print = [real_mr0, salsa_estimated_mr0, real_mr1, salsa_estimated_mr1]
+                mr_by_staleness_res_file = [None for ds in range(self.num_of_DSs)]
                 for ds in range(self.num_of_DSs):
-                    gamad = 34
-                    mr_by_staleness_res_file = open ('../res/{}_C{:.0f}K_U{:.0f}_mr_by_staleness_{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, ds),  "w")
-                    printf (mr_by_staleness_res_file, '\\ format: each line contains one array of data. The array are: real_mr0; salsa-estimated_mr0; real_mr1; salsa-estimated_mr1\n ')
-                    for ar in arraystoprint:
-                        printf (mr_by_staleness_res_file, '{ar[ds]}')
+                    mr_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr_by_staleness_{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, ds),  "w")
+                for ds in range(self.num_of_DSs):
+                    printf (mr_by_staleness_res_file[ds], '\\\ format: each line contains one array of data. The array are: real_mr0; salsa_estimated_mr0; real_mr1; salsa_estimated_mr1\n ')
+                    for ar in arrays2print:
+                        printf (mr_by_staleness_res_file[ds], f'{ar[ds]}\n')
                     # print (f'real mr0={real_mr0}') 
                     # print (f'salsa_estimated_mr0={salsa_estimated_mr0}')
                     # print (f'real mr1={real_mr1}') 

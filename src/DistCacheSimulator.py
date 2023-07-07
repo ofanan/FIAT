@@ -293,6 +293,21 @@ class DistCacheSimulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
+        if self.mode=='measure_mr':
+            """
+            simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
+            periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
+            """
+            self.print_detailed_output          = False
+            self.num_of_DSs                     = 3            
+            self.use_fixed_uInterval            = True
+            self.do_not_advertise_upon_insert   = True
+            self.hit_ratio_based_uInterval      = False
+            self.collect_mr_stat                = False
+            self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
+            for ds in range (self.num_of_DSs):
+                self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
+
         if self.mode=='measure_mr0':
             """
             simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
@@ -514,6 +529,8 @@ class DistCacheSimulator(object):
         Run a trace on a single cache, only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
         Run the trace and measure for a sys' with a single $.
         """
+        self.min_uInterval = 2000
+        print (f'note: fixing min_iInterval={self.min_uInterval}')
         last_printed_ins_cnt = 0
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
@@ -550,8 +567,10 @@ class DistCacheSimulator(object):
         Run a trace only to measure mr0, namely, the prob' that the requested item isn't in the cache, given a negative ind'.
         The accs strat' using in the trace is FN-oblivious Cheapest, namely: 
         - it there're positive indications - accs the cheapest among them.
-        - else, do not accs any cahce.
+        - else, randomly check which cache to accs
         """
+        self.min_uInterval = 2000
+        print (f'note: fixing min_iInterval={self.min_uInterval}')
         last_printed_ins_cnt = np.zeros (self.num_of_DSs)
         num_of_ads           = np.zeros (self.num_of_DSs)   
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
@@ -572,7 +591,6 @@ class DistCacheSimulator(object):
                 if self.cur_req.key in self.DS_list[ds]: # TP --> only touch the item. no need to insert it
                     self.DS_list[ds2accs].access (key=self.cur_req.key, is_speculative_accs = False)
                     hit = True
-                    
             if not(hit): # miss --> need to insert the key to a cache
                 DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
                 DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
@@ -594,6 +612,7 @@ class DistCacheSimulator(object):
                     self.neg_ind_cnt[ds]     = 0
                     self.tn_cnt[ds]          = 0
                     if num_of_ads[ds] > int (1.5 *self.DS_size/self.min_uInterval):
+                                            
                         return
 
                 if self.ins_cnt[ds] == self.min_uInterval:
@@ -603,6 +622,102 @@ class DistCacheSimulator(object):
                     self.tn_cnt[ds]      = 0
                     num_of_ads[ds]      += 1
 
+    
+    
+    def run_trace_measure_mr (self):
+        """
+        Run a trace only to measure mr, namely, the prob' that the requested item isn't in the cache, given the indication.
+        The accs strat' used in the trace is:
+        - it there're positive indications - accs all of the respective DSs.
+        - else, pick a DS to accs u.a.r.
+        The outputs are written to self.mr0_by_staleness_res_file, self.mr1_by_staleness_res_file.
+        """
+        pos_ind_cnt             = np.zeros (self.num_of_DSs)
+        neg_ind_cnt             = np.zeros (self.num_of_DSs)
+        salsa_neg_ind_cnt       = np.zeros (self.num_of_DSs) # The cnt of neg indications known to the DS. A DS knows that he had a negative ind' for a datum x only if the client accessed this DS for datum x. 
+        fp_cnt                  = np.zeros (self.num_of_DSs)
+        tn_cnt                  = np.zeros (self.num_of_DSs)
+        salsa_tn_cnt            = np.zeros (self.num_of_DSs) #the TN cnt as known to the EWMA mechanism, that knows the resolution a DS d only if this DS was accessed. 
+        ins_cnt                 = np.zeros (self.num_of_DSs)
+        last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
+        num_of_ads              = np.zeros (self.num_of_DSs)
+        pos_indications         = [False for ds in range(self.num_of_DSs)]   
+        # resolutions             = [False for ds in range(self.num_of_DSs)]   
+        min_uInterval           = 2000
+        window_size             = min_uInterval/10
+        num_of_points           = 30 # number of points to be written in the output file.
+        real_mr0                = [] * self.num_of_DSs 
+        real_mr1                = [] * self.num_of_DSs
+        salsa_estimated_mr0     = [] * self.num_of_DSs 
+        salsa_estimated_mr1     = [] * self.num_of_DSs 
+        point_num               = 0
+        print (f'note: fixing min_iInterval={min_uInterval}')
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req = self.req_df.iloc[self.req_cnt]  
+            hit                     = False # default value - didn't retrieve the requested key from any DS
+            pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
+            # resolutions     = [True for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds]]
+            for ds in range(self.num_of_DSs):
+                if self.cur_req.key in pos_indications: # self.DS_list[ds].stale_indicator: # positive indication
+                    pos_ind_cnt[ds] += 1
+                    if self.cur_req.key in self.DS_list[ds]: # TP 
+                        hit = True 
+                    else:
+                        fp_cnt[ds] += 1
+                    self.DS_list[ds].access (key=self.cur_req.key, is_speculative_accs = False) # access All DSs with positive indications
+                else: # negative indication 
+                    neg_ind_cnt[ds] += 1
+                    if not (self.cur_req.key in self.DS_list[ds]): # TN
+                        tn_cnt[ds] += 1
+                
+                if pos_indications==[]: # no positive indications
+                    ds2accs = random.randint (0, self.num_of_DSs-1)
+                    hit = self.DS_list[ds2accs].access (key=self.cur_req.key, is_speculative_accs = True)
+                    salsa_neg_ind_cnt[ds2accs] += 1
+                    if not(hit):
+                        salsa_tn_cnt[ds2accs] += 1
+
+            
+            if not(hit): # miss --> need to insert the key to a cache
+                DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
+                DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
+                ins_cnt[DS2insert.ID] += 1
+            
+            for ds in range(self.num_of_DSs):
+                if ins_cnt[ds]>0 and ins_cnt[ds] % window_size==0 and last_printed_ins_cnt[ds] != ins_cnt[ds] and num_of_ads[ds] > self.DS_size/min_uInterval: # start printing only after a warm-up period
+                    real_mr0[ds].append(tn_cnt[ds]/neg_ind_cnt[ds])
+                    real_mr1[ds].append(fp_cnt[ds]/pos_ind_cnt[ds])
+                    point_num += 1
+                    if len(salsa_mr0[ds]==0): # this is the first point 
+                        salsa_mr0[ds].append (salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds]) # for the first point, take the value without sliding
+                    else:
+                        salsa_mr0[ds].append (self.EWMA_alpha_mr0*salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0)*salsa_mr0[ds][-1])
+                    last_printed_ins_cnt[ds] = ins_cnt[ds]
+                    neg_ind_cnt[ds]     = 0
+                    tn_cnt[ds]          = 0
+                    salsa_tn_cnt[ds]    = 0
+                
+                elif pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % window_size==0:
+                    if len(salsa_mr0[ds]==0): # this is not the first point 
+                        salsa_mr1[ds].append (0) 
+                    else:
+                        salsa_mr1[ds].append (self.EWMA_alpha_mr1*salsa_tp_cnt[ds]/window_size + (1-self.EWMA_alpha_mr1)*salsa_mr1[ds][-1])
+                        salsa_tp_cnt[ds] = 0
+
+                if ins_cnt[ds] == min_uInterval: # advertise indicator
+                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    ins_cnt[ds]             = 0 
+                    neg_ind_cnt[ds]         = 0
+                    salsa_neg_ind_cnt[ds]   = 0
+                    tn_cnt[ds]              = 0
+                    salsa_tn_cnt[ds]        = 0
+                    fp_cnt[ds]              = 0
+                    num_of_ads[ds]         += 1
+                    
+            if all([len(real_mr0[ds]>=num_of_points)]) and all([len(real_mr1[ds]>=num_of_points)]) and all([len(salsa_mr0[ds]>=num_of_points)]) and all([len(salsa_mr1[ds]>=num_of_points)]):
+                print (f'real mr0={real_mr0}') 
+                print (f'salsa_mr0={salsa_mr0}')
+                return
 
     def run_trace_measure_mr1 (self):
         """
@@ -870,7 +985,9 @@ class DistCacheSimulator(object):
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
         print ('running', self.gen_settings_str (num_of_req=num_of_req))
         
-        if (self.mode == 'measure_mr0'):
+        if (self.mode == 'measure_mr'):
+            self.run_trace_measure_mr()
+        elif (self.mode == 'measure_mr0'):
             self.run_trace_measure_mr0()
         elif (self.mode == 'measure_mr1'):
             self.run_trace_measure_mr1()

@@ -18,7 +18,7 @@ def main ():
         # for trace in ['F1', 'IBM1', 'Twitter45']:
         # for trace in ['F1', 'F2', 'IBM7', 'IBM1']:     
         # for trace in ['Scarab', 'Wiki', 'Twitter17', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
-        for trace in ['F1']:        
+        for trace in ['Wiki']:        
         # for trace in ['F2']: 
         # for trace in ['IBM1']: 
         # for trace in ['IBM7']: 
@@ -26,11 +26,11 @@ def main ():
         # for trace in ['Twitter45']:
         # for trace in ['Scarab']:       
         # for trace in ['Wiki']:       
-            for DS_size in [64000]: #[, 16000, 64000]:
+            for DS_size in [16000]: #[, 16000, 64000]:
                 max_num_of_req = MyConfig.calc_num_of_req (trace) 
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-                for mode in ['salsa2']:
-                    for missp in [30, 300]: #[10, 30, 100, 300]:
+                for mode in ['measure_mr']:
+                    for missp in [30]: #[10, 30, 100, 300]:
                         tic()
                         sm = sim.DistCacheSimulator(
                             res_file_name           = f'{mode}_HPC',
@@ -46,7 +46,7 @@ def main ():
                             re_init_after_each_ad   = False,
                             min_feasible_uInterval  = min_feasible_uInterval,
                             uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                            verbose                 = [MyConfig.VERBOSE_RES])
+                            verbose                 = [])
                         sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                         toc()
 

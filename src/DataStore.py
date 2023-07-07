@@ -121,8 +121,8 @@ class DataStore (object):
                 self.non_comp_accs_th = non_comp_accs_th
             else:
                 self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, mr1_ad_th 
-        self.fp_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
-        self.tn_events_cnt           = int(0) # Number of False Positive events that happened in the current estimation window
+        self.fp_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
+        self.tn_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
         self.reg_accs_cnt            = 0
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
@@ -191,27 +191,27 @@ class DataStore (object):
         if is_speculative_accs:
             self.spec_accs_cnt += 1
             if (not(hit)):
-                self.tn_events_cnt += 1
+                self.tn_cnt += 1
             if (self.use_EWMA): 
                 if (self.spec_accs_cnt % self.mr0_ewma_window_size == 0 and self.spec_accs_cnt>0):
                     self.update_mr0 ()
             else: # use "flat" history
-                self.mr0_cur = float(self.tn_events_cnt) / float (self.spec_accs_cnt)
+                self.mr0_cur = float(self.tn_cnt) / float (self.spec_accs_cnt)
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                    printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n')
+                    printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n')
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
-                self.fp_events_cnt += 1
+                self.fp_cnt += 1
             if self.use_EWMA: 
                 if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
                     self.update_mr1 ()
             else: # use "flat" history
-                self.mr1_cur = float(self.fp_events_cnt) / float (self.reg_accs_cnt) 
+                self.mr1_cur = float(self.fp_cnt) / float (self.reg_accs_cnt) 
                 # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                    printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+                    printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1_cur))
                 
         return hit 
 
@@ -426,16 +426,16 @@ class DataStore (object):
         if self.collect_mr_stat:
             if self.ins_cnt_in_this_period >= self.period: 
             #self.init_mr0_after_each_ad:
-                self.tn_events_cnt, self.spec_accs_cnt = 0,0
+                self.tn_cnt, self.spec_accs_cnt = 0,0
                 self.ins_cnt_in_this_period = 0 
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
                 if MyConfig.VERBOSE_LOG_MR in self.verbose:
                     printf (self.mr_output_file, 'RE-INIT MR0. mr0={:.3f}\n' .format (self.mr0_cur))
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
-                self.fp_events_cnt, self.reg_accs_cnt = 0,0
+                self.fp_cnt, self.reg_accs_cnt = 0,0
                 self.mr1_cur = self.initial_mr1 
             if self.init_mr0_after_each_ad and not(self.in_delta_mode):
-                self.tn_events_cnt, self.spec_accs_cnt = 0,0
+                self.tn_cnt, self.spec_accs_cnt = 0,0
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
         
         if self.scale_ind_factor!=1: # consider scaling the indicator and the uInterval
@@ -485,23 +485,23 @@ class DataStore (object):
         """
         report the status of the various counters and estimators. Used for logging and debugging.
         """
-        printf (self.mr_output_file, f'DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}, ')
-        printf (self.mr_output_file, 'DS{}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.ID, self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+        printf (self.mr_output_file, f'DS{self.ID}: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}, ')
+        printf (self.mr_output_file, 'DS{}: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.ID, self.fp_cnt, self.reg_accs_cnt, self.mr1_cur))
     
     def update_mr0(self):
         """
         update mr0 (the miss-probability in case of a negative indication), using an exponential moving average.
         If the updated value of mr0 justifies it, advertising an indicator. 
         """
-        self.mr0_cur = self.EWMA_alpha_mr0 * float(self.tn_events_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha_mr0) * self.mr0_cur
+        self.mr0_cur = self.EWMA_alpha_mr0 * float(self.tn_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha_mr0) * self.mr0_cur
         # self.updated_mr0 = True 
         if ((MyConfig.VERBOSE_LOG_MR in self.verbose) or (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose)): 
-            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_events_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 
+            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
-        self.tn_events_cnt = int(0)
+        self.tn_cnt = int(0)
         
     def should_advertise_by_mr0 (self):
         """
@@ -524,14 +524,14 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
-        self.mr1_cur = self.EWMA_alpha_mr1 * float(self.fp_events_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha_mr1) * self.mr1_cur 
+        self.mr1_cur = self.EWMA_alpha_mr1 * float(self.fp_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha_mr1) * self.mr1_cur 
         # self.updated_mr1 = True 
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-            printf (self.mr_output_file, 'in update mr1: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_events_cnt, self.reg_accs_cnt, self.mr1_cur))
+            printf (self.mr_output_file, 'in update mr1: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
-        self.fp_events_cnt = int(0)
+        self.fp_cnt = int(0)
         
     def should_advertise_by_mr1 (self):
         """

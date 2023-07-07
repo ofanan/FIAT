@@ -304,9 +304,6 @@ class DistCacheSimulator(object):
             self.do_not_advertise_upon_insert   = True
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
-            self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
-            for ds in range (self.num_of_DSs):
-                self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
 
         if self.mode=='measure_mr0':
             """
@@ -721,11 +718,19 @@ class DistCacheSimulator(object):
                all([len(real_mr1[ds]) for ds in range(self.num_of_DSs)]) and \
                all([len(salsa_estimated_mr0[ds]) for ds in range(self.num_of_DSs)]) and \
                all([len(salsa_estimated_mr1[ds]) for ds in range(self.num_of_DSs)]):
-                print (f'real mr0={real_mr0}') 
-                print (f'salsa_estimated_mr0={salsa_estimated_mr0}')
-                print (f'real mr1={real_mr1}') 
-                print (f'salsa_estimated_mr1={salsa_estimated_mr1}')
-                return
+                
+                arrays2print = [real_mr0, salsa_estimated_mr0, real_mr1, salsa_estimated_mr1]
+                for ds in range(self.num_of_DSs):
+                    gamad = 34
+                    mr_by_staleness_res_file = open ('../res/{}_C{:.0f}K_U{:.0f}_mr_by_staleness_{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, ds),  "w")
+                    printf (mr_by_staleness_res_file, '\\ format: each line contains one array of data. The array are: real_mr0; salsa-estimated_mr0; real_mr1; salsa-estimated_mr1\n ')
+                    for ar in arraystoprint:
+                        printf (mr_by_staleness_res_file, '{ar[ds]}')
+                    # print (f'real mr0={real_mr0}') 
+                    # print (f'salsa_estimated_mr0={salsa_estimated_mr0}')
+                    # print (f'real mr1={real_mr1}') 
+                    # print (f'salsa_estimated_mr1={salsa_estimated_mr1}')
+                    return
 
     def run_trace_measure_mr1 (self):
         """

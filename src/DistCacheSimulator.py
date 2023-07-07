@@ -646,12 +646,11 @@ class DistCacheSimulator(object):
         min_uInterval           = 2000
         window_size             = min_uInterval/10
         num_of_points           = 30 # number of points to be written in the output file.
-        real_mr0                = [] * self.num_of_DSs 
-        real_mr1                = [] * self.num_of_DSs
-        salsa_estimated_mr0     = [] * self.num_of_DSs 
-        salsa_estimated_mr1     = [] * self.num_of_DSs 
+        real_mr0                = [[]] * self.num_of_DSs
+        real_mr1                = [[]] * self.num_of_DSs
+        salsa_estimated_mr0     = [[]] * self.num_of_DSs 
+        salsa_estimated_mr1     = [[]] * self.num_of_DSs 
         point_num               = 0
-        print (f'note: fixing min_iInterval={min_uInterval}')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             hit                     = False # default value - didn't retrieve the requested key from any DS
@@ -713,11 +712,14 @@ class DistCacheSimulator(object):
                     salsa_tn_cnt[ds]        = 0
                     fp_cnt[ds]              = 0
                     num_of_ads[ds]         += 1
-                    
-            if all([len(real_mr0[ds]>=num_of_points)]) and all([len(real_mr1[ds]>=num_of_points)]) and all([len(salsa_mr0[ds]>=num_of_points)]) and all([len(salsa_mr1[ds]>=num_of_points)]):
+            
+            if all([len(real_mr0[ds]) for ds in range(self.num_of_DSs)]) and \
+               all([len(real_mr1[ds]) for ds in range(self.num_of_DSs)]) and \
+               all([len(salsa_mr0[ds]) for ds in range(self.num_of_DSs)]) and \
+               all([len(salsa_mr1[ds]) for ds in range(self.num_of_DSs)]):
                 print (f'real mr0={real_mr0}') 
-                print (f'salsa_mr0={salsa_mr0}')
-                return
+                # print (f'salsa_mr0={salsa_mr0}')
+                # return
 
     def run_trace_measure_mr1 (self):
         """

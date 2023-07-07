@@ -603,7 +603,6 @@ class DistCacheSimulator(object):
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
         pos_indications         = [False for ds in range(self.num_of_DSs)]   
-        # resolutions             = [False for ds in range(self.num_of_DSs)]   
         min_uInterval           = 2000
         window_size             = min_uInterval/10
         num_of_points           = 30 # number of points to be written in the output file.
@@ -616,7 +615,6 @@ class DistCacheSimulator(object):
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             hit                     = False # default value - didn't retrieve the requested key from any DS
             pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
-            # resolutions     = [True for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds]]
             for ds in range(self.num_of_DSs):
                 if ds in pos_indications: # self.DS_list[ds].stale_indicator: # positive indication
                     pos_ind_cnt[ds] += 1
@@ -645,7 +643,8 @@ class DistCacheSimulator(object):
                 ins_cnt[DS2insert.ID] += 1
             
             for ds in range(self.num_of_DSs):
-                if ins_cnt[ds]>0 and ins_cnt[ds] % window_size==0 and last_printed_ins_cnt[ds] != ins_cnt[ds] and num_of_ads[ds] > self.DS_size/min_uInterval: # start printing only after a warm-up period
+                if ins_cnt[ds]>0 and ins_cnt[ds] % window_size==0 and ins_cnt[ds]!=last_printed_ins_cnt[ds] and num_of_ads[ds] > self.DS_size/min_uInterval: # start printing only after a warm-up period
+                    print (f'appending for DS{ds}') #$$$
                     real_mr0[ds].append(tn_cnt[ds]/neg_ind_cnt[ds])
                     real_mr1[ds].append(fp_cnt[ds]/pos_ind_cnt[ds])
                     point_num += 1
@@ -1223,9 +1222,6 @@ class DistCacheSimulator(object):
                 if MyConfig.VERBOSE_DEBUG in self.verbose and cur_mr>1 or cur_mr<0:
                     MyConfig.error (f'cur_mr={cur_mr}')                     
                 cur_ac += df_of_DSs_in_cur_leaf.iloc[pref_len - 1]['ac']
-                # if self.req_cnt==19406: #$$$
-                #     cand = candidate.candidate(df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_mr, cur_ac)
-                #     print (f'candidate: DSs={cand.DSs_IDs}, ac={cand.ac}, mr={cand.mr}, cost={cand.phi(self.missp)}') # .format (df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_ac, cur_mr)) #$$$
                 leaf[leaf_num].append(candidate.candidate(df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_mr, cur_ac))
 
         # Merge stage
@@ -1251,9 +1247,6 @@ class DistCacheSimulator(object):
 
         min_final_candidate_phi = self.missp + 1 # Will hold the total cost among by all final sols checked so far
         for final_candidate in cur_lvl_node[0]:  # for each of the candidate full solutions
-            # if self.req_cnt==19406: #$$$
-            #     cand = final_candidate
-            #     print (f'final candidate: DSs={cand.DSs_IDs}, ac={cand.ac}, mr={cand.mr}, cost={cand.phi(self.missp)}') # .format (df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_ac, cur_mr)) #$$$
             final_candidate_phi = final_candidate.phi(self.missp)
             if (final_candidate_phi < min_final_candidate_phi): # if this sol' is cheaper than any other sol' found so far', take this new sol'
                 final_sol = final_candidate
@@ -1274,9 +1267,6 @@ class DistCacheSimulator(object):
             is_speculative_accs = not (self.indications[DS_id])
             if (is_speculative_accs): #A speculative accs 
                 mr0 = self.DS_list[DS_id].mr0_cur
-                    # print (f'final sol={final_sol.DSs_IDs}, ac={final_sol.ac}, mr={final_sol.mr}, cost={final_sol.phi(self.missp)}')
-                    # print (f'MRs are {[self.mr_of_DS[ds] for ds in final_sol.DSs_IDs]}') 
-                    # MyConfig.error (f'req_cnt={self.req_cnt}. performing spec accs to DS{DS_id}. DS[{DS_id}].mr0_cur={mr0}') #$$$
                 self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the whole system's data (used for statistics)
                 self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the relevant client's data (used for adaptive / learning alg') 
             if (self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs)): # hit

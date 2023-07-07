@@ -610,7 +610,6 @@ class DistCacheSimulator(object):
         real_mr1                = [[]] * self.num_of_DSs
         salsa_estimated_mr0     = [[]] * self.num_of_DSs 
         salsa_estimated_mr1     = [[]] * self.num_of_DSs 
-        point_num               = 0
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             hit                     = False # default value - didn't retrieve the requested key from any DS
@@ -643,11 +642,12 @@ class DistCacheSimulator(object):
                 ins_cnt[DS2insert.ID] += 1
             
             for ds in range(self.num_of_DSs):
-                if ins_cnt[ds]>0 and ins_cnt[ds] % window_size==0 and ins_cnt[ds]!=last_printed_ins_cnt[ds] and num_of_ads[ds] > self.DS_size/min_uInterval: # start printing only after a warm-up period
+                if num_of_ads[ds] <= self.DS_size/min_uInterval: # skip a warm-up period
+                    continue
+                if ins_cnt[ds]>0 and ins_cnt[ds] % window_size==0 and ins_cnt[ds]!=last_printed_ins_cnt[ds]:
                     print (f'appending for DS{ds}') #$$$
                     real_mr0[ds].append(tn_cnt[ds]/neg_ind_cnt[ds])
                     real_mr1[ds].append(fp_cnt[ds]/pos_ind_cnt[ds])
-                    point_num += 1
                     if len(salsa_estimated_mr0[ds])==0: # this is the first point 
                         salsa_estimated_mr0[ds].append (salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds]) # for the first point, take the value without sliding
                     else:

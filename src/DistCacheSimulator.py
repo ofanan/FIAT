@@ -636,6 +636,7 @@ class DistCacheSimulator(object):
         neg_ind_cnt             = np.zeros (self.num_of_DSs)
         salsa_neg_ind_cnt       = np.zeros (self.num_of_DSs) # The cnt of neg indications known to the DS. A DS knows that he had a negative ind' for a datum x only if the client accessed this DS for datum x. 
         fp_cnt                  = np.zeros (self.num_of_DSs)
+        salsa_fp_cnt            = np.zeros (self.num_of_DSs)
         tn_cnt                  = np.zeros (self.num_of_DSs)
         salsa_tn_cnt            = np.zeros (self.num_of_DSs) #the TN cnt as known to the EWMA mechanism, that knows the resolution a DS d only if this DS was accessed. 
         ins_cnt                 = np.zeros (self.num_of_DSs)
@@ -662,7 +663,8 @@ class DistCacheSimulator(object):
                     if self.cur_req.key in self.DS_list[ds]: # TP 
                         hit = True 
                     else:
-                        fp_cnt[ds] += 1
+                        fp_cnt[ds]       += 1
+                        salsa_fp_cnt[ds] += 1
                     self.DS_list[ds].access (key=self.cur_req.key, is_speculative_accs = False) # access All DSs with positive indications
                 else: # negative indication 
                     neg_ind_cnt[ds] += 1
@@ -687,21 +689,22 @@ class DistCacheSimulator(object):
                     real_mr0[ds].append(tn_cnt[ds]/neg_ind_cnt[ds])
                     real_mr1[ds].append(fp_cnt[ds]/pos_ind_cnt[ds])
                     point_num += 1
-                    if len(salsa_mr0[ds]==0): # this is the first point 
-                        salsa_mr0[ds].append (salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds]) # for the first point, take the value without sliding
+                    if len(salsa_estimated_mr0[ds])==0: # this is the first point 
+                        salsa_estimated_mr0[ds].append (salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds]) # for the first point, take the value without sliding
                     else:
-                        salsa_mr0[ds].append (self.EWMA_alpha_mr0*salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0)*salsa_mr0[ds][-1])
+                        salsa_estimated_mr0[ds].append (self.EWMA_alpha_mr0*salsa_tn_cnt[ds]/salsa_neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0)*salsa_estimated_mr0[ds][-1])
                     last_printed_ins_cnt[ds] = ins_cnt[ds]
                     neg_ind_cnt[ds]     = 0
+                    fp_cnt[ds]          = 0
                     tn_cnt[ds]          = 0
                     salsa_tn_cnt[ds]    = 0
                 
                 elif pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % window_size==0:
-                    if len(salsa_mr0[ds]==0): # this is not the first point 
-                        salsa_mr1[ds].append (0) 
+                    if len(salsa_estimated_mr1[ds])==0: # this is not the first point 
+                        salsa_estimated_mr1[ds].append (0) 
                     else:
-                        salsa_mr1[ds].append (self.EWMA_alpha_mr1*salsa_tp_cnt[ds]/window_size + (1-self.EWMA_alpha_mr1)*salsa_mr1[ds][-1])
-                        salsa_tp_cnt[ds] = 0
+                        salsa_estimated_mr1[ds].append (self.EWMA_alpha_mr1*salsa_fp_cnt[ds]/window_size + (1-self.EWMA_alpha_mr1)*salsa_estimated_mr1[ds][-1])
+                        salsa_fp_cnt[ds] = 0
 
                 if ins_cnt[ds] == min_uInterval: # advertise indicator
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
@@ -711,15 +714,18 @@ class DistCacheSimulator(object):
                     tn_cnt[ds]              = 0
                     salsa_tn_cnt[ds]        = 0
                     fp_cnt[ds]              = 0
+                    salsa_fp_cnt[ds]        = 0
                     num_of_ads[ds]         += 1
             
             if all([len(real_mr0[ds]) for ds in range(self.num_of_DSs)]) and \
                all([len(real_mr1[ds]) for ds in range(self.num_of_DSs)]) and \
-               all([len(salsa_mr0[ds]) for ds in range(self.num_of_DSs)]) and \
-               all([len(salsa_mr1[ds]) for ds in range(self.num_of_DSs)]):
+               all([len(salsa_estimated_mr0[ds]) for ds in range(self.num_of_DSs)]) and \
+               all([len(salsa_estimated_mr1[ds]) for ds in range(self.num_of_DSs)]):
                 print (f'real mr0={real_mr0}') 
-                # print (f'salsa_mr0={salsa_mr0}')
-                # return
+                print (f'salsa_estimated_mr0={salsa_estimated_mr0}')
+                print (f'real mr1={real_mr1}') 
+                print (f'salsa_estimated_mr1={salsa_estimated_mr1}')
+                return
 
     def run_trace_measure_mr1 (self):
         """

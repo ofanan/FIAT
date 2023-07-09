@@ -310,7 +310,7 @@ class DistCacheSimulator(object):
             self.resolution                     = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.DSs2accs                       = []
 
-        if self.mode=='measure_mr0':
+        elif self.mode=='measure_mr0':
             """
             simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
@@ -318,7 +318,7 @@ class DistCacheSimulator(object):
             self.print_detailed_output          = False
             self.num_of_DSs                     = 3            
             self.tn_cnt                         = np.zeros (self.num_of_DSs)
-            self.neg_ind_cnt                    = np.zeros (self.num_of_DSs)
+            # self.neg_ind_cnt                    = np.zeros (self.num_of_DSs)
             self.ins_cnt                        = np.zeros (self.num_of_DSs)
             self.use_fixed_uInterval            = True
             self.do_not_advertise_upon_insert   = True
@@ -326,7 +326,7 @@ class DistCacheSimulator(object):
             self.collect_mr_stat                = False
             self.mr0_measure_window             = self.min_uInterval/10
             self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
-            self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
+            self.indications                    = np.full (self.num_of_DSs, False) 
             self.resolution                     = np.array (range (self.num_of_DSs), dtype = 'bool')
             for ds in range (self.num_of_DSs):
                 self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
@@ -546,7 +546,7 @@ class DistCacheSimulator(object):
         """
         self.pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
         for ds in range(self.num_of_DSs):
-            # self.indications[ds] = [self.cur_req.key in self.DS_list[ds].stale_indicator]
+            self.indications[ds] = [self.cur_req.key in self.DS_list[ds].stale_indicator]
             self.resolution[ds]  = self.cur_req.key in self.DS_list[ds]
         if self.pos_indications==[]: # no positive indications
             self.DSs2accs = [random.randint (0, self.num_of_DSs-1)] if use_fna else [];
@@ -584,6 +584,8 @@ class DistCacheSimulator(object):
         self.ins_cnt            = np.zeros (self.num_of_DSs)
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
+        warmup_ads              = 1 # self.DS_size/self.min_uInterval
+        final_ad                = 3 # 3*self.DS_size/self.min_uInterval
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg(selection_alg='cheapest', use_fna=True) # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
@@ -598,11 +600,11 @@ class DistCacheSimulator(object):
                 
                 # handle_miss
 
-                if num_of_ads[ds] <= self.DS_size/self.min_uInterval: # Skip some warm-up period
+                if num_of_ads[ds] <= warmup_ads: # Skip some warm-up period
                     continue
 
                 # update counters based on the current indications and resolutions
-                if not (ds in self.indications): # negative indication for this DS
+                if not (ds in self.pos_indications): # negative indication for this DS
                     neg_ind_cnt[ds] += 1
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
@@ -615,7 +617,7 @@ class DistCacheSimulator(object):
                         neg_ind_cnt[ds]             = 0
                         tn_cnt[ds]                  = 0
 
-                if num_of_ads[ds] > 3*self.DS_size/self.min_uInterval: # Collected enough points
+                if num_of_ads[ds] > final_ad: # Collected enough points
                     return
             
 

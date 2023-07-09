@@ -545,9 +545,8 @@ class DistCacheSimulator(object):
         - Returns True iff the self.cur_req.key is found in any of the accessed DSs. 
         """
         self.pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
-        for ds in range(self.num_of_DSs):
-            self.indications[ds] = [self.cur_req.key in self.DS_list[ds].stale_indicator]
-            self.resolution[ds]  = self.cur_req.key in self.DS_list[ds]
+        self.indications     = [self.cur_req.key in self.DS_list[ds].stale_indicator for ds in range (self.num_of_DSs)]
+        self.resolution      = [self.cur_req.key in self.DS_list[ds]                 for ds in range (self.num_of_DSs)]
         if self.pos_indications==[]: # no positive indications
             self.DSs2accs = [random.randint (0, self.num_of_DSs-1)] if use_fna else [];
         else: # at least one positive indication
@@ -584,8 +583,8 @@ class DistCacheSimulator(object):
         self.ins_cnt            = np.zeros (self.num_of_DSs)
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
-        warmup_ads              = 1 # self.DS_size/self.min_uInterval
-        final_ad                = 3 # 3*self.DS_size/self.min_uInterval
+        warmup_ads              = self.DS_size/self.min_uInterval
+        final_ad                = 3*self.DS_size/self.min_uInterval
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg(selection_alg='cheapest', use_fna=True) # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
@@ -604,7 +603,7 @@ class DistCacheSimulator(object):
                     continue
 
                 # update counters based on the current indications and resolutions
-                if not (ds in self.pos_indications): # negative indication for this DS
+                if self.indications[ds]==False: # negative indication for this DS
                     neg_ind_cnt[ds] += 1
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
@@ -612,7 +611,7 @@ class DistCacheSimulator(object):
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: 
 
                     if neg_ind_cnt[ds]>0:
-                        printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (self.tn_cnt[ds]/neg_ind_cnt[ds]))
+                        printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
                         last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
                         neg_ind_cnt[ds]             = 0
                         tn_cnt[ds]                  = 0

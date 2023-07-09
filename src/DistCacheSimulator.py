@@ -607,10 +607,9 @@ class DistCacheSimulator(object):
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
 
-                print (f'self.ins_cnt[ds]={self.ins_cnt[ds]}, self.mr0_measure_window={self.mr0_measure_window}, last_printed_ins_cnt[ds]={last_printed_ins_cnt[ds]}')
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: 
 
-                    if self.neg_ind_cnt[ds]>0:
+                    if neg_ind_cnt[ds]>0:
                         printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (self.tn_cnt[ds]/self.neg_ind_cnt[ds]))
                         last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
                         neg_ind_cnt[ds]             = 0

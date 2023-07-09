@@ -99,5 +99,8 @@ def calc_opt_service_cost_in_loop ():
             calc_opt_service_cost (accs_cost=65151, comp_miss_cnt=367426, missp=missp, num_of_req=400000)
 
 if __name__ == '__main__':
-    main ()
+    try: 
+        main ()
+    except KeyboardInterrupt:
+        print('Keyboard interrupt.')
     

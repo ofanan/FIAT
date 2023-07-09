@@ -215,7 +215,7 @@ class DataStore (object):
                 
         return hit 
 
-    def insert(self, key, req_cnt = -1):
+    def insert (self, key, req_cnt = -1):
         """
         If using an indicator:
         - If we maintain a Counting Bloom Filter (that should always reflect the list of cached items):         

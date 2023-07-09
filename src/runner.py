@@ -10,6 +10,7 @@ import numpy as np
 from printf import printf
 import DistCacheSimulator as sim
 from   tictoc import tic, toc
+import mod_pylru
 
 def main ():
     min_feasible_uInterval = 10
@@ -29,7 +30,7 @@ def main ():
             for DS_size in [16000]: #[, 16000, 64000]:
                 max_num_of_req = MyConfig.calc_num_of_req (trace) 
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-                for mode in ['measure_mr']:
+                for mode in ['measure_mr0']:
                     for missp in [30]: #[10, 30, 100, 300]:
                         tic()
                         sm = sim.DistCacheSimulator(

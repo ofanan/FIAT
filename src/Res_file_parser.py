@@ -759,11 +759,11 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-type = 0
-for ds in range (1): 
-    my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U1600_mr0_by_staleness_{ds}.res', type=type)
-# my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa2_minBpe10.res'])#, 'fnaa.res', 'salsa2.res', 'salsa2_minFU10.res'])
-# for DS_size in [4, 16, 64]: 
-#     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True)
+# type = 0
+# for ds in range (1): 
+#     my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U1600_mr_by_staleness_{ds}.res', type=type)
+my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE

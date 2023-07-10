@@ -542,9 +542,9 @@ class DistCacheSimulator(object):
                 self.DS_list[ds2accs].cache[self.cur_req.key] #Touch the element, so as to update the LRU mechanism
                 
         if not(hit): # miss --> need to insert the key to a cache
-            DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
-            DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
-            self.ins_cnt[DS2insert.ID] += 1
+            self.DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
+            self.DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
+            self.ins_cnt[self.DS2insert.ID] += 1
         return hit
         
         
@@ -598,7 +598,7 @@ class DistCacheSimulator(object):
                     return  
     
 
-    def run_trace_measure_mr0_full_knowledge (self):
+    def run_trace_estimate_mr0_by_salsa (self):
         """
         Estimate mr0 and print to an output .res file mr0.
         mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
@@ -613,40 +613,46 @@ class DistCacheSimulator(object):
         self.ins_cnt            = np.zeros (self.num_of_DSs)
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
+        finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
+        
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
             
             for ds in self.DSs2accs:
 
-                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
-
-                    if num_of_ads[ds] >= self.num_of_warmup_ads and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
-                        if neg_ind_cnt[ds]>0:
-                            printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
-                            last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
-                        else:
-                            MyConfig.error ('neg_ind_cnt==0')
-
-                    if self.ins_cnt[ds] == self.min_uInterval: # time to advertise
-                        self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
-                        num_of_ads[ds] += 1
-                        self.ins_cnt[ds]  = 0 
-
-                    neg_ind_cnt[ds] = 0
-                    tn_cnt[ds]      = 0
-                
-
-                if num_of_ads[ds] < self.num_of_warmup_ads-1: # No need to collect stat before the warm-up period is nearly to end
-                    continue
-                
                 # update counters based on the current indications and resolutions
-                if self.indications[ds]==False: # negative indication for this DS
+                if finished_warmup_period[ds] and self.indications[ds]==False: # negative indication for this DS
                     neg_ind_cnt[ds] += 1
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
 
-                if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
+            if self.DS2insert: # there was an insertion to a DS
+            
+                # printf (self.mr0_by_staleness_res_file[ds], f'req_cnt={self.req_cnt}, ins_cnt[{ds}]={self.ins_cnt[ds]}\n') #$$$
+                ds = self.DS2insert
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
+
+                    if num_of_ads[ds] >= self.num_of_warmup_ads:
+                        finished_warmup_period[ds] = True
+                        if last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+                            if neg_ind_cnt[ds]>0:
+                                printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
+                                last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
+                            else:
+                                MyConfig.error ('neg_ind_cnt==0')
+                        neg_ind_cnt[ds] = 0
+                        tn_cnt[ds]      = 0
+
+                    # printf (self.mr0_by_staleness_res_file[ds], '{:.5f}\n' .format (self.ins_cnt[ds])) #$$$
+                    if self.ins_cnt[ds] == self.min_uInterval: # time to advertise
+                        self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                        num_of_ads[ds] += 1
+                        self.ins_cnt[ds]  = 0 
+                        neg_ind_cnt[ds] = 0
+                        tn_cnt[ds]      = 0
+
+                if finished_warmup_period[ds] and num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
                     return  
     
 
@@ -866,7 +872,7 @@ class DistCacheSimulator(object):
         if (self.mode == 'measure_mr0'):
             self.run_trace_measure_mr0_full_knowledge() 
         elif (self.mode == 'measure_mr0_by_salsa'):
-            self.run_trace_measure_mr0_by_salsa() 
+            self.run_trace_estimate_mr0_by_salsa() 
         elif (self.mode == 'measure_mr1'):
             self.run_trace_measure_mr1()
         elif (self.mode == 'measure fp fn'):

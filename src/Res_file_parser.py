@@ -739,14 +739,13 @@ class Res_file_parser (object):
         
         """
         num_of_points = 31
+        x_diff = 200
         for line in open ('../res/{}' .format (input_file_name),  "r"):
             splitted_line = line.split (',')
             mr = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
             mr = mr[:num_of_points]
-        plt.xlim (0, 160*(len(mr)-1))
-        # print (f'x={[160*i for i in range(len(mr))]}') #$$$
-        # print (f'mr={mr}') #$$$
-        plt.plot ([160*i for i in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
+        plt.xlim (0, x_diff*(len(mr)-1))
+        plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
         plt.xlabel ('Insertion Count')
         if type==0:
             plt.ylim (0.8, 1.02)
@@ -759,11 +758,11 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-# type = 0
-# for ds in range (1): 
-#     my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U1600_mr_by_staleness_{ds}.res', type=type)
-my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-for DS_size in [4, 16, 64]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
+type = 0
+for ds in range (3): 
+    my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U2000_mr0_by_staleness_org_{ds}.res', type=type)
+# my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+# for DS_size in [4, 16, 64]: 
+#     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE

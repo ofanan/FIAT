@@ -43,7 +43,7 @@ def main ():
                             client_DS_cost          = DS_cost,
                             missp                   = missp,
                             DS_size                 = DS_size,
-                            min_uInterval           = DS_size/10,
+                            min_uInterval           = 2000 if mode=='measure_mr0' else DS_size/10,
                             re_init_after_each_ad   = False,
                             min_feasible_uInterval  = min_feasible_uInterval,
                             uInterval_factor        = 32 if mode.startswith('salsa') else 1,

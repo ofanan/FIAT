@@ -556,31 +556,33 @@ class DistCacheSimulator(object):
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
             
             for ds in range(self.num_of_DSs):
-                if self.ins_cnt[ds] == self.min_uInterval:
-                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
-                    self.ins_cnt[ds]     = 0 
+
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
+
+                    if num_of_ads[ds] >= self.num_of_warmup_ads and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+                        if neg_ind_cnt[ds]>0:
+                            printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
+                            last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
+                        else:
+                            MyConfig.error ('neg_ind_cnt==0')
+
+                    if self.ins_cnt[ds] == self.min_uInterval: # time to advertise
+                        self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                        num_of_ads[ds] += 1
+                        self.ins_cnt[ds]  = 0 
+
                     neg_ind_cnt[ds] = 0
                     tn_cnt[ds]      = 0
-                    num_of_ads[ds] += 1
                 
-                if num_of_ads[ds] < self.num_of_warmup_ads: # Skip some warm-up period
-                    continue
 
+                if num_of_ads[ds] < self.num_of_warmup_ads-1: # No need to collect stat before the warm-up period is nearly to end
+                    continue
+                
                 # update counters based on the current indications and resolutions
                 if self.indications[ds]==False: # negative indication for this DS
                     neg_ind_cnt[ds] += 1
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
-
-                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0 and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: 
-
-                    if neg_ind_cnt[ds]>0:
-                        printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
-                        last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
-                        neg_ind_cnt[ds]             = 0
-                        tn_cnt[ds]                  = 0
-                    else:
-                        MyConfig.error ('neg_ind_cnt==0')
 
                 if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
                     return  

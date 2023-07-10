@@ -312,7 +312,7 @@ class DistCacheSimulator(object):
             self.ins_cnt                        = np.zeros (self.num_of_DSs)
             self.mr0_measure_window             = self.min_uInterval/10
             self.mr1_measure_window             = self.min_uInterval/10
-            self.naive_selection_alg            = 'cheapest'
+            self.naive_selection_alg            = 'all'
             self.use_fna                        = True
             self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
             self.final_simulated_ad             = self.num_of_warmup_ads + 3
@@ -321,6 +321,11 @@ class DistCacheSimulator(object):
                 self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
                 for ds in range (self.num_of_DSs):
                     self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}_{}{}.res' .format (
+                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds),  "w")
+            elif self.mode=='measure_mr0_by_salsa':
+                self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
+                for ds in range (self.num_of_DSs):
+                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_salsa_{}_{}{}.res' .format (
                         self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds),  "w")
             elif self.mode=='measure_mr1':
                 self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
@@ -545,6 +550,11 @@ class DistCacheSimulator(object):
         
     def run_trace_measure_mr0_full_knowledge (self):
         """
+        Measure and print to an output .res file mr0. 
+        mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
+        The alg' runs the chosen naive selection alg' - that is, either "all" - which accesses all the DSs with positive ind', or "cheapest", which accesses the cheapest DS with a pos' ind'.
+        The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
+        If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
         """
         neg_ind_cnt             = np.zeros (self.num_of_DSs)
         tn_cnt                  = np.zeros (self.num_of_DSs)
@@ -556,6 +566,58 @@ class DistCacheSimulator(object):
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
             
             for ds in range(self.num_of_DSs):
+
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
+
+                    if num_of_ads[ds] >= self.num_of_warmup_ads and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+                        if neg_ind_cnt[ds]>0:
+                            printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
+                            last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
+                        else:
+                            MyConfig.error ('neg_ind_cnt==0')
+
+                    if self.ins_cnt[ds] == self.min_uInterval: # time to advertise
+                        self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                        num_of_ads[ds] += 1
+                        self.ins_cnt[ds]  = 0 
+
+                    neg_ind_cnt[ds] = 0
+                    tn_cnt[ds]      = 0
+                
+
+                if num_of_ads[ds] < self.num_of_warmup_ads-1: # No need to collect stat before the warm-up period is nearly to end
+                    continue
+                
+                # update counters based on the current indications and resolutions
+                if self.indications[ds]==False: # negative indication for this DS
+                    neg_ind_cnt[ds] += 1
+                    if self.resolution[ds]==False:
+                        tn_cnt[ds] += 1
+
+                if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
+                    return  
+    
+
+    def run_trace_measure_mr0_full_knowledge (self):
+        """
+        Estimate mr0 and print to an output .res file mr0.
+        mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
+        The alg' runs the chosen naive selection alg' - that is, either "all" - which accesses all the DSs with positive ind', or "cheapest", which accesses the cheapest DS with a pos' ind'.
+        Only the estimation uses a SALSA2-like mechanism; in order to make a meaningful comparison with the other estimations/measurements of mr0, 
+        the selection alg' is NOT salsa, but a naive DS selection alg'.   
+        The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
+        If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
+        """
+        neg_ind_cnt             = np.zeros (self.num_of_DSs)
+        tn_cnt                  = np.zeros (self.num_of_DSs)
+        self.ins_cnt            = np.zeros (self.num_of_DSs)
+        last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
+        num_of_ads              = np.zeros (self.num_of_DSs)
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req = self.req_df.iloc[self.req_cnt]  
+            self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
+            
+            for ds in self.DSs2accs:
 
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
 
@@ -803,6 +865,8 @@ class DistCacheSimulator(object):
         #     self.run_trace_measure_mr()
         if (self.mode == 'measure_mr0'):
             self.run_trace_measure_mr0_full_knowledge() 
+        elif (self.mode == 'measure_mr0_by_salsa'):
+            self.run_trace_measure_mr0_by_salsa() 
         elif (self.mode == 'measure_mr1'):
             self.run_trace_measure_mr1()
         elif (self.mode == 'measure fp fn'):

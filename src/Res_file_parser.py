@@ -748,7 +748,7 @@ class Res_file_parser (object):
         plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
         plt.xlabel ('Insertion Count')
         if type==0:
-            plt.ylim (0.8, 1.02)
+            plt.ylim (0.5, 1.02)
             plt.ylabel (r'$\nu$')
         else:
             plt.ylim (0, 0.25)
@@ -758,11 +758,11 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-# type = 0
-# for ds in range (3): 
-#     my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U2000_mr0_by_staleness_{ds}.res', type=type)
-my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-for DS_size in [4, 16, 64]: 
-    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True)
+type = 0
+for ds in range (3): 
+    my_Res_file_parser.plot_mr(input_file_name=f'Scarab_C16K_U2000_mr0_by_staleness_all_{ds}.res', type=type)
+# my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+# for DS_size in [4, 16, 64]: 
+#     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 300], DS_size=64)

@@ -315,8 +315,8 @@ class DistCacheSimulator(object):
             if self.mode=='measure_mr0':
                 self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
                 for ds in range (self.num_of_DSs):
-                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}{}.res' .format (
-                        self.trace_name, self.DS_size/1000, self.min_uInterval, 'org_' if self.use_org else 'new_', 'detailed_' if self.print_detailed_output else '', ds),  "w")
+                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (
+                        self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
             elif self.mode=='measure_mr1':
                 self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
                 for ds in range (self.num_of_DSs):

@@ -315,13 +315,13 @@ class DistCacheSimulator(object):
             self.naive_selection_alg            = 'cheapest'
             self.use_fna                        = True
             self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
-            self.final_simulated_ad             = 3*self.DS_size/self.min_uInterval
+            self.final_simulated_ad             = self.num_of_warmup_ads + 3
 
             if self.mode=='measure_mr0':
                 self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
                 for ds in range (self.num_of_DSs):
-                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}{}.res' .format (
-                        self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  "w")
+                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}_{}{}.res' .format (
+                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds),  "w")
             elif self.mode=='measure_mr1':
                 self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
                 for ds in range (self.num_of_DSs):
@@ -563,8 +563,7 @@ class DistCacheSimulator(object):
                     tn_cnt[ds]      = 0
                     num_of_ads[ds] += 1
                 
-                # handle_miss
-                if num_of_ads[ds] <= self.num_of_warmup_ads: # Skip some warm-up period
+                if num_of_ads[ds] < self.num_of_warmup_ads: # Skip some warm-up period
                     continue
 
                 # update counters based on the current indications and resolutions

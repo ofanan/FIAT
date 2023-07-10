@@ -299,6 +299,11 @@ class DistCacheSimulator(object):
             simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
             """
+            self.use_fixed_uInterval            = True
+            self.do_not_advertise_upon_insert   = True
+            self.hit_ratio_based_uInterval      = False
+            self.collect_mr_stat                = False
+            self.use_CountingBloomFilter        = False
             self.print_detailed_output          = False
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
@@ -321,11 +326,6 @@ class DistCacheSimulator(object):
                 self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
                 for ds in range (self.num_of_DSs):
                     self.mr1_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr1_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  'w')
-            # self.use_fixed_uInterval            = True
-            # self.do_not_advertise_upon_insert   = True
-            # self.hit_ratio_based_uInterval      = False
-            # self.collect_mr_stat                = False
-            # self.use_CountingBloomFilter        = False
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs

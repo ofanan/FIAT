@@ -521,13 +521,13 @@ class Res_file_parser (object):
                    mr1_th           = 0.01,
                    uInterval        = None,
                    bpe              = 14,
-                   traces           = ['Wiki', 'Scarab', 'F1', 'P3'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['IBM1', 'IBM7', 'F1','F2', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], 
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
                    plot_bwCost      = True,
-                   mode             = 'SALSA1',
-                   uIntFactVals     = [2, 8, 32]
+                   mode             = 'SALSA2',
+                   uIntFactVals     = [2, 32]
                    ):
         """
         Generate and save a Python's bar-plot of the service cost and BW for varying uIntFact (update interval factor).   
@@ -612,7 +612,7 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['IBM1', 'IBM7', 'F1','F2', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], #['Wiki', 'Scarab', 'F1', 'P3'],
+                   traces           = ['IBM7', 'F2', 'Scarab', 'Twitter17'], #['IBM1', 'IBM7', 'F1','F2', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], 
                    modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
@@ -758,11 +758,11 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-type = 0
-for ds in range (3): 
-    my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U2000_mr0_by_staleness_{ds}.res', type=type)
-# my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-# for DS_size in [4, 16, 64]: 
-#     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True)
-# my_Res_file_parser.parse_files(['opt.res', 'salsa1.res'])
-# my_Res_file_parser.plot_bars_by_uIntFact (plot_serviceCost=False, missp_vals=[30, 300], DS_size=4)ROTATION_ANGLE
+# type = 0
+# for ds in range (3): 
+#     my_Res_file_parser.plot_mr(input_file_name=f'Wiki_C16K_U2000_mr0_by_staleness_{ds}.res', type=type)
+my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True)
+# my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res'])
+# my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 300], DS_size=64)

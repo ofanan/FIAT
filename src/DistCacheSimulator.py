@@ -518,6 +518,7 @@ class DistCacheSimulator(object):
         - Assign to self.pos_indications the list of DSs with positive indications for self.cur_req.key.
         - Assign to self.resolution the resolution (existence/non existence) of self.cur_req.key in each DS.
         - Assign to self.DSs2accs the list of DSs to access, according to the chosen selection alg'.
+        - If inserting the item to a DS (happens only upon a miss), then set self.DS2insert = ID of this DS. Else, set self.DS2insert=None. 
         - Access all the DSs in self.DSs2accs.
         - If the access is a miss, insert self.cur_req.key into one of the DS, as chosen by self.select_DS_to_insert. 
         - Returns True iff the self.cur_req.key is found in any of the accessed DSs. 
@@ -541,10 +542,12 @@ class DistCacheSimulator(object):
                 hit = True
                 self.DS_list[ds2accs].cache[self.cur_req.key] #Touch the element, so as to update the LRU mechanism
                 
-        if not(hit): # miss --> need to insert the key to a cache
-            self.DS2insert = self.select_DS_to_insert(0) # pseudo-randomly select the DS to which the item will be inserted 
-            self.DS2insert.insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
-            self.ins_cnt[self.DS2insert.ID] += 1
+        if hit: # hit --> need to insert the key to a cache
+            self.DS2insert = None
+        else: # miss --> need to insert the key to a cache    
+            self.DS2insert = self.select_DS_to_insert(0).ID # pseudo-randomly select the DS to which the item will be inserted 
+            self.DS_list[self.DS2insert].insert (key = self.cur_req.key, req_cnt = self.req_cnt) # miss --> insert the missed item into the DS
+            self.ins_cnt[self.DS2insert] += 1
         return hit
         
         
@@ -633,9 +636,8 @@ class DistCacheSimulator(object):
                 ds = self.DS2insert
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
 
-                    if num_of_ads[ds] >= self.num_of_warmup_ads:
-                        finished_warmup_period[ds] = True
-                        if last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+                    if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                        if last_printed_ins_cnt[ds] != self.ins_cnt[ds]: 
                             if neg_ind_cnt[ds]>0:
                                 printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
                                 last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
@@ -647,10 +649,12 @@ class DistCacheSimulator(object):
                     # printf (self.mr0_by_staleness_res_file[ds], '{:.5f}\n' .format (self.ins_cnt[ds])) #$$$
                     if self.ins_cnt[ds] == self.min_uInterval: # time to advertise
                         self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
-                        num_of_ads[ds] += 1
-                        self.ins_cnt[ds]  = 0 
-                        neg_ind_cnt[ds] = 0
-                        tn_cnt[ds]      = 0
+                        num_of_ads[ds]     += 1
+                        self.ins_cnt[ds]    = 0 
+                        neg_ind_cnt[ds]     = 0
+                        tn_cnt[ds]          = 0
+                        if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
+                            finished_warmup_period[ds] = True
 
                 if finished_warmup_period[ds] and num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
                     return  

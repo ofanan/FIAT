@@ -85,6 +85,9 @@ class Res_file_parser (object):
                             'SALSA29'   : 'red',   
                             'SALSA3'    : 'brown',
                             # 'others'    : , 'black','magenta','red', 'brown', yellow
+                            'fullKnow'  : 'blue',
+                            'salsa2'    : 'black',
+                            'fnaa'      : 'magenta'
                             }
 
         # The markers used for each alg', in the dist' case
@@ -755,11 +758,11 @@ class Res_file_parser (object):
         output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
-        num_of_points = 31
         x_diff = 200
         for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
             mr = dict['vec']
-            plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
+            print (f'len(mr)={len(mr)}')
+            plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[dict['measure_mr_mode']])
             plt.xlabel ('Insertion Count')
         if mr_type==0:
             plt.ylim (0.5, 1.02)

@@ -746,7 +746,7 @@ class Res_file_parser (object):
         return [(idx_in_group + num_bars_per_group*x + BAR_WIDTH_BETWEEN_GRPS*(x+1))*BAR_WIDTH for x in range(num_groups)]
 
     
-    def plot_mr (self, mr_type=0):
+    def plot_mr (self, input_file_name, mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
         Inputs: 
@@ -772,9 +772,10 @@ class Res_file_parser (object):
         plt.clf ()
         
                     
+input_file_name = 'IBM7_C16K_U2000_measure_mr_all_0.res'
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_files(input_file_names=['IBM7_C16K_U2000_measure_mr_all_0.res'], file_type='.mr.res')
-my_Res_file_parser.plot_mr(mr_type=0)
+my_Res_file_parser.parse_files(input_file_names=[input_file_name], file_type='.mr.res')
+my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
 # type = 0
 # for ds in range (3): 
 #     my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)

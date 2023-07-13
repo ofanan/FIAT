@@ -114,6 +114,20 @@ class Res_file_parser (object):
         self.set_plt_params ()
 
 
+    def parse_mr_res_line (self, line):
+        """
+        Parse a single line of a .mr.res file.
+        """
+        splitted_line = line.split (" | ")
+        if len (splitted_line)<3:
+            MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
+        vec  = splitted_line[2].split(',')
+        self.dict = {'mr_type'          : splitted_line[0],
+                     'measure_mr_mode'  : splitted_line[1],
+                     'vec'              : [float(vec[i]) for i in range(len(vec)-1)]
+            } 
+        MyConfig.error (self.dict)
+
     def parse_line (self, line):
         """
         Parse a single line of a .res file.
@@ -453,7 +467,7 @@ class Res_file_parser (object):
                                          add_legend_str = add_legend_str,    legend_entry = self.legend_entry_dict[alg_mode]) 
             
                     
-    def parse_files (self, input_file_names):
+    def parse_files (self, input_file_names, file_type='.res'):
         """
         Parse each file in the list input_file_names, and save the parsed data in self.list_of_dicts
         """
@@ -471,7 +485,12 @@ class Res_file_parser (object):
                 if (line.split ("//")[0] == ""):
                     continue
                
-                self.parse_line(line)
+                if file_type=='.res':
+                    self.parse_line(line)
+                elif file_type=='.mr.res':
+                    self.parse_mr_res_line(line)
+                else:
+                    MyConfig.error (f'Sorry, the file_type {file_type} is not supported.')
                 if ( not(self.dict in self.list_of_dicts)):
                     self.list_of_dicts.append(self.dict)
                         
@@ -758,9 +777,10 @@ class Res_file_parser (object):
         
                     
 my_Res_file_parser = Res_file_parser ()
-type = 0
-for ds in range (3): 
-    my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)
+my_Res_file_parser.parse_files(input_file_names=['IBM7_C16K_U2000_measure_mr_all_0.res'], file_type='.mr.res')
+# type = 0
+# for ds in range (3): 
+#     my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)
 # my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
 # for DS_size in [4, 16, 64]: 
 #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True)

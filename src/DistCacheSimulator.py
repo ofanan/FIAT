@@ -137,7 +137,7 @@ class DistCacheSimulator(object):
             return (open (full_path_res_file_name,  'a'))
         res_file =  open (full_path_res_file_name,  'w')
         printf (res_file, '// Format:\n' )
-        printf (res_file, '// bin : mode : m0, m1, ...\n' )
+        printf (res_file, '// bin | mode | m0, m1, ...\n' )
         printf (res_file, '// Where: bin is 0 for mr0, 1 for mr1.\n' )
         printf (res_file, '// mode is either: fullKnow, salsa2, or fnaa.\n' )
         printf (res_file, '// m0, m1, ... is the vector of mr.\n')        
@@ -572,8 +572,9 @@ class DistCacheSimulator(object):
         self.ins_cnt            = np.zeros (self.num_of_DSs)
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
+        finished_report_period  = [False for _ in range(self.num_of_DSs)]
         for ds in range(self.num_of_DSs):
-            printf (self.measure_mr_res_file[ds], '\n0 : fullKnow : ')
+            printf (self.measure_mr_res_file[ds], '\n0 | fullKnow | ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
@@ -608,6 +609,8 @@ class DistCacheSimulator(object):
                         tn_cnt[ds] += 1
 
                 if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
+                    finished_report_period[ds] = True
+                if all(finished_report_period): 
                     return  
     
 
@@ -631,7 +634,7 @@ class DistCacheSimulator(object):
         finished_report_period  = [False for _ in range(self.num_of_DSs)]
         
         for ds in range(self.num_of_DSs):
-            printf (self.measure_mr_res_file[ds], '\n0 : salsa2 : ')
+            printf (self.measure_mr_res_file[ds], '\n0 | salsa2 | ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 

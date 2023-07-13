@@ -122,11 +122,10 @@ class Res_file_parser (object):
         if len (splitted_line)<3:
             MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
         vec  = splitted_line[2].split(',')
-        self.dict = {'mr_type'          : splitted_line[0],
+        self.dict = {'mr_type'          : int(splitted_line[0]),
                      'measure_mr_mode'  : splitted_line[1],
                      'vec'              : [float(vec[i]) for i in range(len(vec)-1)]
             } 
-        MyConfig.error (self.dict)
 
     def parse_line (self, line):
         """
@@ -728,7 +727,6 @@ class Res_file_parser (object):
                 sub_plot_str = '_bCost'
             else:
                 sub_plot_str = ''
-            # plt.show () #$$$
             plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
@@ -748,7 +746,7 @@ class Res_file_parser (object):
         return [(idx_in_group + num_bars_per_group*x + BAR_WIDTH_BETWEEN_GRPS*(x+1))*BAR_WIDTH for x in range(num_groups)]
 
     
-    def plot_mr (self, input_file_name, type=0):
+    def plot_mr (self, mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
         Inputs: 
@@ -759,25 +757,24 @@ class Res_file_parser (object):
         """
         num_of_points = 31
         x_diff = 200
-        for line in open ('../res/{}' .format (input_file_name),  "r"):
-            splitted_line = line.split (',')
-            mr = [float (splitted_line[i]) for i  in range(len(splitted_line)) if splitted_line[i]!='']
-            mr = mr[:num_of_points]
-        plt.xlim (0, x_diff*(len(mr)-1))
-        plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
-        plt.xlabel ('Insertion Count')
-        if type==0:
+        for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
+            mr = dict['vec']
+            plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color='blue')
+            plt.xlabel ('Insertion Count')
+        if mr_type==0:
             plt.ylim (0.5, 1.02)
             plt.ylabel (r'$\nu$')
         else:
             plt.ylim (0, 0.25)
             plt.ylabel (r'$\pi$')
+        plt.xlim (0, x_diff*(len(mr)-1))
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
         
                     
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_files(input_file_names=['IBM7_C16K_U2000_measure_mr_all_0.res'], file_type='.mr.res')
+my_Res_file_parser.plot_mr(mr_type=0)
 # type = 0
 # for ds in range (3): 
 #     my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)

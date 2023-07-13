@@ -264,7 +264,7 @@ class DistCacheSimulator(object):
         self.FN_miss_cnt          = 0 # num of misses happened due to FN event
         self.tot_num_of_updates   = 0
         self.bw                   = bw
-        self.initial_mr0          = (1 - 1.1*(self.client_DS_cost[0][i]/self.missp)) if self.re_init_after_each_ad else 0.88,
+        self.initial_mr0          = (1 - 1.1*(self.client_DS_cost[0][i]/self.missp)) if self.re_init_after_each_ad else 0.88
                
         # If the uInterval is given in the input (as a non-negative value) - use it. 
         # Else, calculate uInterval by the given bw parameter.
@@ -615,9 +615,9 @@ class DistCacheSimulator(object):
         neg_ind_cnt             = np.zeros (self.num_of_DSs)
         tn_cnt                  = np.zeros (self.num_of_DSs)
         self.ins_cnt            = np.zeros (self.num_of_DSs)
-        last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
-        estimated_mr            = np.zeros (self.num_of_DSs)
+        estimated_mr            = [self.initial_mr0 for _ in range(self.num_of_DSs)] 
+        np.ones (self.num_of_DSs)
         finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
         finished_report_period  = [False for _ in range(self.num_of_DSs)]
         
@@ -627,45 +627,36 @@ class DistCacheSimulator(object):
             
             for ds in self.DSs2accs:
 
-                # update counters based on the current indications and resolutions
-                if finished_warmup_period[ds] and self.indications[ds]==False: # negative indication for this DS
+                if self.indications[ds]==False: # negative indication for this DS
                     neg_ind_cnt[ds] += 1
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
+
+                    # printf (self.mr0_by_staleness_res_file[ds], f'\nneg_ind_cnt={neg_ind_cnt[ds]}, tn_cnt={tn_cnt[ds]}\n') #$$$
+                    if neg_ind_cnt[ds] % self.mr0_measure_window==0:
+                        estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
+                        if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                            printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (estimated_mr[ds]))
+                            neg_ind_cnt[ds] = 0
+                            tn_cnt[ds]      = 0
 
             if self.DS2insert==None: # there was no insertion to a DS
                 continue
             
             # Now we know that the request resulted in a miss, and therefore was inserted into self.DS2insert
-            if self.ins_cnt[self.DS2insert]>0 and self.ins_cnt[self.DS2insert] % self.mr0_measure_window==0:
-
-                if finished_warmup_period[self.DS2insert]: # Skip some warm-up period; later, write the results to file
-                    if last_printed_ins_cnt[self.DS2insert] != self.ins_cnt[self.DS2insert]: 
-                        if neg_ind_cnt[self.DS2insert]>0:
-                            estimated_mr [self.DS2insert] = self.EWMA_alpha_mr0 * estimated_mr [self.DS2insert] + (1-self.EWMA_alpha_mr0) * tn_cnt[self.DS2insert]/neg_ind_cnt[self.DS2insert]
-                            printf (self.mr0_by_staleness_res_file[self.DS2insert], '{:.5f},' .format (estimated_mr[self.DS2insert]))
-                            last_printed_ins_cnt[self.DS2insert]    = self.ins_cnt[self.DS2insert]
-                        else:
-                            MyConfig.error ('neg_ind_cnt==0')
-                    neg_ind_cnt[self.DS2insert] = 0
-                    tn_cnt[self.DS2insert]      = 0
-
-                # printf (self.mr0_by_staleness_res_file[self.DS2insert], '{:.5f}\n' .format (self.ins_cnt[self.DS2insert])) #$$$
-                if self.ins_cnt[self.DS2insert] == self.min_uInterval: # time to advertise
-                    self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
-                    num_of_ads[self.DS2insert]     += 1
-                    self.ins_cnt[self.DS2insert]    = 0 
-                    neg_ind_cnt[self.DS2insert]     = 0
-                    tn_cnt[self.DS2insert]          = 0
-                    if num_of_ads[self.DS2insert] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
-                        finished_warmup_period[self.DS2insert] = True
-                        estimated_mr          [self.DS2insert] = self.initial_mr0  
-                        
+            # printf (self.mr0_by_staleness_res_file[self.DS2insert], f'\nneg_ind_cnt={neg_ind_cnt[self.DS2insert]}, tn_cnt={tn_cnt[self.DS2insert]}\n') #$$$
+            if self.ins_cnt[self.DS2insert] == self.min_uInterval: # time to advertise
+                self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
+                num_of_ads[self.DS2insert]     += 1
+                self.ins_cnt[self.DS2insert]    = 0 
+                if num_of_ads[self.DS2insert] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
+                    finished_warmup_period[self.DS2insert] = True                        
 
             if finished_warmup_period[self.DS2insert]: 
                 if num_of_ads[self.DS2insert] > self.final_simulated_ad: # Collected enough points
                     finished_report_period[self.DS2insert] = True
-                return  
+                if all(finished_report_period): 
+                    return  
     
 
     def run_trace_opt_hetro (self):

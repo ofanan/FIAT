@@ -25,16 +25,16 @@ def main ():
         # for trace in ['IBM7']: 
         # for trace in ['Twitter17']:
         # for trace in ['Twitter45']:
-        for trace in ['Scarab']:       
-        # for trace in ['Wiki']:       
-            for DS_size in [16000]: #[, 16000, 64000]:
+        # for trace in ['Scarab']:       
+        for trace in ['IBM7']:       
+            for DS_size in [10000]: #[, 16000, 64000]:
                 max_num_of_req = MyConfig.calc_num_of_req (trace) 
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-                for mode in ['measure_mr0_by_salsa']:
-                    for missp in [10]: #[10, 30, 100, 300]:
+                for mode in ['salsa2']:
+                    for missp in [100]: #[10, 30, 100, 300]:
                         tic()
                         sm = sim.DistCacheSimulator(
-                            res_file_name           = f'{mode}_HPC',
+                            res_file_name           = f'{mode}_PC',
                             EWMA_alpha_mr0          = 0.85, 
                             EWMA_alpha_mr1          = 0.25, 
                             trace_name              = trace,
@@ -43,11 +43,11 @@ def main ():
                             client_DS_cost          = DS_cost,
                             missp                   = missp,
                             DS_size                 = DS_size,
-                            min_uInterval           = 2000 if mode.startswith('measure_mr0') else DS_size/10,
+                            min_uInterval           = DS_size/10,
                             re_init_after_each_ad   = False,
                             min_feasible_uInterval  = min_feasible_uInterval,
-                            uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                            verbose                 = [])
+                            uInterval_factor        = 2 if mode.startswith('salsa') else 1,
+                            verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
                         sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                         toc()
 
@@ -78,7 +78,7 @@ def calc_DS_cost (num_of_DSs=3, use_homo_DS_cost = False):
         return calc_DS_homo_costs(num_of_DSs, num_of_clients)
     else:
         return calc_DS_hetro_costs(num_of_DSs, num_of_clients)
-
+ 
 
 def calc_opt_service_cost (accs_cost, comp_miss_cnt, missp, num_of_req):
     """
@@ -98,9 +98,62 @@ def calc_opt_service_cost_in_loop ():
         for missp in [30, 100, 300]:
             calc_opt_service_cost (accs_cost=65151, comp_miss_cnt=367426, missp=missp, num_of_req=400000)
 
+def run_full_ind_oriented_sim ():
+    """
+    Run a simulation of a conf' that is very likely to encourage SALSA2 to use full indicators. 
+    """
+    DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    max_num_of_req = 500000  
+    trace = 'Twitter45'
+    requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
+    tic()
+    sm = sim.DistCacheSimulator(
+        res_file_name           = 'salsa2_PC',
+        EWMA_alpha_mr0          = 0.85, 
+        EWMA_alpha_mr1          = 0.25, 
+        trace_name              = trace,
+        mode                    = 'salsa2',
+        req_df                  = requests,
+        client_DS_cost          = DS_cost,
+        missp                   = 100,
+        DS_size                 = 10000,
+        min_uInterval           = 2000,
+        uInterval_factor        = 2,
+        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+    sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+    toc()
+
+
+def run_mr_sim ():
+    """
+    Run an experiment to measure "mr", namely, the exclusion probabilities.
+    """
+    min_feasible_uInterval = 10
+    DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    for trace in ['IBM7']: #['IBM1', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
+        max_num_of_req = 100000  
+        requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
+        for mode in ['measure_mr0_by_salsa']:
+            tic()
+            sm = sim.DistCacheSimulator(
+                res_file_name           = f'{mode}_PC',
+                EWMA_alpha_mr0          = 0.85, 
+                EWMA_alpha_mr1          = 0.25, 
+                trace_name              = trace,
+                mode                    = mode,
+                req_df                  = requests,
+                client_DS_cost          = DS_cost,
+                missp                   = 10,
+                DS_size                 = 16000,
+                min_uInterval           = 2000,
+                uInterval_factor        = 32 if mode.startswith('salsa') else 1,
+                verbose                 = [])
+            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+            toc()
+    
 if __name__ == '__main__':
-    try: 
-        main ()
+    try:
+        run_full_ind_oriented_sim ()
+        # main ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')
-    

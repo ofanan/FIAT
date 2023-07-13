@@ -762,7 +762,8 @@ class Res_file_parser (object):
         for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
             mr = dict['vec']
             print (f'len(mr)={len(mr)}')
-            plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[dict['measure_mr_mode']])
+            measure_mr_mode = dict['measure_mr_mode']
+            plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode], label=measure_mr_mode)
             plt.xlabel ('Insertion Count')
         if mr_type==0:
             plt.ylim (0.5, 1.02)
@@ -770,6 +771,7 @@ class Res_file_parser (object):
         else:
             plt.ylim (0, 0.25)
             plt.ylabel (r'$\pi$')
+        plt.legend()
         plt.xlim (0, x_diff*(len(mr)-1))
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()

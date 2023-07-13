@@ -332,8 +332,8 @@ class DistCacheSimulator(object):
             self.mr1_measure_window             = self.min_uInterval/10
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
-            self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
-            self.final_simulated_ad             = self.num_of_warmup_ads + 3
+            self.num_of_warmup_ads              = 8 #self.DS_size/self.min_uInterval
+            self.final_simulated_ad             = self.num_of_warmup_ads + 4
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
@@ -572,6 +572,7 @@ class DistCacheSimulator(object):
         self.ins_cnt            = np.zeros (self.num_of_DSs)
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
+        finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
         finished_report_period  = [False for _ in range(self.num_of_DSs)]
         for ds in range(self.num_of_DSs):
             printf (self.measure_mr_res_file[ds], '\n0 | fullKnow | ')
@@ -583,17 +584,25 @@ class DistCacheSimulator(object):
 
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
 
-                    if num_of_ads[ds] >= self.num_of_warmup_ads and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+                    if finished_warmup_period[ds] and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
                         if neg_ind_cnt[ds]>0:
+                            # print (f'ins_cnt[{ds}]={self.ins_cnt[ds]}') #$$$
                             printf (self.measure_mr_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
-                            last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
+                            last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                         else:
                             MyConfig.error ('neg_ind_cnt==0')
 
                     if self.ins_cnt[ds] == self.min_uInterval: # time to advertise
                         self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
                         num_of_ads[ds] += 1
-                        self.ins_cnt[ds]  = 0 
+                        if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
+                            finished_warmup_period[ds] = True                        
+                        self.ins_cnt[ds] = 0 
+                        if finished_warmup_period[ds]: 
+                            print (f'ds={ds}, num_of_ads={num_of_ads[ds]}') #$$$ 
+                            if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
+                                print (f'ds={ds}, num_of_ads={num_of_ads[ds]}, self.final_simulated_ad={self.final_simulated_ad}') #$$$ 
+                                finished_report_period[ds] = True
 
                     neg_ind_cnt[ds] = 0
                     tn_cnt[ds]      = 0
@@ -608,10 +617,8 @@ class DistCacheSimulator(object):
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
 
-                if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
-                    finished_report_period[ds] = True
-                if all(finished_report_period): 
-                    return  
+            if all(finished_report_period): 
+                return  
     
 
     def run_trace_estimate_mr0_by_salsa (self):
@@ -665,10 +672,12 @@ class DistCacheSimulator(object):
                 self.ins_cnt[self.DS2insert]    = 0 
                 if num_of_ads[self.DS2insert] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
                     finished_warmup_period[self.DS2insert] = True                        
+                if finished_warmup_period[self.DS2insert]: 
+                    print (f'salsa: ds={self.DS2insert}, num_of_ads={num_of_ads[self.DS2insert]}, self.final_simulated_ad={self.final_simulated_ad}') 
+                    if num_of_ads[self.DS2insert] > self.final_simulated_ad: # Collected enough points
+                        finished_report_period[self.DS2insert] = True
 
-            if finished_warmup_period[self.DS2insert]: 
-                if num_of_ads[self.DS2insert] > self.final_simulated_ad: # Collected enough points
-                    finished_report_period[self.DS2insert] = True
+            for ds in range(self.num_of_DSs):
                 if all(finished_report_period): 
                     return  
     

@@ -153,7 +153,8 @@ def run_mr_sim ():
     
 if __name__ == '__main__':
     try:
-        run_full_ind_oriented_sim ()
+        # run_full_ind_oriented_sim ()
+        run_mr_sim ()
         # main ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

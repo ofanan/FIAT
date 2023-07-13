@@ -126,6 +126,22 @@ class DistCacheSimulator(object):
                 missp       = self.missp) 
         for i in range(self.num_of_clients)]
     
+    def init_mr_res_file (self, res_file_name):
+        """
+        Open the res file for writing results of 'measure_mr' sim, as follows:
+        If a res file with the relevant name already exists - open it for appending.
+        Else, open a new res file, and write to it comment header lines, explaining the file's format  
+        """
+        full_path_res_file_name = '../res/{}.res' .format(res_file_name)
+        if Path(full_path_res_file_name).is_file(): # does this res file already exist?
+            return (open (full_path_res_file_name,  'a'))
+        res_file =  open (full_path_res_file_name,  'w')
+        printf (res_file, '// bin : mode : m0, m1, ...\n' )
+        printf (res_file, '// Where: bin is 0 for mr0, 1 for mr1.\n' )
+        printf (res_file, '// mode is either: fullKnow, salsa2, or fnaa.\n' )
+        printf (res_file, '// m0, m1, ... is the vector of mr.\n')        
+        return res_file
+    
     def init_res_file (self, res_file_name):
         """
         Open the res file for writing, as follows:
@@ -318,20 +334,13 @@ class DistCacheSimulator(object):
             self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
             self.final_simulated_ad             = self.num_of_warmup_ads + 3
 
-            if self.mode=='measure_mr0':
-                self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
-                for ds in range (self.num_of_DSs):
-                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_staleness_{}_{}{}.res' .format (
-                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds),  "w")
-            elif self.mode=='measure_mr0_by_salsa':
-                self.mr0_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
-                for ds in range (self.num_of_DSs):
-                    self.mr0_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr0_by_salsa_{}_{}{}.res' .format (
-                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds),  "w")
-            elif self.mode=='measure_mr1':
-                self.mr1_by_staleness_res_file      = [None for ds in range(self.num_of_DSs)]
-                for ds in range (self.num_of_DSs):
-                    self.mr1_by_staleness_res_file[ds] = open ('../res/{}_C{:.0f}K_U{:.0f}_mr1_by_staleness_{}{}.res' .format (self.trace_name, self.DS_size/1000, self.min_uInterval, 'detailed_' if self.print_detailed_output else '', ds),  'w')
+            self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
+            for ds in range (self.num_of_DSs):
+                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_measure_mr_{}_{}{}.res' .format (
+                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
+            MyConfig.error ('rgrg') #$$$
+
+
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
@@ -575,7 +584,7 @@ class DistCacheSimulator(object):
 
                     if num_of_ads[ds] >= self.num_of_warmup_ads and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
                         if neg_ind_cnt[ds]>0:
-                            printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
+                            printf (self.measure_mr_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
                             last_printed_ins_cnt[ds]    = self.ins_cnt[ds]
                         else:
                             MyConfig.error ('neg_ind_cnt==0')
@@ -632,11 +641,11 @@ class DistCacheSimulator(object):
                     if self.resolution[ds]==False:
                         tn_cnt[ds] += 1
 
-                    # printf (self.mr0_by_staleness_res_file[ds], f'\nneg_ind_cnt={neg_ind_cnt[ds]}, tn_cnt={tn_cnt[ds]}\n') #$$$
+                    # printf (self.measure_mr_res_file[ds], f'\nneg_ind_cnt={neg_ind_cnt[ds]}, tn_cnt={tn_cnt[ds]}\n') #$$$
                     if neg_ind_cnt[ds] % self.mr0_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                            printf (self.mr0_by_staleness_res_file[ds], '{:.5f},' .format (estimated_mr[ds]))
+                            printf (self.measure_mr_res_file[ds], '{:.5f},' .format (estimated_mr[ds]))
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
 
@@ -644,7 +653,7 @@ class DistCacheSimulator(object):
                 continue
             
             # Now we know that the request resulted in a miss, and therefore was inserted into self.DS2insert
-            # printf (self.mr0_by_staleness_res_file[self.DS2insert], f'\nneg_ind_cnt={neg_ind_cnt[self.DS2insert]}, tn_cnt={tn_cnt[self.DS2insert]}\n') #$$$
+            # printf (self.measure_mr_res_file[self.DS2insert], f'\nneg_ind_cnt={neg_ind_cnt[self.DS2insert]}, tn_cnt={tn_cnt[self.DS2insert]}\n') #$$$
             if self.ins_cnt[self.DS2insert] == self.min_uInterval: # time to advertise
                 self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
                 num_of_ads[self.DS2insert]     += 1

@@ -136,6 +136,7 @@ class DistCacheSimulator(object):
         if Path(full_path_res_file_name).is_file(): # does this res file already exist?
             return (open (full_path_res_file_name,  'a'))
         res_file =  open (full_path_res_file_name,  'w')
+        printf (res_file, '// Format:\n' )
         printf (res_file, '// bin : mode : m0, m1, ...\n' )
         printf (res_file, '// Where: bin is 0 for mr0, 1 for mr1.\n' )
         printf (res_file, '// mode is either: fullKnow, salsa2, or fnaa.\n' )
@@ -336,11 +337,8 @@ class DistCacheSimulator(object):
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
-                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_measure_mr_{}_{}{}.res' .format (
+                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_measure_mr_{}_{}{}' .format (
                         self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
-            MyConfig.error ('rgrg') #$$$
-
-
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
@@ -574,6 +572,8 @@ class DistCacheSimulator(object):
         self.ins_cnt            = np.zeros (self.num_of_DSs)
         last_printed_ins_cnt    = np.zeros (self.num_of_DSs)
         num_of_ads              = np.zeros (self.num_of_DSs)
+        for ds in range(self.num_of_DSs):
+            printf (self.measure_mr_res_file[ds], '\n0 : fullKnow : ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
@@ -879,9 +879,7 @@ class DistCacheSimulator(object):
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
         print ('running', self.gen_settings_str (num_of_req=num_of_req))
         
-        # if (self.mode == 'measure_mr'):
-        #     self.run_trace_measure_mr()
-        if (self.mode == 'measure_mr0'):
+        if (self.mode == 'measure_mr0_fullKnow'):
             self.run_trace_measure_mr0_full_knowledge() 
         elif (self.mode == 'measure_mr0_by_salsa'):
             self.run_trace_estimate_mr0_by_salsa() 

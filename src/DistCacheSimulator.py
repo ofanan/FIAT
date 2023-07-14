@@ -323,6 +323,7 @@ class DistCacheSimulator(object):
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
             self.print_detailed_output          = False
+            self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.resolution                     = np.array (range (self.num_of_DSs), dtype = 'bool')
@@ -330,6 +331,7 @@ class DistCacheSimulator(object):
             self.ins_cnt                        = np.zeros (self.num_of_DSs)
             self.mr0_measure_window             = self.min_uInterval/10
             self.mr1_measure_window             = self.min_uInterval/10
+            self.q_measure_window               = self.mr0_measure_window
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
             self.num_of_warmup_ads              = 1 #self.DS_size/self.min_uInterval
@@ -674,6 +676,68 @@ class DistCacheSimulator(object):
             for ds in range(self.num_of_DSs):
                 if all(finished_report_period): 
                     return  
+    
+
+    def run_trace_estimate_mr0_by_fnaa (self):
+        """
+        Estimate mr0 and print to an output .res file mr0.
+        mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
+        The alg' runs the chosen naive selection alg' - that is, either "all" - which accesses all the DSs with positive ind', or "cheapest", which accesses the cheapest DS with a pos' ind'.
+        Only the estimation uses a SALSA2-like mechanism; in order to make a meaningful comparison with the other estimations/measurements of mr0, 
+        the selection alg' is NOT fnaa, but a naive DS selection alg'.   
+        The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
+        If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
+        """
+        pos_ind_cnt             = [0     for _ in range(self.num_of_DSs)]
+        estimated_pr_of_pos_ind = [0.5   for _ in range(self.num_of_DSs)] # q[ds] will hold the estimated prob' of pos' ind' in DS ds.
+        estimated_hit_ratio     = [0.5   for _ in range(self.num_of_DSs)]
+        self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
+        num_of_ads              = [0     for _ in range(self.num_of_DSs)]
+        finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
+        finished_report_period  = [False for _ in range(self.num_of_DSs)]
+        estimated_fpr           = [0 for _ in range(self.num_of_DSs)]
+        estimated_fnr           = [0 for _ in range(self.num_of_DSs)]
+        estimated_mr            = [0 for _ in range(self.num_of_DSs)]
+        zeros_ar                = [0 for _ in range(self.num_of_DSs)]
+        ones_ar                 = [1 for _ in range(self.num_of_DSs)]
+        
+        for ds in range(self.num_of_DSs):
+            printf (self.measure_mr_res_file[ds], '\n0 | fnaa | ')
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req = self.req_df.iloc[self.req_cnt]  
+            self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
+
+            for ds in self.pos_indications:
+                pos_ind_cnt[ds] += 1
+            
+            for ds in range(self.num_of_DSs):              
+                if self.req_cnt > 0:
+                    if self.req_cnt < self.q_measure_window:
+                        estimated_pr_of_pos_ind[ds]  = pos_ind_cnt/self.req_cnt
+                    elif self.req_cnt % self.ewma_window_size == 0:
+                        estimated_pr_of_pos_ind[ds] = self.q_window_alpha * pos_ind_cnt[ds] / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind[ds]   
+            estimated_hit_ratio = np.minimum (ones_ar, np.maximum (self.zeros_ar, (self.pr_of_pos_ind_estimation - estimated_fpr) / (1 - estimated_fpr - estimated_fnr)))
+
+            mr = np.zeros (self.num_of_DSs)
+            for ds in range(self.num_of_DSs):              
+                estimate_mr1_mr0_by_analysis (self.indications)
+                if (self.indications[ds]): # positive ind'
+                    
+                    if (estimated_pr_of_pos_ind[ds] == 0): 
+                        mr[ds] = 1
+                    elif (self.fpr[ds] == 0 or # If there're no FP, then upon a positive ind', the prob' that the item is NOT in the cache is 0 
+                          self.hit_ratio[ds] == 1): #If the hit ratio is 1, then upon ANY indication (and, in particular, positive ind'), the prob' that the item is NOT in the cache is 0
+                            mr[ds] = 0 
+                    else:
+                        mr[ds] = self.fpr[ds] * (1 - self.hit_ratio[ds]) / estimated_pr_of_pos_indi]
+                else: # negative ind'                                               
+                    mr[ds] = 1 if (fno_mode or 
+                                       self.fnr[ds] == 0 or # if there're no false-neg, then upon a negative ind', the item is SURELY not in the cache  
+                                       estimated_pr_of_pos_indi] == 1 or # if pr_of_pos_ind_estimation is 1, the denominator of our formula is 0, so mr[ds] should get its maximal value --> 1  
+                                       self.hit_ratio[ds] == 1) else (1 - self.fpr[ds]) * (1 - self.hit_ratio[ds]) / (1 - estimated_pr_of_pos_indi]) 
+    
+        mr = np.maximum (self.zeros_ar, np.minimum (mr, self.ones_ar)) # Verify that all mr values are feasible - that is, within [0,1].
+
     
 
     def run_trace_opt_hetro (self):

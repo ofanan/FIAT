@@ -117,8 +117,9 @@ def run_full_ind_oriented_sim ():
         client_DS_cost          = DS_cost,
         missp                   = 100,
         DS_size                 = 10000,
-        min_uInterval           = 2000,
+        min_uInterval           = 3000,
         uInterval_factor        = 2,
+        bpe                     = 10,
         verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
     toc()
@@ -131,7 +132,7 @@ def run_mr_sim ():
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     for trace in ['IBM7']: #['IBM1', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
-        max_num_of_req = 300000  
+        max_num_of_req = MyConfig.calc_num_of_req (trace)  
         requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
         for mode in ['measure_mr0_fullKnow', 'measure_mr0_by_salsa']: #, 'measure_mr0_by_salsa'
             tic()

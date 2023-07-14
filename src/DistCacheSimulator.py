@@ -586,8 +586,7 @@ class DistCacheSimulator(object):
 
                     if finished_warmup_period[ds] and last_printed_ins_cnt[ds] != self.ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
                         if neg_ind_cnt[ds]>0:
-                            # print (f'ins_cnt[{ds}]={self.ins_cnt[ds]}') #$$$
-                            printf (self.measure_mr_res_file[ds], '{:.5f},' .format (tn_cnt[ds]/neg_ind_cnt[ds]))
+                            printf (self.measure_mr_res_file[ds], '({}, {:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds]/neg_ind_cnt[ds], estimated_mr[ds]))
                             last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                         else:
                             MyConfig.error ('neg_ind_cnt==0')
@@ -657,7 +656,7 @@ class DistCacheSimulator(object):
                     if neg_ind_cnt[ds] % self.mr0_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                            printf (self.measure_mr_res_file[ds], '{:.5f},' .format (estimated_mr[ds]))
+                            printf (self.measure_mr_res_file[ds], '({}, {:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
 

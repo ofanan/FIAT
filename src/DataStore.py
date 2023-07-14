@@ -141,6 +141,8 @@ class DataStore (object):
         self.uInterval_factor        = uInterval_factor
         self.period                  = 10 * self.min_uInterval  
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
+        if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
         self.ins_cnt_since_last_full_ad = 0 # cnt of insertions since the last advertisement of fresh indicator
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 

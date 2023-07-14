@@ -336,6 +336,7 @@ class DistCacheSimulator(object):
             self.use_fna                        = True
             self.num_of_warmup_ads              = 1 #self.DS_size/self.min_uInterval
             self.final_simulated_ad             = self.num_of_warmup_ads + 1
+            self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
@@ -697,7 +698,8 @@ class DistCacheSimulator(object):
         finished_report_period  = [False for _ in range(self.num_of_DSs)]
         estimated_fpr           = [0 for _ in range(self.num_of_DSs)]
         estimated_fnr           = [0 for _ in range(self.num_of_DSs)]
-        estimated_mr            = [0 for _ in range(self.num_of_DSs)]
+        estimated_mr0           = [0 for _ in range(self.num_of_DSs)]
+        estimated_mr1           = [0 for _ in range(self.num_of_DSs)]
         zeros_ar                = [0 for _ in range(self.num_of_DSs)]
         ones_ar                 = [1 for _ in range(self.num_of_DSs)]
         
@@ -707,39 +709,59 @@ class DistCacheSimulator(object):
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
 
-            for ds in self.pos_indications:
-                pos_ind_cnt[ds] += 1
+            pos_ind_cnt += self.indications 
             
+            if self.req_cnt > 0:
+                if self.req_cnt < self.q_measure_window:
+                    estimated_pr_of_pos_ind  = pos_ind_cnt/self.req_cnt
+                elif self.req_cnt % self.q_measure_window == 0:
+                    estimated_pr_of_pos_ind = self.q_window_alpha * pos_ind_cnt / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind
+                    pos_ind_cnt = zeros_ar   
+                estimated_hit_ratio = np.minimum (ones_ar, np.maximum (self.zeros_ar, (estimated_pr_of_pos_ind - estimated_fpr) / (1 - estimated_fpr - estimated_fnr)))
+
             for ds in range(self.num_of_DSs):              
-                if self.req_cnt > 0:
-                    if self.req_cnt < self.q_measure_window:
-                        estimated_pr_of_pos_ind[ds]  = pos_ind_cnt/self.req_cnt
-                    elif self.req_cnt % self.ewma_window_size == 0:
-                        estimated_pr_of_pos_ind[ds] = self.q_window_alpha * pos_ind_cnt[ds] / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind[ds]   
-            estimated_hit_ratio = np.minimum (ones_ar, np.maximum (self.zeros_ar, (self.pr_of_pos_ind_estimation - estimated_fpr) / (1 - estimated_fpr - estimated_fnr)))
+                if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
+                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    num_of_ads[ds] += 1
+                    if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
+                        finished_warmup_period[ds] = True                        
+                    if finished_warmup_period[ds]: 
+                        if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
+                            finished_report_period[ds] = True
+                            
+                        for ds in range(self.num_of_DSs): # finished warmup period --> calculate mr estimation, and output to the std file.              
+                            if (self.indications[ds]): # positive ind' --> update mr1
+                                if (estimated_pr_of_pos_ind[ds] == 0): 
+                                    estimated_mr1[ds] = 1
+                                elif (estimated_fpr[ds] == 0 or # If there're no FP, then upon a positive ind', the prob' that the item is NOT in the cache is 0 
+                                      self.hit_ratio[ds] == 1): #If the hit ratio is 1, then upon ANY indication (and, in particular, positive ind'), the prob' that the item is NOT in the cache is 0
+                                      estimated_mr1[ds] = 0 
+                                else:
+                                    estimated_mr1[ds] = estimated_fpr[ds] * (1 - self.hit_ratio[ds]) / estimated_pr_of_pos_ind[ds]
+                            else: 
+                                if estimated_fnr[ds] == 0 or estimated_pr_of_pos_ind[ds] == 1 or hit_ratio[ds] == 1:
+                                    estimated_mr0[ds] = 1 
+                                else:
+                                    estimated_mr0[ds] = (1 - fpr[ds]) * (1 - self.hit_ratio[ds]) / (1 - estimated_pr_of_pos_ind[ds]) 
+                
+                            estimated_mr0[ds] = np.maximum (0, np.minimum (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
+                            estimated_mr1[ds] = np.maximum (0, np.minimum (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
 
-            mr = np.zeros (self.num_of_DSs)
-            for ds in range(self.num_of_DSs):              
-                estimate_mr1_mr0_by_analysis (self.indications)
-                if (self.indications[ds]): # positive ind'
-                    
-                    if (estimated_pr_of_pos_ind[ds] == 0): 
-                        mr[ds] = 1
-                    elif (self.fpr[ds] == 0 or # If there're no FP, then upon a positive ind', the prob' that the item is NOT in the cache is 0 
-                          self.hit_ratio[ds] == 1): #If the hit ratio is 1, then upon ANY indication (and, in particular, positive ind'), the prob' that the item is NOT in the cache is 0
-                            mr[ds] = 0 
-                    else:
-                        mr[ds] = self.fpr[ds] * (1 - self.hit_ratio[ds]) / estimated_pr_of_pos_indi]
-                else: # negative ind'                                               
-                    mr[ds] = 1 if (fno_mode or 
-                                       self.fnr[ds] == 0 or # if there're no false-neg, then upon a negative ind', the item is SURELY not in the cache  
-                                       estimated_pr_of_pos_indi] == 1 or # if pr_of_pos_ind_estimation is 1, the denominator of our formula is 0, so mr[ds] should get its maximal value --> 1  
-                                       self.hit_ratio[ds] == 1) else (1 - self.fpr[ds]) * (1 - self.hit_ratio[ds]) / (1 - estimated_pr_of_pos_indi]) 
-    
-        mr = np.maximum (self.zeros_ar, np.minimum (mr, self.ones_ar)) # Verify that all mr values are feasible - that is, within [0,1].
-
-    
-
+            if self.DS2insert==None: # there was no insertion to a DS
+                continue
+            
+            # Now we know that the request resulted in a miss, and therefore was inserted into self.DS2insert
+            if self.ins_cnt[self.DS2insert]%self.num_of_insertions_between_fpr_fnr_updates == 0:
+                DS = self.DS_list[self.DS2insert]
+                updated_sbf = DS.genNewSBF ()
+                Delta1      = sum (np.bitwise_and (updated_sbf.array, ~DS.stale_indicator.array)) # # of bits that are set in the updated array, and reset in the stale array.
+                B1_up       = sum (updated_sbf.array)             # Num of bits set in the updated indicator
+                B1_st       = sum (DS.stale_indicator.array)    # Num of bits set in the stale indicator
+                estimated_fpr[DS.id] = pow ( B1_st / self.ind_size, self.num_of_hashes)
+                estimated_fnr[DS.id] = 1 - pow ( (B1_up-Delta1) / B1_up, DS.num_of_hashes)
+                
+                
     def run_trace_opt_hetro (self):
         """
         Run a full trace as Opt access strat' when the DS costs are heterogeneous

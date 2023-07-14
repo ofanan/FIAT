@@ -120,7 +120,7 @@ def run_full_ind_oriented_sim ():
         min_uInterval           = 3000,
         uInterval_factor        = 2,
         bpe                     = 10,
-        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+        verbose                 = []) #MyConfig.VERBOSE_DETAILED_LOG_MR
     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
     toc()
 
@@ -154,8 +154,8 @@ def run_mr_sim ():
     
 if __name__ == '__main__':
     try:
-        # run_full_ind_oriented_sim ()
-        run_mr_sim ()
+        run_full_ind_oriented_sim ()
+        # run_mr_sim ()
         # main ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

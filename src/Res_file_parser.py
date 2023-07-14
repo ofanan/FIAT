@@ -763,12 +763,10 @@ class Res_file_parser (object):
         output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
-        x_diff = 200
         for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
-            mr = dict['vec']
-            print (f'len(mr)={len(mr)}')
+            x_vec, mr_vec = dict['x_vec'], dict['y_vec']
             measure_mr_mode = dict['measure_mr_mode']
-            plt.plot ([x_diff*x for x in range(len(mr))], mr, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode], label=measure_mr_mode)
+            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode], label=measure_mr_mode)
             plt.xlabel ('Insertion Count')
         if mr_type==0:
             plt.ylim (0.5, 1.02)
@@ -777,7 +775,7 @@ class Res_file_parser (object):
             plt.ylim (0, 0.25)
             plt.ylabel (r'$\pi$')
         plt.legend()
-        plt.xlim (0, x_diff*(len(mr)-1))
+        # plt.xlim (0, x_diff*(len(mr)-1))
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
         
@@ -785,7 +783,7 @@ class Res_file_parser (object):
 input_file_name = 'IBM7_C16K_U2000_measure_mr_all_0.res'
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_files(input_file_names=[input_file_name], file_type='.mr.res')
-# my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
+my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
 # type = 0
 # for ds in range (3): 
 #     my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)

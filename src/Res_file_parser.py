@@ -123,11 +123,16 @@ class Res_file_parser (object):
         """
         splitted_line = line.split (" | ")
         if len (splitted_line)<3:
-            MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
-        vec  = splitted_line[2].split(',')
+            MyConfig.error ('parse_mr_res_line encountered format error. splitted_line={}' .format (splitted_line))
+        x_vec, y_vec = [], []
+        for point in splitted_line[2].split('(')[1:]:
+            point = point.split(')')[0].split (',')            
+            x_vec.append (point[0])
+            y_vec.append (point[1])
         self.dict = {'mr_type'          : int(splitted_line[0]),
                      'measure_mr_mode'  : splitted_line[1],
-                     'vec'              : [float(vec[i]) for i in range(len(vec)-1)]
+                     'x_vec'            : [int(x_vec[i]) for i in range(len(x_vec)-1)],
+                     'y_vec'            : [float(y_vec[i]) for i in range(len(y_vec)-1)],
             } 
 
     def parse_line (self, line):
@@ -780,7 +785,7 @@ class Res_file_parser (object):
 input_file_name = 'IBM7_C16K_U2000_measure_mr_all_0.res'
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_files(input_file_names=[input_file_name], file_type='.mr.res')
-my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
+# my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
 # type = 0
 # for ds in range (3): 
 #     my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)

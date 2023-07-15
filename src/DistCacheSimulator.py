@@ -5,6 +5,7 @@ from   pathlib import Path
 
 import DataStore, Client, candidate, node, MyConfig 
 from   printf import printf
+from numpy.core._rational_tests import denominator
 
 class DistCacheSimulator(object):
     """
@@ -717,7 +718,9 @@ class DistCacheSimulator(object):
                 elif self.req_cnt % self.q_measure_window == 0:
                     estimated_pr_of_pos_ind = [self.q_window_alpha * pos_ind_cnt[ds] / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind[ds] for ds in range(self.num_of_DSs)]
                     pos_ind_cnt = zeros_ar   
-                estimated_hit_ratio = [min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / (1 - estimated_fpr[ds] - estimated_fnr[ds]))) for ds in range(self.num_of_DSs)]
+                for ds in range(self.num_of_DSs):
+                    denominator = 1 - estimated_fpr[ds] - estimated_fnr[ds]
+                    estimated_hit_ratio = 1 if denominator<=0 else min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / denominator))
 
             for ds in range(self.num_of_DSs):              
                 if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise

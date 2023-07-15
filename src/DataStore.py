@@ -139,7 +139,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
-        self.period                  = 10 * self.min_uInterval  
+        self.period                  = 1 * self.min_uInterval #$$$  
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -303,7 +303,7 @@ class DataStore (object):
         if self.ins_cnt_since_last_full_ad>=self.period: # time to consider scaling, or at least send a keep-alive full ind'
 
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.mr_output_file, f'\nfinished a period')                     
+                printf (self.mr_output_file, f'\nfinished a period\n')                     
             self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_factor!=1:                                          
                 self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
@@ -423,9 +423,6 @@ class DataStore (object):
             B1_st                                   = sum (self.stale_indicator.array)    # Num of bits set in the updated indicator
             self.fpr                                = pow ( B1_st / self.ind_size, self.num_of_hashes)
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
-        # if (not (self.analyse_ind_deltas)) and self.consider_delta_updates: # This is a SALSA2 running, where we'd like to inform about any full-ind update  
-        #     print ('advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str)) #$$$
-        
         
         if self.collect_mr_stat:
             if self.ins_cnt_in_this_period >= self.period: 
@@ -469,9 +466,9 @@ class DataStore (object):
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         bw_coeff                    = (bw_in_cur_interval - self.ind_size/self.period) / curIndSize_lg_curIndSize
         estimated_bw_of_cadnidate   = [self.potential_indSize[i]/self.period + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
-        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate/bw_in_cur_interval - self.bw_budget/bw_in_cur_interval) for i in range(len(self.potential_indSize))]
+        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i]/bw_in_cur_interval - self.bw_budget/bw_in_cur_interval) for i in range(len(self.potential_indSize))]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
-        if idx==0 and bw_in_cur_interval * self.potential_indSize_lg_indSize[0]/curIndSize_lg_curIndSize > self.bw_budget:
+        if idx==0 and estimated_bw_of_cadnidate[0] > self.bw_budget: # Cannot cope with the BW restriction using delta mode even with the smallest feasible ind'
             self.min_uInterval = int (self.ind_size / self.bw_budget) 
 
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 

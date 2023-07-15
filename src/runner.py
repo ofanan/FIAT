@@ -152,7 +152,7 @@ def run_full_ind_oriented_sim ():
         req_df                  = requests,
         client_DS_cost          = DS_cost,
         missp                   = 100,
-        DS_size                 = 10000,
+        DS_size                 = 4000,
         min_uInterval           = 3000,
         uInterval_factor        = 2,
         bpe                     = 10,
@@ -190,8 +190,8 @@ def run_mr_sim ():
     
 if __name__ == '__main__':
     try:
-        run_num_of_DSs_sim ()
-        # run_full_ind_oriented_sim ()
+        # run_num_of_DSs_sim ()
+        run_full_ind_oriented_sim ()
         # run_mr_sim ()
         # main ()
     except KeyboardInterrupt:

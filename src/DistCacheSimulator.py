@@ -724,7 +724,7 @@ class DistCacheSimulator(object):
 
             for ds in range(self.num_of_DSs):              
                 if self.print_detailed_output:
-                    printf (self.mr_output_file, 'q={:.3f}, h={:.2f}, fpr={.3f}, fnr={.3f}\n' .format (estimated_pr_of_pos_ind[ds], estimated_hit_ratio[ds], estimated_fpr[ds], estimated_fnr[ds]))
+                    printf (self.measure_mr_res_file[ds], 'q={:.3f}, h={:.2f}, fpr={:.3f}, fnr={:.3f}\n' .format (estimated_pr_of_pos_ind[ds], estimated_hit_ratio[ds], estimated_fpr[ds], estimated_fnr[ds]))
                 if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
                     self.DS_list[ds].stale_indicator = self.DS_list[ds].genNewSBF ()
                     num_of_ads[ds] += 1

@@ -334,8 +334,8 @@ class DistCacheSimulator(object):
             self.q_measure_window               = self.mr0_measure_window
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
-            self.num_of_warmup_ads              = 1 #self.DS_size/self.min_uInterval
-            self.final_simulated_ad             = self.num_of_warmup_ads + 1
+            self.num_of_warmup_ads              = 8 #self.DS_size/self.min_uInterval
+            self.final_simulated_ad             = self.num_of_warmup_ads + 3
             self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
@@ -734,15 +734,15 @@ class DistCacheSimulator(object):
                                 if (estimated_pr_of_pos_ind[ds] == 0): 
                                     estimated_mr1[ds] = 1
                                 elif (estimated_fpr[ds] == 0 or # If there're no FP, then upon a positive ind', the prob' that the item is NOT in the cache is 0 
-                                      self.hit_ratio[ds] == 1): #If the hit ratio is 1, then upon ANY indication (and, in particular, positive ind'), the prob' that the item is NOT in the cache is 0
+                                      estimated_hit_ratio[ds] == 1): #If the hit ratio is 1, then upon ANY indication (and, in particular, positive ind'), the prob' that the item is NOT in the cache is 0
                                       estimated_mr1[ds] = 0 
                                 else:
-                                    estimated_mr1[ds] = estimated_fpr[ds] * (1 - self.hit_ratio[ds]) / estimated_pr_of_pos_ind[ds]
+                                    estimated_mr1[ds] = estimated_fpr[ds] * (1 - estimated_hit_ratio[ds]) / estimated_pr_of_pos_ind[ds]
                             else: 
-                                if estimated_fnr[ds] == 0 or estimated_pr_of_pos_ind[ds] == 1 or hit_ratio[ds] == 1:
+                                if estimated_fnr[ds] == 0 or estimated_pr_of_pos_ind[ds] == 1 or estimated_hit_ratio[ds] == 1:
                                     estimated_mr0[ds] = 1 
                                 else:
-                                    estimated_mr0[ds] = (1 - fpr[ds]) * (1 - self.hit_ratio[ds]) / (1 - estimated_pr_of_pos_ind[ds]) 
+                                    estimated_mr0[ds] = (1 - estimated_fpr[ds]) * (1 - estimated_hit_ratio[ds]) / (1 - estimated_pr_of_pos_ind[ds]) 
                 
                             estimated_mr0[ds] = np.maximum (0, np.minimum (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
                             estimated_mr1[ds] = np.maximum (0, np.minimum (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].

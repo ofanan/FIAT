@@ -466,7 +466,7 @@ class DataStore (object):
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         bw_coeff                    = (bw_in_cur_interval - self.ind_size/self.period) / curIndSize_lg_curIndSize
         estimated_bw_of_cadnidate   = [self.potential_indSize[i]/self.period + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
-        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i]/bw_in_cur_interval - self.bw_budget/bw_in_cur_interval) for i in range(len(self.potential_indSize))]
+        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i] - self.bw_budget) for i in range(len(self.potential_indSize))]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         if idx==0 and estimated_bw_of_cadnidate[0] > self.bw_budget: # Cannot cope with the BW restriction using delta mode even with the smallest feasible ind'
             self.min_uInterval = int (self.ind_size / self.bw_budget) 

@@ -465,7 +465,9 @@ class DataStore (object):
         """
         cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
-        diffs_from_desiredRatio     = [abs (self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize - (self.bw_budget - self.potential_indSize[i])/ bw_in_cur_interval) for i in range(len(self.potential_indSize))]
+        bw_coeff                    = (bw_in_cur_interval - self.ind_size/self.period) / curIndSize_lg_curIndSize
+        estimated_bw_of_cadnidate   = [self.potential_indSize[i]/self.period + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
+        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate/bw_in_cur_interval - self.bw_budget/bw_in_cur_interval) for i in range(len(self.potential_indSize))]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         if idx==0 and bw_in_cur_interval * self.potential_indSize_lg_indSize[0]/curIndSize_lg_curIndSize > self.bw_budget:
             self.min_uInterval = int (self.ind_size / self.bw_budget) 
@@ -483,7 +485,7 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_Q in self.verbose: 
                 printf (self.q_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))
                    
-    def report_mr (self):
+    def report_mr (self): 
         """
         report the status of the various counters and estimators. Used for logging and debugging.
         """

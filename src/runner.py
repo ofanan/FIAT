@@ -12,6 +12,42 @@ import DistCacheSimulator as sim
 from   tictoc import tic, toc
 import mod_pylru
 
+def run_num_of_DSs_sim ():
+    """
+    Run an experiment with varying num of DSs and homogeneous DSs costs..
+    """
+    min_feasible_uInterval = 10
+    for num_of_DSs in [3,5,7]:
+        DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=False)
+        for trace in ['Wiki']:        
+        # for trace in ['Scarab']:       
+        # for trace in ['F1']: 
+        # for trace in ['F2']: 
+        # for trace in ['IBM1']: 
+        # for trace in ['IBM7']: 
+        # for trace in ['Twitter17']:
+        # for trace in ['Twitter45']:
+            max_num_of_req = MyConfig.calc_num_of_req (trace)  
+            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
+            for mode in ['opt']: 
+                tic()
+                sm = sim.DistCacheSimulator(
+                    res_file_name           = f'{mode}_PC',
+                    EWMA_alpha_mr0          = 0.85, 
+                    EWMA_alpha_mr1          = 0.25, 
+                    trace_name              = trace,
+                    mode                    = mode,
+                    req_df                  = requests,
+                    client_DS_cost          = DS_cost,
+                    missp                   = 100,
+                    DS_size                 = 10000,
+                    min_uInterval           = 1000,
+                    uInterval_factor        = 32 if mode.startswith('salsa') else 1,
+                    verbose                 = [])
+                sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
+                toc()
+    
+
 def main ():
     min_feasible_uInterval = 10
     for num_of_DSs in range (3, 4): #(1, 9):
@@ -120,7 +156,7 @@ def run_full_ind_oriented_sim ():
         min_uInterval           = 3000,
         uInterval_factor        = 2,
         bpe                     = 10,
-        verbose                 = []) #MyConfig.VERBOSE_DETAILED_LOG_MR
+        verbose                 = [MyConfig.VERBOSE_DETAILED_LOG_MR]) #MyConfig.VERBOSE_DETAILED_LOG_MR
     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
     toc()
 
@@ -154,7 +190,8 @@ def run_mr_sim ():
     
 if __name__ == '__main__':
     try:
-        run_full_ind_oriented_sim ()
+        run_num_of_DSs_sim ()
+        # run_full_ind_oriented_sim ()
         # run_mr_sim ()
         # main ()
     except KeyboardInterrupt:

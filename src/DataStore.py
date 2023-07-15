@@ -302,6 +302,8 @@ class DataStore (object):
         
         if self.ins_cnt_since_last_full_ad>=self.period: # time to consider scaling, or at least send a keep-alive full ind'
 
+            if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                printf (self.mr_output_file, f'\nfinished a period')                     
             self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_factor!=1:                                          
                 self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)

@@ -715,7 +715,7 @@ class DistCacheSimulator(object):
                 if self.req_cnt < self.q_measure_window:
                     estimated_pr_of_pos_ind  = [pos_ind_cnt[ds]/self.req_cnt for ds in range(self.num_of_DSs)]
                 elif self.req_cnt % self.q_measure_window == 0:
-                    estimated_pr_of_pos_ind = self.q_window_alpha * pos_ind_cnt / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind
+                    estimated_pr_of_pos_ind = [self.q_window_alpha * pos_ind_cnt[ds] / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind[ds] for ds in range(self.num_of_DSs)]
                     pos_ind_cnt = zeros_ar   
                 estimated_hit_ratio = [min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / (1 - estimated_fpr[ds] - estimated_fnr[ds]))) for ds in range(self.num_of_DSs)]
 
@@ -758,8 +758,8 @@ class DistCacheSimulator(object):
                 Delta1      = sum (np.bitwise_and (updated_sbf.array, ~DS.stale_indicator.array)) # # of bits that are set in the updated array, and reset in the stale array.
                 B1_up       = sum (updated_sbf.array)             # Num of bits set in the updated indicator
                 B1_st       = sum (DS.stale_indicator.array)    # Num of bits set in the stale indicator
-                estimated_fpr[DS.id] = pow ( B1_st / self.ind_size, self.num_of_hashes)
-                estimated_fnr[DS.id] = 1 - pow ( (B1_up-Delta1) / B1_up, DS.num_of_hashes)
+                estimated_fpr[DS.ID] = pow ( B1_st / DS.ind_size, DS.num_of_hashes)
+                estimated_fnr[DS.ID] = 1 - pow ( (B1_up-Delta1) / B1_up, DS.num_of_hashes)
                 
                 
     def run_trace_opt_hetro (self):

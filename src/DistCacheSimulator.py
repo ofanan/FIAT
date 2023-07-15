@@ -720,7 +720,7 @@ class DistCacheSimulator(object):
                     pos_ind_cnt = zeros_ar   
                 for ds in range(self.num_of_DSs):
                     denominator = 1 - estimated_fpr[ds] - estimated_fnr[ds]
-                    estimated_hit_ratio = 1 if denominator<=0 else min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / denominator))
+                    estimated_hit_ratio[ds] = 1 if denominator<=0 else min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / denominator))
 
             for ds in range(self.num_of_DSs):              
                 if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
@@ -747,9 +747,9 @@ class DistCacheSimulator(object):
                                 else:
                                     estimated_mr0[ds] = (1 - estimated_fpr[ds]) * (1 - estimated_hit_ratio[ds]) / (1 - estimated_pr_of_pos_ind[ds]) 
                 
-                            estimated_mr0[ds] = np.maximum (0, np.minimum (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
-                            estimated_mr1[ds] = np.maximum (0, np.minimum (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
+            estimated_mr0[ds] = np.maximum (0, np.minimum (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
+            estimated_mr1[ds] = np.maximum (0, np.minimum (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
+            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
 
             if self.DS2insert==None: # there was no insertion to a DS
                 continue

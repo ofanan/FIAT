@@ -713,11 +713,11 @@ class DistCacheSimulator(object):
             
             if self.req_cnt > 0:
                 if self.req_cnt < self.q_measure_window:
-                    estimated_pr_of_pos_ind  = pos_ind_cnt/self.req_cnt
+                    estimated_pr_of_pos_ind  = [pos_ind_cnt[ds]/self.req_cnt for ds in range(self.num_of_DSs)]
                 elif self.req_cnt % self.q_measure_window == 0:
                     estimated_pr_of_pos_ind = self.q_window_alpha * pos_ind_cnt / self.q_measure_window + (1 - self.q_window_alpha) * estimated_pr_of_pos_ind
                     pos_ind_cnt = zeros_ar   
-                estimated_hit_ratio = np.minimum (ones_ar, np.maximum (self.zeros_ar, (estimated_pr_of_pos_ind - estimated_fpr) / (1 - estimated_fpr - estimated_fnr)))
+                estimated_hit_ratio = [min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / (1 - estimated_fpr[ds] - estimated_fnr[ds]))) for ds in range(self.num_of_DSs)]
 
             for ds in range(self.num_of_DSs):              
                 if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
@@ -977,6 +977,8 @@ class DistCacheSimulator(object):
             self.run_trace_measure_mr0_full_knowledge() 
         elif (self.mode == 'measure_mr0_by_salsa'):
             self.run_trace_estimate_mr0_by_salsa() 
+        elif (self.mode == 'measure_mr0_by_fnaa'):
+            self.run_trace_estimate_mr0_by_fnaa() 
         elif (self.mode == 'measure_mr1'):
             self.run_trace_measure_mr1()
         elif (self.mode == 'measure fp fn'):

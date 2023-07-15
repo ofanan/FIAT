@@ -470,10 +470,12 @@ class DataStore (object):
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         if idx==0 and estimated_bw_of_cadnidate[0] > self.bw_budget: # Cannot cope with the BW restriction using delta mode even with the smallest feasible ind'
             self.min_uInterval = int (self.ind_size / self.bw_budget) 
+            self.in_delta_mode      = False
 
-            if MyConfig.VERBOSE_LOG_Q in self.verbose: 
-                printf (self.q_output_file, 'Switching back to full mode. cur bw={}, indSize={}, curIndSize_lg_curIndSize={}, self.potential_indSize_lg_indSize[0]={}, \n' .format 
-                        (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, self.potential_indSize_lg_indSize[0]))        
+            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                printf (self.mr_output_file, 'Switching back to full mode. cur bw={:.2f}, indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
+                        (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, estimated_bw_of_cadnidate[0]))
+            return         
          
          # scaled ind' size is the min' feasible val.             
         new_ind_size                = self.potential_indSize[idx]

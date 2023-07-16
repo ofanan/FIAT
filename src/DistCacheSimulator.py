@@ -138,10 +138,10 @@ class DistCacheSimulator(object):
             return (open (full_path_res_file_name,  'a'))
         res_file =  open (full_path_res_file_name,  'w')
         printf (res_file, '// Format:\n' )
-        printf (res_file, '// bin | mode | m0, m1, ...\n' )
+        printf (res_file, '// bin | mode | (i0,m0),(i1,m1), ...\n' )
         printf (res_file, '// Where: bin is 0 for mr0, 1 for mr1.\n' )
         printf (res_file, '// mode is either: fullKnow, salsa2, or fnaa.\n' )
-        printf (res_file, '// m0, m1, ... is the vector of mr.\n')        
+        printf (res_file, '// i0 is the insertion count when the estimated mr is m0; i1 is the insertion count when the estimated mr is m1, etc.\n')        
         return res_file
     
     def init_res_file (self, res_file_name):

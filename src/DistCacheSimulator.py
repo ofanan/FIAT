@@ -647,7 +647,7 @@ class DistCacheSimulator(object):
                 return  
     
 
-    def run_trace_estimate_mr0_by_salsa (self,
+    def run_trace_estimate_mr_by_salsa (self,
                                        ):
         """
         Estimate using SALSA estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.

@@ -325,7 +325,7 @@ class DistCacheSimulator(object):
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
-            self.print_detailed_output          = False
+            self.print_detailed_output          = True
             self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
@@ -647,8 +647,7 @@ class DistCacheSimulator(object):
                 return  
     
 
-    def run_trace_estimate_mr_by_salsa (self,
-                                       ):
+    def run_trace_estimate_mr_by_salsa (self):
         """
         Estimate using SALSA estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
         mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
@@ -687,12 +686,6 @@ class DistCacheSimulator(object):
                         neg_ind_cnt[ds] += 1
                         if self.resolution[ds]==False:
                             tn_cnt[ds] += 1
-                else:
-                    if self.indications[ds]: # positive indication for this DS
-                        pos_ind_cnt[ds] += 1
-                        if self.resolution[ds]==False:
-                            fp_cnt[ds] += 1
-
                     if neg_ind_cnt[ds] % self.mr0_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
@@ -700,6 +693,12 @@ class DistCacheSimulator(object):
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
                             
+                else:
+                    if self.indications[ds]: # positive indication for this DS
+                        pos_ind_cnt[ds] += 1
+                        if self.resolution[ds]==False:
+                            fp_cnt[ds] += 1
+
                     if pos_ind_cnt[ds] % self.mr1_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr1 * fp_cnt[ds]/pos_ind_cnt[ds] + (1-self.EWMA_alpha_mr1) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file

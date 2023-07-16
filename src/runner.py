@@ -70,7 +70,7 @@ def run_num_of_DSs_sim ():
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             tic()
             sm = sim.DistCacheSimulator(
-                res_file_name           = f'{mode}_PC',
+                res_file_name           = f'{mode}_HPC',
                 EWMA_alpha_mr0          = 0.85, 
                 EWMA_alpha_mr1          = 0.25, 
                 trace_name              = trace,
@@ -81,7 +81,7 @@ def run_num_of_DSs_sim ():
                 DS_size                 = 10000,
                 min_uInterval           = 1000,
                 uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                verbose                 = [MyConfig.VERBOSE_RES])
+                verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
             sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
             toc()
     

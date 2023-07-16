@@ -679,7 +679,9 @@ class DistCacheSimulator(object):
                 return  
     
 
-    def run_trace_estimate_mr0_by_fnaa (self):
+    def run_trace_estimate_mr_by_fnaa (self, 
+                                       mr_type # either 0 (for mr0), or 1 (for mr1).
+                                       ):
         """
         Estimate mr0 and print to an output .res file mr0.
         mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
@@ -776,7 +778,7 @@ class DistCacheSimulator(object):
                 estimated_mr0[ds] = max (0, min (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
                 estimated_mr1[ds] = max (0, min (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
                 if self.ins_cnt[ds]%self.mr0_measure_window==0 and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
-                    printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
+                    printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds] if mr_type==0 else estimated_mr1[ds]))
                     last_reported_ins_cnt[ds] = self.ins_cnt[ds]
 
             if all(finished_report_period): 
@@ -999,7 +1001,9 @@ class DistCacheSimulator(object):
         elif (self.mode == 'measure_mr0_by_salsa'):
             self.run_trace_estimate_mr0_by_salsa() 
         elif (self.mode == 'measure_mr0_by_fnaa'):
-            self.run_trace_estimate_mr0_by_fnaa() 
+            self.run_trace_estimate_mr_by_fnaa(mr_type=0) 
+        elif (self.mode == 'measure_mr1_by_fnaa'):
+            self.run_trace_estimate_mr_by_fnaa(mr_type=1) 
         elif (self.mode == 'measure_mr1'):
             self.run_trace_measure_mr1()
         elif (self.mode == 'measure fp fn'):

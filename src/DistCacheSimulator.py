@@ -323,7 +323,7 @@ class DistCacheSimulator(object):
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
-            self.print_detailed_output          = True
+            self.print_detailed_output          = False
             self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
@@ -336,7 +336,7 @@ class DistCacheSimulator(object):
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
             self.num_of_warmup_ads              = 1 #self.DS_size/self.min_uInterval
-            self.final_simulated_ad             = self.num_of_warmup_ads + 10
+            self.final_simulated_ad             = self.num_of_warmup_ads + 30
             self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
@@ -638,6 +638,7 @@ class DistCacheSimulator(object):
         tn_cnt                  = [0     for _ in range(self.num_of_DSs)]
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
         num_of_ads              = [0     for _ in range(self.num_of_DSs)]
+        last_reported_ins_cnt   = [0     for _ in range(self.num_of_DSs)]
         finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
         finished_report_period  = [False for _ in range(self.num_of_DSs)]
         estimated_mr            = [self.initial_mr0 for _ in range(self.num_of_DSs)] 
@@ -703,6 +704,7 @@ class DistCacheSimulator(object):
         estimated_mr1           = [0.0   for _ in range(self.num_of_DSs)]
         zeros_ar                = [0.0   for _ in range(self.num_of_DSs)]
         ones_ar                 = [1.0   for _ in range(self.num_of_DSs)]
+        advertised = False
         
         for ds in range(self.num_of_DSs):
             printf (self.measure_mr_res_file[ds], '\n0 | fnaa | ')
@@ -710,8 +712,9 @@ class DistCacheSimulator(object):
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
 
-            pos_ind_cnt += self.indications 
-            
+            pos_ind_cnt = [pos_ind_cnt[ds] + (1 if self.indications[ds] else 0) for ds in range(self.num_of_DSs)] 
+            if self.print_detailed_output:
+                printf (self.measure_mr_res_file[ds], 'pos_ind_cnt={}, ' .format (pos_ind_cnt))
             if self.req_cnt > 0:
                 if self.req_cnt < self.q_measure_window:
                     estimated_pr_of_pos_ind  = [pos_ind_cnt[ds]/self.req_cnt for ds in range(self.num_of_DSs)]
@@ -722,11 +725,13 @@ class DistCacheSimulator(object):
                     denominator = 1 - estimated_fpr[ds] - estimated_fnr[ds]
                     estimated_hit_ratio[ds] = 1 if denominator<=0 else min (1, max (0, (estimated_pr_of_pos_ind[ds] - estimated_fpr[ds]) / denominator))
 
-            for ds in range(self.num_of_DSs):              
+            for ds in range(self.num_of_DSs):
                 if self.print_detailed_output:
                     printf (self.measure_mr_res_file[ds], 'q={:.3f}, h={:.2f}, fpr={:.3f}, fnr={:.3f}\n' .format (estimated_pr_of_pos_ind[ds], estimated_hit_ratio[ds], estimated_fpr[ds], estimated_fnr[ds]))
-                if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise                    
                     self.DS_list[ds].stale_indicator = self.DS_list[ds].genNewSBF ()
+                    if self.print_detailed_output:
+                        printf (self.measure_mr_res_file[ds], 'advertised\n')                    
                     num_of_ads[ds] += 1
                     if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
                         finished_warmup_period[ds] = True                        
@@ -751,8 +756,9 @@ class DistCacheSimulator(object):
                 
                         estimated_mr0[ds] = max (0, min (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
                         estimated_mr1[ds] = max (0, min (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
-                        if finished_warmup_period[ds]: 
+                        if finished_warmup_period[ds] and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
+                            last_reported_ins_cnt[ds] = self.ins_cnt[ds]
 
             if self.DS2insert==None: # there was no insertion to a DS
                 continue

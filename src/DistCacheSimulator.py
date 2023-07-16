@@ -335,7 +335,7 @@ class DistCacheSimulator(object):
             self.q_measure_window               = self.mr0_measure_window
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
-            self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
+            self.num_of_warmup_ads              = 3 #$$$$ self.DS_size/self.min_uInterval
             self.final_simulated_ad             = self.num_of_warmup_ads + 3
             self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
@@ -704,6 +704,7 @@ class DistCacheSimulator(object):
         zeros_ar                = [0.0   for _ in range(self.num_of_DSs)]
         ones_ar                 = [1.0   for _ in range(self.num_of_DSs)]
         last_reported_ins_cnt   = [0     for _ in range(self.num_of_DSs)]
+        last_advertised_ins_cnt = [0     for _ in range(self.num_of_DSs)]
         advertised = False
         
         # print first initialization text to the output files
@@ -732,11 +733,12 @@ class DistCacheSimulator(object):
                     printf (self.measure_mr_res_file[ds], 'q={:.3f}, h={:.2f}, fpr={:.3f}, fnr={:.3f}\n' .format (estimated_pr_of_pos_ind[ds], estimated_hit_ratio[ds], estimated_fpr[ds], estimated_fnr[ds]))
                     
                 # Check whether need to advertise and/or finish the warmup period and do so, if needed      
-                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise                    
+                if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.min_uInterval == 0 and last_advertised_ins_cnt[ds]!=self.ins_cnt[ds]: # time to advertise                    
                     self.DS_list[ds].stale_indicator = self.DS_list[ds].genNewSBF ()
                     if self.print_detailed_output:
                         printf (self.measure_mr_res_file[ds], 'advertised\n')                    
                     num_of_ads[ds] += 1
+                    last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
                     if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
                         finished_warmup_period[ds] = True                        
                     if finished_warmup_period[ds]: 

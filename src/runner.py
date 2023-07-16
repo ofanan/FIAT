@@ -15,7 +15,7 @@ import mod_pylru
 def main ():
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Wiki', 'Scarab', 'F1', 'F2']:
+    # for trace in ['Wiki', 'Scarab', 'F1', 'F2']:
     # for trace in ['IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['IBM1', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
     # for trace in ['Wiki']:        
@@ -23,14 +23,14 @@ def main ():
     # for trace in ['IBM1']: 
     # for trace in ['IBM7']: 
     # for trace in ['Twitter17']:
-    # for trace in ['Twitter45']:
+    for trace in ['Twitter45']:
     # for trace in ['Scarab']:       
     # for trace in ['IBM7']:       
         for DS_size in [4000]: #[, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa2']:
-                for missp in [10, 30]: #[10, 30, 100, 300]:
+                for missp in [300]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         res_file_name           = f'{mode}_HPC',
@@ -46,7 +46,7 @@ def main ():
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor        = 2 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     try:
         # run_num_of_DSs_sim ()
         # run_full_ind_oriented_sim ()
-        run_mr_sim ()
-        # main ()
+        # run_mr_sim ()
+        main ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

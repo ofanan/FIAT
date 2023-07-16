@@ -139,7 +139,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
-        self.period                  = 1 * self.min_uInterval #$$$  
+        self.period                  = 10 * self.min_uInterval   
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -307,7 +307,7 @@ class DataStore (object):
             self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_factor!=1:                                          
                 self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
-            self.overall_ad_size               += self.ind_size # even if not scaled, need to advertise a full ind' once in a period.
+            self.overall_ad_size               += self.ind_size # need to advertise a full ind' once in a period.
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:

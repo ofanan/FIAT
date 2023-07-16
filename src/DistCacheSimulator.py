@@ -335,7 +335,7 @@ class DistCacheSimulator(object):
             self.q_measure_window               = self.mr0_measure_window
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
-            self.num_of_warmup_ads              = 3 #$$$$ self.DS_size/self.min_uInterval
+            self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
             self.final_simulated_ad             = self.num_of_warmup_ads + 3
             self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
@@ -675,9 +675,8 @@ class DistCacheSimulator(object):
                     if num_of_ads[self.DS2insert] > self.final_simulated_ad: # Collected enough points
                         finished_report_period[self.DS2insert] = True
 
-            for ds in range(self.num_of_DSs):
-                if all(finished_report_period): 
-                    return  
+            if all(finished_report_period): 
+                return  
     
 
     def run_trace_estimate_mr0_by_fnaa (self):
@@ -780,6 +779,8 @@ class DistCacheSimulator(object):
                     printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
                     last_reported_ins_cnt[ds] = self.ins_cnt[ds]
 
+            if all(finished_report_period): 
+                return  
 
                 
     def run_trace_opt_hetro (self):

@@ -638,7 +638,7 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['IBM7', 'F2', 'Scarab', 'Twitter17'], #['IBM1', 'IBM7', 'F1','F2', 'Wiki', 'Scarab', 'Twitter17', 'Twitter45'], 
+                   traces           = ['Wiki', 'Scarab', 'F1','F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45', ], 
                    modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
@@ -780,15 +780,15 @@ class Res_file_parser (object):
         plt.clf ()
         
                     
-input_file_name = 'IBM7_C16K_U2000_measure_mr_all_0.res'
 my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_files(input_file_names=[input_file_name], file_type='.mr.res')
-my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
+# input_file_name = 'IBM7_C16K_U2000_measure_mr_all_0.res'
+# my_Res_file_parser.parse_files(input_file_names=[input_file_name], file_type='.mr.res')
+# my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=0)
 # type = 0
 # for ds in range (3): 
 #     my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', type=type)
-# my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-# for DS_size in [4, 16, 64]: 
-#     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True)
+my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[100], DS_size=DS_size, normalize_by_Opt=True)
 # my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res'])
 # my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 300], DS_size=64)

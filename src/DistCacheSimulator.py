@@ -686,10 +686,10 @@ class DistCacheSimulator(object):
                         neg_ind_cnt[ds] += 1
                         if self.resolution[ds]==False:
                             tn_cnt[ds] += 1
-                    if neg_ind_cnt[ds] % self.mr0_measure_window==0:
+                    if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds]))
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
                             
@@ -699,7 +699,7 @@ class DistCacheSimulator(object):
                         if self.resolution[ds]==False:
                             fp_cnt[ds] += 1
 
-                    if pos_ind_cnt[ds] % self.mr1_measure_window==0:
+                    if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr1 * fp_cnt[ds]/pos_ind_cnt[ds] + (1-self.EWMA_alpha_mr1) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))

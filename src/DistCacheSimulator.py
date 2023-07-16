@@ -325,7 +325,7 @@ class DistCacheSimulator(object):
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
-            self.print_detailed_output          = True
+            self.print_detailed_output          = False
             self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')

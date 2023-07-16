@@ -335,8 +335,8 @@ class DistCacheSimulator(object):
             self.q_measure_window               = self.mr0_measure_window
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
-            self.num_of_warmup_ads              = 1 #self.DS_size/self.min_uInterval
-            self.final_simulated_ad             = self.num_of_warmup_ads + 30
+            self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
+            self.final_simulated_ad             = self.num_of_warmup_ads + 3
             self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]

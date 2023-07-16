@@ -172,6 +172,7 @@ def run_mr_sim ():
         for mode in ['measure_mr0_by_fnaa', 'measure_mr0_fullKnow', 'measure_mr0_by_salsa']: #, 'measure_mr0_by_fnaa', 'measure_mr0_fullKnow', 'measure_mr0_by_salsa'
             tic()
             sm = sim.DistCacheSimulator(
+                mr_type                 = 0,
                 res_file_name           = f'{mode}_PC',
                 EWMA_alpha_mr0          = 0.85, 
                 EWMA_alpha_mr1          = 0.25, 

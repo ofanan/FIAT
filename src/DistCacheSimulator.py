@@ -630,11 +630,13 @@ class DistCacheSimulator(object):
                     if self.mr_type==0:
                         if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds]/neg_ind_cnt[ds]))
+                            last_handled_ins_cnt[ds] = self.ins_cnt[ds]
                     else: #self.mr_type==1
                         if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
                             if not(printed_mr1_for_DS[ds]):
                                 printed_mr1_for_DS[ds] = True
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
+                            last_handled_ins_cnt[ds] = self.ins_cnt[ds]
 
                 if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')

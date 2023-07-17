@@ -580,6 +580,7 @@ class DistCacheSimulator(object):
         else:
             pos_ind_cnt         = [0     for _ in range(self.num_of_DSs)]
             fp_cnt              = [0     for _ in range(self.num_of_DSs)]
+            printed_mr1_for_DS  = [False for _ in range(self.num_of_DSs)]
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
         last_printed_ins_cnt    = [0     for _ in range(self.num_of_DSs)]
         num_of_ads              = [0     for _ in range(self.num_of_DSs)]
@@ -601,7 +602,7 @@ class DistCacheSimulator(object):
                             neg_ind_cnt[ds] += 1
                             if self.resolution[ds]==False:
                                 tn_cnt[ds] += 1
-                    else:
+                    else: #self.mr_type==1
                         if self.indications[ds]: # positive indication for this DS
                             pos_ind_cnt[ds] += 1
                             if self.resolution[ds]==False:
@@ -610,31 +611,29 @@ class DistCacheSimulator(object):
                 if last_handled_ins_cnt[ds]==self.ins_cnt[ds]: # no new insertions to this DS since the last time it was handled.
                     continue
 
-
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
-
                     last_handled_ins_cnt[ds] = self.ins_cnt[ds]
-                    if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                        if self.mr_type==0:
-                            if neg_ind_cnt[ds]>0:
-                                printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds]/neg_ind_cnt[ds]))
-                            else:
-                                print ('In know_all: neg_ind_cnt==0')
-                        else:
-                            if pos_ind_cnt[ds]>0:
-                                printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
-                            else:
-                                print ('In know_all: pos_ind_cnt==0')
 
-                    if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
-                        self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
-                        num_of_ads[ds] += 1
-                        if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
-                            finished_warmup_period[ds] = True                        
-                        if finished_warmup_period[ds]: 
-                            if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
-                                finished_report_period[ds] = True
-                    
+                if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+
+                    if self.mr_type==0:
+                        if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds]/neg_ind_cnt[ds]))
+                    else: #self.mr_type==1
+                        if not(printed_mr1_for_DS[ds]):
+                            printed_mr1_for_DS[ds] = True
+                        if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
+
+                if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
+                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    num_of_ads[ds] += 1
+                    if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
+                        finished_warmup_period[ds] = True                        
+                    if finished_warmup_period[ds]: 
+                        if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
+                            finished_report_period[ds] = True
+                
                     if self.mr_type==0:
                         neg_ind_cnt[ds] = 0
                         tn_cnt[ds]      = 0
@@ -643,7 +642,11 @@ class DistCacheSimulator(object):
                         fp_cnt     [ds] = 0
                 
 
-            if all(finished_report_period): 
+            if all(finished_report_period):
+                if self.mr_type==1:
+                    for ds in range(self.num_of_DSs):
+                        if not(printed_mr1_for_DS[ds]):
+                            print ('Warning: did not print any results for DS {ds}') 
                 return  
     
 
@@ -693,7 +696,7 @@ class DistCacheSimulator(object):
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
                             
-                else:
+                else: #self.mr_type==1
                     if self.indications[ds]: # positive indication for this DS
                         pos_ind_cnt[ds] += 1
                         if self.resolution[ds]==False:

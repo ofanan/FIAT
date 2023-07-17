@@ -646,7 +646,7 @@ class DistCacheSimulator(object):
                 if self.mr_type==1:
                     for ds in range(self.num_of_DSs):
                         if not(printed_mr1_for_DS[ds]):
-                            print ('Warning: did not print any results for DS {ds}') 
+                            print (f'Warning: did not print any results for DS {ds}') 
                 return  
     
 
@@ -706,6 +706,8 @@ class DistCacheSimulator(object):
                     if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr1 * fp_cnt[ds]/pos_ind_cnt[ds] + (1-self.EWMA_alpha_mr1) * estimated_mr [ds] 
                         if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                            if not(printed_mr1_for_DS[ds]):
+                                printed_mr1_for_DS[ds] = True
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
                             pos_ind_cnt[ds] = 0
                             fp_cnt[ds]      = 0
@@ -723,7 +725,11 @@ class DistCacheSimulator(object):
                     if num_of_ads[self.DS2insert] > self.final_simulated_ad: # Collected enough points
                         finished_report_period[self.DS2insert] = True
 
-            if all(finished_report_period): 
+            if all(finished_report_period):
+                if self.mr_type==1:
+                    for ds in range(self.num_of_DSs):
+                        if not(printed_mr1_for_DS[ds]):
+                            print (f'Warning: did not print any results for DS {ds}') 
                 return  
     
 

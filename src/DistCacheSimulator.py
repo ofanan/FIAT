@@ -337,8 +337,8 @@ class DistCacheSimulator(object):
             self.q_measure_window               = self.mr0_measure_window
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
-            self.num_of_warmup_ads              = self.DS_size/self.min_uInterval
-            self.final_simulated_ad             = self.num_of_warmup_ads + 4
+            self.num_of_warmup_ads              = [self.DS_size/self.min_uInterval, 3 * self.DS_size/self.min_uInterval] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
+            self.num_of_ads_to_measure          = 4
             self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
@@ -565,6 +565,17 @@ class DistCacheSimulator(object):
         return hit
         
         
+    def check_warmup_ad_and_finish_report (self, ds):
+        """
+        Assigns self.finished_warmup_period[ds]=True iff the warmup advertisement period is done.
+        Assigns self.finished_report_period[ds]=True iff the period in which report should be written to the .mr.res file is done.
+        """
+        if self.num_of_ads[ds] == self.num_of_warmup_ads[self.mr_type]: # Skip some warm-up period; later, write the results to file
+            self.finished_warmup_period[ds] = True                        
+        if self.finished_warmup_period[ds]: 
+            if self.num_of_ads[ds] > self.num_of_warmup_ads[self.mr_type] + self.num_of_ads_to_measure: # Collected enough points
+                self.finished_report_period[ds] = True
+
     def run_trace_measure_mr_full_knowledge (self):
         """
         Measuer and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
@@ -583,10 +594,10 @@ class DistCacheSimulator(object):
             printed_mr1_for_DS  = [False for _ in range(self.num_of_DSs)]
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
         last_printed_ins_cnt    = [0     for _ in range(self.num_of_DSs)]
-        num_of_ads              = [0     for _ in range(self.num_of_DSs)]
+        self.num_of_ads         = [0     for _ in range(self.num_of_DSs)]
         last_handled_ins_cnt    = [0     for _ in range(self.num_of_DSs)]
-        finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
-        finished_report_period  = [False for _ in range(self.num_of_DSs)]
+        self.finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
+        self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
         for ds in range(self.num_of_DSs):
             printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | fullKnow | ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
@@ -596,7 +607,7 @@ class DistCacheSimulator(object):
             for ds in range(self.num_of_DSs):
 
                 # update counters based on the current indications and resolutions
-                if finished_warmup_period[ds]:
+                if self.finished_warmup_period[ds]:
                     if self.mr_type==0:
                         if self.indications[ds]==False: # negative indication for this DS
                             neg_ind_cnt[ds] += 1
@@ -614,7 +625,7 @@ class DistCacheSimulator(object):
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0:
                     last_handled_ins_cnt[ds] = self.ins_cnt[ds]
 
-                if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
 
                     if self.mr_type==0:
                         if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
@@ -627,12 +638,8 @@ class DistCacheSimulator(object):
 
                 if self.ins_cnt[ds] % self.min_uInterval == 0: # time to advertise
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
-                    num_of_ads[ds] += 1
-                    if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
-                        finished_warmup_period[ds] = True                        
-                    if finished_warmup_period[ds]: 
-                        if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
-                            finished_report_period[ds] = True
+                    self.num_of_ads[ds] += 1
+                    self.check_warmup_ad_and_finish_report (ds)
                 
                     if self.mr_type==0:
                         neg_ind_cnt[ds] = 0
@@ -642,14 +649,13 @@ class DistCacheSimulator(object):
                         fp_cnt     [ds] = 0
                 
 
-            if all(finished_report_period):
+            if all(self.finished_report_period):
                 if self.mr_type==1:
                     for ds in range(self.num_of_DSs):
                         if not(printed_mr1_for_DS[ds]):
                             print (f'Warning: did not print any results for DS {ds}') 
                 return  
     
-
     def run_trace_estimate_mr_by_salsa (self):
         """
         Estimate using SALSA estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
@@ -672,9 +678,9 @@ class DistCacheSimulator(object):
             printed_mr1_for_DS  = [False for _ in range(self.num_of_DSs)]
 
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
-        num_of_ads              = [0     for _ in range(self.num_of_DSs)]
-        finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
-        finished_report_period  = [False for _ in range(self.num_of_DSs)]
+        self.num_of_ads         = [0     for _ in range(self.num_of_DSs)]
+        self.finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
+        self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
         estimated_mr            = [self.initial_mr0 for _ in range(self.num_of_DSs)] 
         
         for ds in range(self.num_of_DSs):
@@ -692,7 +698,7 @@ class DistCacheSimulator(object):
                             tn_cnt[ds] += 1
                     if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
-                        if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                        if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
@@ -705,7 +711,7 @@ class DistCacheSimulator(object):
 
                     if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr1 * fp_cnt[ds]/pos_ind_cnt[ds] + (1-self.EWMA_alpha_mr1) * estimated_mr [ds] 
-                        if finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                        if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
                             if not(printed_mr1_for_DS[ds]):
                                 printed_mr1_for_DS[ds] = True
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
@@ -718,14 +724,10 @@ class DistCacheSimulator(object):
             # Now we know that the request resulted in a miss, and therefore was inserted into self.DS2insert
             if self.ins_cnt[self.DS2insert] % self.min_uInterval == 0: # time to advertise
                 self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
-                num_of_ads[self.DS2insert]     += 1
-                if num_of_ads[self.DS2insert] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
-                    finished_warmup_period[self.DS2insert] = True                        
-                if finished_warmup_period[self.DS2insert]: 
-                    if num_of_ads[self.DS2insert] > self.final_simulated_ad: # Collected enough points
-                        finished_report_period[self.DS2insert] = True
+                self.num_of_ads[self.DS2insert]     += 1
+                self.check_warmup_ad_and_finish_report (self.DS2insert)
 
-            if all(finished_report_period):
+            if all(self.finished_report_period):
                 if self.mr_type==1:
                     for ds in range(self.num_of_DSs):
                         if not(printed_mr1_for_DS[ds]):
@@ -748,9 +750,9 @@ class DistCacheSimulator(object):
         estimated_pr_of_pos_ind = [0.5   for _ in range(self.num_of_DSs)] # q[ds] will hold the estimated prob' of pos' ind' in DS ds.
         estimated_hit_ratio     = [0.5   for _ in range(self.num_of_DSs)]
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
-        num_of_ads              = [0     for _ in range(self.num_of_DSs)]
-        finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
-        finished_report_period  = [False for _ in range(self.num_of_DSs)]
+        self.num_of_ads              = [0     for _ in range(self.num_of_DSs)]
+        self.finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
+        self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
         estimated_fpr           = [0.0   for _ in range(self.num_of_DSs)]
         estimated_fnr           = [0.0   for _ in range(self.num_of_DSs)]
         estimated_mr0           = [0.0   for _ in range(self.num_of_DSs)]
@@ -791,13 +793,9 @@ class DistCacheSimulator(object):
                     self.DS_list[ds].stale_indicator = self.DS_list[ds].genNewSBF ()
                     if self.print_detailed_output:
                         printf (self.measure_mr_res_file[ds], 'advertised\n')                    
-                    num_of_ads[ds] += 1
+                    self.num_of_ads[ds] += 1
                     last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
-                    if num_of_ads[ds] == self.num_of_warmup_ads: # Skip some warm-up period; later, write the results to file
-                        finished_warmup_period[ds] = True                        
-                    if finished_warmup_period[ds]: 
-                        if num_of_ads[ds] > self.final_simulated_ad: # Collected enough points
-                            finished_report_period[ds] = True
+                    self.check_warmup_ad_and_finish_report (ds)
                             
             if self.DS2insert: # if the request resulted in a miss, it was inserted into self.DS2insert; thus, we may have to update the relevant estimated_fpr, estimated_fnr.
                 if self.ins_cnt[self.DS2insert]%self.num_of_insertions_between_fpr_fnr_updates == 0:
@@ -812,7 +810,7 @@ class DistCacheSimulator(object):
             # if needed, update the relevant mr estimations
             for ds in range(self.num_of_DSs):                            # Update the estimated mr by the updated prob' of positive indication
                 
-                if not(finished_warmup_period[ds]):
+                if not(self.finished_warmup_period[ds]):
                     continue
                 if (self.indications[ds]): # positive ind' --> update mr1
                     if estimated_pr_of_pos_ind[ds] == 0: 
@@ -834,7 +832,7 @@ class DistCacheSimulator(object):
                     printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds] if self.mr_type==0 else estimated_mr1[ds]))
                     last_reported_ins_cnt[ds] = self.ins_cnt[ds]
 
-            if all(finished_report_period): 
+            if all(self.finished_report_period): 
                 return  
 
                 

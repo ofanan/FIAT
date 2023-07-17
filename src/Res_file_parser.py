@@ -123,7 +123,7 @@ class Res_file_parser (object):
         """
         splitted_line = line.split (" | ")
         if len (splitted_line)<3:
-            MyConfig.error ('parse_mr_res_line encountered format error. splitted_line={}' .format (splitted_line))
+            MyConfig.error (f'parse_mr_res_line encountered format error in file {self.relative_path_to_input_file}. splitted_line={splitted_line}')
         x_vec, y_vec = [], []
         for point in splitted_line[2].split('(')[1:]:
             point = point.split(')')[0].split (',')            
@@ -143,7 +143,7 @@ class Res_file_parser (object):
          
         settings      = splitted_line[0]
         if len (splitted_line)<2:
-            MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
+            MyConfig.error (f'parse_line encountered format error in file {self.relative_path_to_input_file}. splitted_line={splitted_line}')
         if len (splitted_line[1].split(" = "))<2:
             MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
         serviceCost   = float(splitted_line[1].split(" = ")[1])
@@ -479,9 +479,9 @@ class Res_file_parser (object):
         Parse each file in the list input_file_names, and save the parsed data in self.list_of_dicts
         """
         for input_file_name in input_file_names:
-            relative_path_to_input_file = f'../res/{input_file_name}'
-            MyConfig.check_if_input_file_exists (relative_path_to_input_file=relative_path_to_input_file)
-            self.input_file         = open (relative_path_to_input_file,  "r")
+            self.relative_path_to_input_file = f'../res/{input_file_name}'
+            MyConfig.check_if_input_file_exists (relative_path_to_input_file=self.relative_path_to_input_file)
+            self.input_file         = open (self.relative_path_to_input_file,  "r")
             # self.output_file        = open ("../res/" + input_file_name.split(".")[0] + ".dat", "w")
             lines               = (line.rstrip() for line in self.input_file) # "lines" contains all lines in input file
             lines               = (line for line in lines if line)       # Discard blank lines
@@ -793,10 +793,10 @@ def gen_mr_plots ():
     my_Res_file_parser = Res_file_parser ()
     input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
                       'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    my_Res_file_parser.parse_files(input_file_names=input_file_names, file_type='.mr.res')
-    my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=mr_type)
     for input_file_name in input_file_names:
         for ds in range (3): 
-            my_Res_file_parser.plot_mr(input_file_name=f'{input_file_name}_{ds}.mr.res', mr_type=mr_type)
+            input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
+            my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
+            my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
 gen_mr_plots ()

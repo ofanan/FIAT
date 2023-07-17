@@ -343,8 +343,8 @@ class DistCacheSimulator(object):
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
-                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_measure_mr_{}_{}{}.mr' .format (
-                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
+                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_bpe{:.0f}_measure_mr_{}_{}{}.mr' .format (
+                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs

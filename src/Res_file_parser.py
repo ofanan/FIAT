@@ -791,10 +791,10 @@ def gen_mr_plots ():
 
     mr_type = 0                    
     my_Res_file_parser = Res_file_parser ()
-    input_file_name = 'Scarab_C16K_U2000_measure_mr_all_0.mr.res'
-    my_Res_file_parser.parse_files(input_file_names=[input_file_name], file_type='.mr.res')
+    my_Res_file_parser.parse_files(input_file_names=['Scarab_C16K_U2000_measure_mr_all_.mr.res', 'IBM1_C16K_U2000_measure_mr_all_.mr.res', 'IBM7_C16K_U2000_measure_mr_all_.mr.res'], 
+                                   file_type='.mr.res')
     my_Res_file_parser.plot_mr(input_file_name=input_file_name, mr_type=mr_type)
-    for ds in range (1): 
+    for ds in range (3): 
         my_Res_file_parser.plot_mr(input_file_name=f'IBM7_C16K_U2000_mr0_by_salsa_all_{ds}.res', mr_type=mr_type)
 
 gen_mr_plots ()

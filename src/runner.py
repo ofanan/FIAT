@@ -18,7 +18,7 @@ def run_hetro_costs_sim ():
     """
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['IBM1', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
     # for trace in ['Wiki']:        
     # for trace in ['Scarab']:       
@@ -27,15 +27,16 @@ def run_hetro_costs_sim ():
     # for trace in ['IBM1']: 
     # for trace in ['IBM7']: 
     # for trace in ['Twitter17']:
-    # for trace in ['Twitter45']:
+    for trace in ['Twitter45']:
         for DS_size in [4000]: #[, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) 
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa2']:
-                for missp in [10]: #[10, 30, 100, 300]:
+                for missp in [30]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
-                        res_file_name           = f'{mode}_HPC',
+                        # bpe                     = 10, #$$$
+                        res_file_name           = f'{mode}_PC',
                         EWMA_alpha_mr0          = 0.85, 
                         EWMA_alpha_mr1          = 0.25, 
                         trace_name              = trace,
@@ -198,7 +199,7 @@ if __name__ == '__main__':
     try:
         # run_num_of_DSs_sim ()
         # run_full_ind_oriented_sim ()
-        run_mr_sim ()
-        # run_hetro_costs_sim ()
+        # run_mr_sim ()
+        run_hetro_costs_sim ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

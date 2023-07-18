@@ -92,8 +92,7 @@ class DistCacheSimulator(object):
             non_comp_miss_th        = self.non_comp_miss_th,
             non_comp_accs_th        = self.non_comp_accs_th,
             initial_mr0             = self.initial_mr0,
-            initial_mr1             = 0,
-            # initial_mr1 is set by the DS to its designed fpr.
+            initial_mr1             = self.initial_mr1, # initial_mr1 is set by the DS to its designed fpr.
             mr0_ad_th               = self.mr0_ad_th,
             mr1_ad_th               = self.mr1_ad_th,
             settings_str            = self.gen_settings_str (num_of_req=self.trace_len), 
@@ -315,6 +314,7 @@ class DistCacheSimulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
+        self.initial_mr1                    = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
         if self.mode.startswith('measure_mr'):
             """
             simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
@@ -394,7 +394,6 @@ class DistCacheSimulator(object):
             self.fp_cnt         = np.zeros  (self.num_of_DSs)
             self.tn_cnt         = np.zeros  (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.initial_mr1    = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
             self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()

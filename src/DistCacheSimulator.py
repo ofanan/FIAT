@@ -325,21 +325,20 @@ class DistCacheSimulator(object):
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
-            self.print_detailed_output          = True
+            self.print_detailed_output          = False
             self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.resolution                     = np.array (range (self.num_of_DSs), dtype = 'bool')
             self.DSs2accs                       = []
             self.ins_cnt                        = np.zeros (self.num_of_DSs)
-            self.mr0_measure_window             = self.min_uInterval/10
-            self.mr1_measure_window             = self.min_uInterval/10
-            self.q_measure_window               = self.mr0_measure_window
+            self.mr_measure_window              = [self.min_uInterval/10, self.min_uInterval/10] # size of measure window for mr0, mr1. 
+            self.q_measure_window               = self.mr_measure_window[0]
             self.naive_selection_alg            = 'all'
             self.use_fna                        = True
             self.num_of_warmup_ads              = [self.DS_size/self.min_uInterval, 3 * self.DS_size/self.min_uInterval] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
-            self.num_of_ads_to_measure          = 4
-            self.num_of_insertions_between_fpr_fnr_updates = self.mr0_measure_window 
+            self.num_of_ads_to_measure          = 5
+            self.num_of_insertions_between_fpr_fnr_updates = self.mr_measure_window[0] 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
             for ds in range (self.num_of_DSs):
@@ -622,19 +621,19 @@ class DistCacheSimulator(object):
                             if self.resolution[ds]==False:
                                 fp_cnt[ds] += 1
                 
-                if self.print_detailed_output and self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr0_measure_window==0: #$$
-                    printf (self.measure_mr_res_file[ds], f'\nreq_cnt={self.req_cnt}, ins_cnt[{ds}]={self.ins_cnt[ds]}, pos_ind_cnt={pos_ind_cnt[ds]}, fp_cnt={fp_cnt[ds]}, num_of_ads={self.num_of_ads}') #$$$
+                if self.print_detailed_output and self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr_measure_window[1]==0: #$$
+                    printf (self.measure_mr_res_file[ds], f'\nreq_cnt={self.req_cnt}, ins_cnt[{ds}]={self.ins_cnt[ds]}, pos_ind_cnt={pos_ind_cnt[ds]}, fp_cnt={fp_cnt[ds]}, num_of_ads={self.num_of_ads}, last_printed_ins_cnt={last_printed_ins_cnt[ds]}') 
                 
                 if self.finished_warmup_period[ds] and self.ins_cnt[ds]!=last_printed_ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
 
                     if self.mr_type==0:
-                        if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
+                        if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr_measure_window[0]==0:
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds]/neg_ind_cnt[ds]))
                             last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
                     else: #self.mr_type==1
-                        if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
+                        if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr_measure_window[1]==0:
                             if not(printed_mr1_for_DS[ds]):
                                 printed_mr1_for_DS[ds] = True
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
@@ -644,6 +643,11 @@ class DistCacheSimulator(object):
 
                 if self.ins_cnt[ds] % self.min_uInterval == 0 and self.ins_cnt[ds]!=last_advertised_ins_cnt[ds]: # time to advertise
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    if self.print_detailed_output:
+                        if self.mr_type==0:
+                            printf (self.measure_mr_res_file[ds], f'\nadvertised. ins_cnt[{ds}]={self.ins_cnt[ds]}, neg_ind_cnt[{ds}]={neg_ind_cnt[ds]}') 
+                        else:
+                            printf (self.measure_mr_res_file[ds], f'\nadvertised. ins_cnt[{ds}]={self.ins_cnt[ds]}, pos_ind_cnt[{ds}]={pos_ind_cnt[ds]}') 
                     if self.mr_type==0:
                         if neg_ind_cnt[ds] >= 100: # report only if we have enough data for it...
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds]/neg_ind_cnt[ds]))
@@ -685,16 +689,17 @@ class DistCacheSimulator(object):
         if self.mr_type==0:
             neg_ind_cnt         = [0     for _ in range(self.num_of_DSs)]
             tn_cnt              = [0     for _ in range(self.num_of_DSs)]
+            estimated_mr        = [self.initial_mr0 for _ in range(self.num_of_DSs)] 
         else:
             pos_ind_cnt         = [0     for _ in range(self.num_of_DSs)]
             fp_cnt              = [0     for _ in range(self.num_of_DSs)]
             printed_mr1_for_DS  = [False for _ in range(self.num_of_DSs)]
+            estimated_mr        = [self.initial_mr1 for _ in range(self.num_of_DSs)] 
 
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
         self.num_of_ads         = [0     for _ in range(self.num_of_DSs)]
         self.finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
         self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
-        estimated_mr            = [self.initial_mr0 for _ in range(self.num_of_DSs)] 
         
         for ds in range(self.num_of_DSs):
             printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | salsa2 | ')
@@ -709,7 +714,7 @@ class DistCacheSimulator(object):
                         neg_ind_cnt[ds] += 1
                         if self.resolution[ds]==False:
                             tn_cnt[ds] += 1
-                    if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr0_measure_window==0:
+                    if neg_ind_cnt[ds]>0 and neg_ind_cnt[ds] % self.mr_measure_window[0]==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr0 * tn_cnt[ds]/neg_ind_cnt[ds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds] 
                         if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
@@ -722,7 +727,7 @@ class DistCacheSimulator(object):
                         if self.resolution[ds]==False:
                             fp_cnt[ds] += 1
 
-                    if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr1_measure_window==0:
+                    if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr_measure_window[1]==0:
                         estimated_mr [ds] = self.EWMA_alpha_mr1 * fp_cnt[ds]/pos_ind_cnt[ds] + (1-self.EWMA_alpha_mr1) * estimated_mr [ds] 
                         if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
                             if not(printed_mr1_for_DS[ds]):
@@ -841,9 +846,14 @@ class DistCacheSimulator(object):
         
                 estimated_mr0[ds] = max (0, min (estimated_mr0[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
                 estimated_mr1[ds] = max (0, min (estimated_mr1[ds], 1)) # Verify that all mr values are feasible - that is, within [0,1].
-                if self.ins_cnt[ds]%self.mr0_measure_window==0 and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
-                    printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds] if self.mr_type==0 else estimated_mr1[ds]))
-                    last_reported_ins_cnt[ds] = self.ins_cnt[ds]
+                if self.mr_type==0:
+                    if self.ins_cnt[ds]%self.mr_measure_window[0]==0 and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
+                        printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds] if self.mr_type==0 else estimated_mr0[ds]))
+                        last_reported_ins_cnt[ds] = self.ins_cnt[ds]                    
+                else:
+                    if self.ins_cnt[ds]%self.mr_measure_window[0]==0 and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
+                        printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr1[ds] if self.mr_type==0 else estimated_mr1[ds]))
+                        last_reported_ins_cnt[ds] = self.ins_cnt[ds]
 
             if all(self.finished_report_period): 
                 return  

@@ -779,13 +779,17 @@ class Res_file_parser (object):
         plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
 
+def gen_plot_bars_by_uIntFact ():
+    my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'salsa2_HPC.res'])
+    for DS_size in [4, 16, 64]: 
+        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=False, missp_vals=[30, 300], DS_size=64, uIntFactVals=[2, 999999])
+
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[100], DS_size=DS_size, normalize_by_Opt=True)
-    # my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res'])
-    # my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 300], DS_size=64)
         
 def gen_mr_plots ():
 
@@ -799,4 +803,5 @@ def gen_mr_plots ():
             my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
             my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
-gen_mr_plots ()
+# gen_mr_plots ()
+gen_plot_bars_by_uIntFact ()

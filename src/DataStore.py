@@ -55,7 +55,7 @@ class DataStore (object):
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
          min_feasible_uInterval     = 10,
-         period                     = 10 * self.min_uInterval, # length of "sync periods" of the indicator's scaling alg.
+         period_param               = 10, # length of "sync periods" of the indicator's scaling alg.
          do_not_advertise_upon_insert = True,
          ):
         """
@@ -140,7 +140,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
-        self.period                  = period   
+        self.period_param            = period_param 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -301,7 +301,7 @@ class DataStore (object):
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
         
-        if self.ins_cnt_since_last_full_ad>=self.period: # time to consider scaling, or at least send a keep-alive full ind'
+        if self.ins_cnt_since_last_full_ad>=self.period_param * self.min_uInterval: # time to consider scaling, or at least send a keep-alive full ind'
 
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, f'\nfinished a period\n')                     
@@ -426,7 +426,7 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         
         if self.collect_mr_stat:
-            if self.ins_cnt_in_this_period >= self.period: 
+            if self.ins_cnt_in_this_period >= self.period_param * self.min_uInterval: 
             #self.init_mr0_after_each_ad:
                 self.tn_cnt, self.spec_accs_cnt = 0,0
                 self.ins_cnt_in_this_period = 0 

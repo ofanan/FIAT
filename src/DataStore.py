@@ -55,6 +55,7 @@ class DataStore (object):
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
          min_feasible_uInterval     = 10,
+         period                     = 10 * self.min_uInterval, # length of "sync periods" of the indicator's scaling alg.
          do_not_advertise_upon_insert = True,
          ):
         """
@@ -139,7 +140,7 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
-        self.period                  = 10 * self.min_uInterval   
+        self.period                  = period   
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 

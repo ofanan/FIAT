@@ -569,10 +569,10 @@ class Res_file_parser (object):
                            item['num_of_DSs'] == 3] 
         all_opt_points   = [item for item in relevant_points if item['mode'] == 'Opt']
         all_salsa_points = [item for item in relevant_points if 
-                           item['mode']             == mode   and
-                           item['bpe']              == bpe    and
+                           item['mode']             == mode and
+                            item['bpe']              == bpe and
                            item['mr0_th']           == mr0_th and
-                           item['mr1_th']           == mr1_th]
+                            item['mr1_th']           == mr1_th]
         
         for missp in missp_vals: 
             opt_points_w_this_missp   = [item for item in all_opt_points   if item['missp']==missp]  
@@ -588,15 +588,16 @@ class Res_file_parser (object):
                     trace = traces[traceIdx]
                     opt_points      = [item for item in opt_points_w_this_missp if 
                                        item['trace']      == trace and
-                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000]
+                    # print (f'num of req of {trace}={MyConfig.calc_num_of_req (trace, DS_size*1000)/1000}') #$$$
                     salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if 
-                                       item['trace']      == trace and
-                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                                       item['trace']      == trace]# and #$$$
+                                       # item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
                     if salsa_points==[]: # no results for this settings
                         print (f'no points for {trace}.C{DS_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
                     if (opt_points==[]):
-                        MyConfig.error ('no results for Opt {trace}.C{DS_size}K M{missp}')
+                        MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
                     opt_serviceCost = opt_points[0]['serviceCost']
                     point = salsa_points[0]
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
@@ -782,15 +783,17 @@ class Res_file_parser (object):
 
 def gen_plot_bars_by_uIntFact ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'salsa2_HPC.res'])
-    for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=False, missp_vals=[30, 300], DS_size=DS_size, uIntFactVals=[2, 999999], normalize_by_Opt=False)
+    my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'salsa2_PC.res'])
+    for DS_size in [4]: 
+        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, uIntFactVals=[2, 999999], normalize_by_Opt=False)
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999)
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
+    for DS_size in [4, 16, 64]: 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=False, uIntFact=2)
         
 def gen_mr_plots ():
 
@@ -804,6 +807,6 @@ def gen_mr_plots ():
             my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
             my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
-gen_plot_bars_by_uIntFact ()
+# gen_plot_bars_by_uIntFact ()
 # gen_mr_plots ()
-# gen_plot_bars ()
+gen_plot_bars ()

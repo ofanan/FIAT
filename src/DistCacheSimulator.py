@@ -106,6 +106,7 @@ class DistCacheSimulator(object):
             use_fixed_uInterval     = self.use_fixed_uInterval,
             min_feasible_uInterval  = self.min_feasible_uInterval,
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
+            period                  = self.period, # length of "sync periods" of the indicator's scaling alg.
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_fpr_fnr_updates   = self.num_of_insertions_between_fpr_fnr_updates,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
@@ -199,6 +200,7 @@ class DistCacheSimulator(object):
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = False, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)
+                 period             = 10 * self.min_uInterval, # length of "sync periods" of the indicator's scaling alg.
                  re_init_after_each_ad = False, 
                  min_feasible_uInterval = 10,
                  mr_type            = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1. 

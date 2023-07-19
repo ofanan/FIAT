@@ -377,9 +377,10 @@ class DataStore (object):
         """
         self.gen_updated_sbf()
         self.delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
-        if MyConfig.VERBOSE_LOG_Q in self.verbose:
-            printf (self.q_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 
-        return self.delta_ad_size < self.ind_size
+        if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            printf (self.mr_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 
+        
+        return (self.delta_ad_size / self.ind_size) < 1 - 1/self.period_param
     
     def advertise_switch_to_delta_update (self):
         """

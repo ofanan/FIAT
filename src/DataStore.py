@@ -477,7 +477,7 @@ class DataStore (object):
                         (self.ind_size, estimated_bw_of_cadnidate[0]))
             return         
         diffs_from_bw_budget        = [abs (item - self.bw_budget) for item in estimated_bw_of_cadnidate]
-        val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
+        val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_bw_budget))
          
         new_ind_size                = self.potential_indSize[idx]
         if new_ind_size!=self.ind_size: 

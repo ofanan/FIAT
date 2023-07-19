@@ -29,14 +29,14 @@ def run_hetro_costs_sim ():
     # for trace in ['Twitter17']:
     # for trace in ['Twitter45']:
         for DS_size in [4000]: #[, 16000, 64000]:
-            max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
+            max_num_of_req = 500000 # MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa2']:
                 for missp in [30]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$
-                        period_param            = 1, # length of "sync periods" of the indicator's scaling alg.
+                        period_param            = 10, # length of "sync periods" of the indicator's scaling alg.
                         res_file_name           = f'{mode}_HPC',
                         EWMA_alpha_mr0          = 0.85, 
                         EWMA_alpha_mr1          = 0.25, 
@@ -50,7 +50,7 @@ def run_hetro_costs_sim ():
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor        = 999999 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
+                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES]) #MyConfig.VERBOSE_DETAILED_LOG_MR]) # [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                     toc()
 

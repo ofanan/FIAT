@@ -464,11 +464,10 @@ class DataStore (object):
         Scale the indicator (if needed) while in "delta" mode.
         Update stat, and consider reverting to full_indicator mode, if needed.
         """
-        cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         num_insertions_per_period   = self.period_param * self.min_uInterval
         cur_bw_of_delta_ads_per_ins = self.total_ad_size_in_this_period / num_insertions_per_period 
-        estimated_bw_of_cadnidate   = [cur_bw_of_delta_ads_per_ins *self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize + self.bw_budget/self.period_param  for i in range(len(self.potential_indSize))]
+        estimated_bw_of_cadnidate   = [cur_bw_of_delta_ads_per_ins * self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize + self.bw_budget/self.period_param  for i in range(len(self.potential_indSize))]
         if all([item > self.bw_budget for item in estimated_bw_of_cadnidate]): # Cannot satisfy the BW constraint using delta mode 
             self.min_uInterval      = int (self.ind_size / self.bw_budget) 
             self.in_delta_mode      = False
@@ -477,10 +476,9 @@ class DataStore (object):
                 printf (self.mr_output_file, 'Switching back to full mode. indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
                         (self.ind_size, estimated_bw_of_cadnidate[0]))
             return         
-        diffs_from_bw_budget        = [abs (item - self.bw_budget) for i in estimated_bw_of_cadnidate]
+        diffs_from_bw_budget        = [abs (item - self.bw_budget) for item in estimated_bw_of_cadnidate]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
          
-         # scaled ind' size is the min' feasible val.             
         new_ind_size                = self.potential_indSize[idx]
         if new_ind_size!=self.ind_size: 
             self.ind_size               = new_ind_size

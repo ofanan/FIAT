@@ -307,7 +307,7 @@ class DataStore (object):
                 printf (self.mr_output_file, f'\nfinished a period\n')                     
             self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_factor!=1:                                          
-                self.scale_ind_delta_mode (bw_in_cur_interval=self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)
+                self.scale_ind_delta_mode ()
             self.overall_ad_size               += self.ind_size # need to advertise a full ind' once in a period.
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
@@ -458,17 +458,17 @@ class DataStore (object):
         self.num_of_full_ads        += 1
         self.overall_ad_size        += self.ind_size
 
-    def scale_ind_delta_mode (self, bw_in_cur_interval):
+    def scale_ind_delta_mode (self):
         """
         Scale the indicator (if needed) while in "delta" mode.
         Update stat, and consider reverting to full_indicator mode, if needed.
         """
         cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
-        period                      = self.period_param * self.min_uInterval
-        bw_coeff                    = (bw_in_cur_interval - self.ind_size/period) / curIndSize_lg_curIndSize
-        estimated_bw_of_cadnidate   = [self.potential_indSize[i]/period + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
-        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i] - self.bw_budget) for i in range(len(self.potential_indSize))]
+        num_insertions_per_period   = self.period_param * self.min_uInterval
+        bw_coeff                    = (self.total_ad_size_in_this_period - self.ind_size) / curIndSize_lg_curIndSize
+        estimated_bw_of_cadnidate   = [self.potential_indSize[i] + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
+        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i] - self.bw_budget*num_insertions_per_period) for i in range(len(self.potential_indSize))]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
         if idx==0 and estimated_bw_of_cadnidate[0] > self.bw_budget: # Cannot cope with the BW restriction using delta mode even with the smallest feasible ind'
             self.min_uInterval = int (self.ind_size / self.bw_budget) 

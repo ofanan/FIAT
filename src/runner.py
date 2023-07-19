@@ -26,13 +26,13 @@ def run_hetro_costs_sim ():
     # for trace in ['F2']: 
     # for trace in ['IBM1']: 
     # for trace in ['IBM7']: 
-    # for trace in ['Twitter17']:
-    for trace in ['Twitter45']:
+    for trace in ['Twitter17', 'IBM7']:
+    # for trace in ['Twitter45']:
         for DS_size in [4000]: #[, 16000, 64000]:
-            max_num_of_req = 500000 #$$$$ MyConfig.calc_num_of_req (trace) 
+            max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa2']:
-                for missp in [30]: #[10, 30, 100, 300]:
+            for mode in ['fnaa']:
+                for missp in [10]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$

@@ -466,11 +466,10 @@ class DataStore (object):
         cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         num_insertions_per_period   = self.period_param * self.min_uInterval
-        bw_coeff                    = (self.total_ad_size_in_this_period - self.ind_size) / curIndSize_lg_curIndSize
+        bw_coeff                    = self.total_ad_size_in_this_period / curIndSize_lg_curIndSize
         estimated_bw_of_cadnidate   = [self.potential_indSize[i] + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
-        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i] - self.bw_budget*num_insertions_per_period) for i in range(len(self.potential_indSize))]
-        val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
-        if idx==0 and estimated_bw_of_cadnidate[0] > self.bw_budget: # Cannot cope with the BW restriction using delta mode even with the smallest feasible ind'
+        overall_bw_budget_per_period = self.bw_budget*num_insertions_per_period
+        if all([estimated_bw > overall_bw_budget_per_period for estimated_bw in estimated_bw_of_cadnidate]): # Cannot satisfy the BW constraint using delta mode 
             self.min_uInterval = int (self.ind_size / self.bw_budget) 
             self.in_delta_mode      = False
 
@@ -478,6 +477,8 @@ class DataStore (object):
                 printf (self.mr_output_file, 'Switching back to full mode. cur bw={:.2f}, indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
                         (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, estimated_bw_of_cadnidate[0]))
             return         
+        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i] - self.bw_budget*num_insertions_per_period) for i in range(len(self.potential_indSize))]
+        val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
          
          # scaled ind' size is the min' feasible val.             
         new_ind_size                = self.potential_indSize[idx]

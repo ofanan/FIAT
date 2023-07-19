@@ -15,6 +15,10 @@ from printf import printf
 
 class DataStore (object):
 
+    # estimate_bw_of_candidate_indSize = lambda self, cur_bw_of_delta_ads_per_ins, curIndSize_lg_curIndSize i : cur_bw_of_delta_ads_per_ins*self.indS   
+
+        # estimated_bw_of_cadnidate   = [self.potential_indSize[i] + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
+
     def __init__(self, 
          ID,                             # datastore ID
          size                   = 1000,  # number of elements that can be stored in the datastore
@@ -330,9 +334,6 @@ class DataStore (object):
             self.overall_ad_size               += ad_size                              
             self.stale_indicator                = self.updated_sbf
             self.num_of_advertisements         += 1
-            if MyConfig.VERBOSE_LOG_Q in self.verbose:
-                printf (self.q_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, \n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad)) 
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
                         (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt)) 
@@ -466,18 +467,17 @@ class DataStore (object):
         cur_IndSize                 = self.ind_size
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         num_insertions_per_period   = self.period_param * self.min_uInterval
-        bw_coeff                    = self.total_ad_size_in_this_period / curIndSize_lg_curIndSize
-        estimated_bw_of_cadnidate   = [self.potential_indSize[i] + bw_coeff*self.potential_indSize_lg_indSize[i] for i in range(len(self.potential_indSize))]
-        overall_bw_budget_per_period = self.bw_budget*num_insertions_per_period
-        if all([estimated_bw > overall_bw_budget_per_period for estimated_bw in estimated_bw_of_cadnidate]): # Cannot satisfy the BW constraint using delta mode 
-            self.min_uInterval = int (self.ind_size / self.bw_budget) 
+        cur_bw_of_delta_ads_per_ins = self.total_ad_size_in_this_period / num_insertions_per_period 
+        estimated_bw_of_cadnidate   = [cur_bw_of_delta_ads_per_ins *self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize + self.bw_budget/self.period_param  for i in range(len(self.potential_indSize))]
+        if all([item > self.bw_budget for item in estimated_bw_of_cadnidate]): # Cannot satisfy the BW constraint using delta mode 
+            self.min_uInterval      = int (self.ind_size / self.bw_budget) 
             self.in_delta_mode      = False
 
             if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-                printf (self.mr_output_file, 'Switching back to full mode. cur bw={:.2f}, indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
-                        (bw_in_cur_interval, self.ind_size, curIndSize_lg_curIndSize, estimated_bw_of_cadnidate[0]))
+                printf (self.mr_output_file, 'Switching back to full mode. indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
+                        (self.ind_size, estimated_bw_of_cadnidate[0]))
             return         
-        diffs_from_desiredRatio     = [abs (estimated_bw_of_cadnidate[i] - self.bw_budget*num_insertions_per_period) for i in range(len(self.potential_indSize))]
+        diffs_from_bw_budget        = [abs (item - self.bw_budget) for i in estimated_bw_of_cadnidate]
         val, idx                    = min((val, idx) for (idx, val) in enumerate(diffs_from_desiredRatio))
          
          # scaled ind' size is the min' feasible val.             

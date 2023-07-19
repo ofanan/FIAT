@@ -144,7 +144,8 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
-        self.period_param            = period_param 
+        self.period_param            = period_param
+        self.re_init_mr0_param       = 10 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
@@ -317,10 +318,8 @@ class DataStore (object):
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:
                 self.stale_indicator            = self.genNewSBF ()
-            if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-                printf (self.q_output_file, f'advertising delta. ins_cnt_in_this_period ={self.ins_cnt_since_last_full_ad}\n')                     
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.mr_output_file, f'advertising delta. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
+                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
             self.num_of_advertisements  += 1
             self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
@@ -428,7 +427,7 @@ class DataStore (object):
             self.fnr                                = 0 # Immediately after sending an update, the expected fnr is 0
         
         if self.collect_mr_stat:
-            if self.ins_cnt_in_this_period >= self.period_param * self.min_uInterval: 
+            if self.ins_cnt_in_this_period >= self.re_init_mr0_param * self.min_uInterval: 
             #self.init_mr0_after_each_ad:
                 self.tn_cnt, self.spec_accs_cnt = 0,0
                 self.ins_cnt_in_this_period = 0 

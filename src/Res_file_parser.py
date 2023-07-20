@@ -24,6 +24,10 @@ alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: 
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
 mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
 uIntFact_idx            = 14 # mr0 th for SALSA's advertisement decision
+minFU_idx               = 15
+alpha0_idx              = 16
+alpha1_idx              = 18
+period_param_idx        = 20
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH               = 0.25
@@ -192,9 +196,12 @@ class Res_file_parser (object):
 
         if len (splitted_line) <= mr0th_idx:
             return # no further data in this .res entry
-        self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
-        self.dict['mr1_th'] = float ('0.' + splitted_line [mr1th_idx+1])
-        self.dict['uIntFact'] = float (splitted_line [uIntFact_idx].split("uIntFact")[1])
+        self.dict['mr0_th']         = float ('0.' + splitted_line [mr0th_idx+1])
+        self.dict['mr1_th']         = float ('0.' + splitted_line [mr1th_idx+1])
+        self.dict['uIntFact']       = float (splitted_line [uIntFact_idx].split("uIntFact")[1])
+        if len(splitted_line)>period_param_idx:
+            self.dict['period_param']   = int   (splitted_line [period_param_idx].split('per_param')[1])
+         
          
     def print_tbl (self):
         """
@@ -554,7 +561,7 @@ class Res_file_parser (object):
                    plot_bwCost      = True,
                    mode             = 'SALSA2',
                    uIntFactVals     = [2, 32],
-                   normalize_by_Opt = True, # When true, normalize the service cost by that of Opt 
+                   normalize_by_Opt = True, # When true, normalize the service cost by that of Opt
                    ):
         """
         Generate and save a Python's bar-plot of the service cost and BW for varying uIntFact (update interval factor).   
@@ -591,8 +598,10 @@ class Res_file_parser (object):
                                        item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000]
                     # print (f'num of req of {trace}={MyConfig.calc_num_of_req (trace, DS_size*1000)/1000}') #$$$
                     salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if 
-                                       item['trace']      == trace]# and #$$$
-                                       # item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                                       item['trace']      == trace and 
+                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                    if period_param!=None:
+                        salsa_points = [item for item in salsa_points if item['period_param']==period_param]
                     if salsa_points==[]: # no results for this settings
                         print (f'no points for {trace}.C{DS_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
@@ -647,6 +656,7 @@ class Res_file_parser (object):
                    plot_serviceCost = True, 
                    plot_bwCost      = True,
                    normalize_by_Opt = True, # When true, normalize the service cost by that of Opt 
+                   period_param     = None, 
                    ):
         """
         Generate and save a Python's bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -789,11 +799,11 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    # for DS_size in [4, 16, 64]: 
-    #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
+    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
+    # for DS_size in [4, 16, 64]: 
+    #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
         
 def gen_mr_plots ():
 

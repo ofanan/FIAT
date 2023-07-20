@@ -600,8 +600,6 @@ class Res_file_parser (object):
                     salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if 
                                        item['trace']      == trace and 
                                        item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
-                    if period_param!=None:
-                        salsa_points = [item for item in salsa_points if item['period_param']==period_param]
                     if salsa_points==[]: # no results for this settings
                         print (f'no points for {trace}.C{DS_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
@@ -709,6 +707,8 @@ class Res_file_parser (object):
                                              item['mr1_th'] == mr1_th]
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
+                        if period_param!=None:
+                            mode_trace_points = [item for item in salsa_points if item['period_param']==period_param]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
@@ -800,8 +800,8 @@ def gen_plot_bars_by_uIntFact ():
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
+    for DS_size in [4]: 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
     # for DS_size in [4, 16, 64]: 
     #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
         

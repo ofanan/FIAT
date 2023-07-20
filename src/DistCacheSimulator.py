@@ -505,7 +505,10 @@ class DistCacheSimulator(object):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
         if self.mode=='salsa2':
             printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
+            printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
         printf (res_file, '\n')
+        
+        
         
     def run_trace_measure_fp_fn (self):
         """

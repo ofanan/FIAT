@@ -160,7 +160,8 @@ class DataStore (object):
         
         self.num_of_insertions_between_fpr_fnr_updates  = num_of_insertions_between_fpr_fnr_updates
         self.ins_since_last_fpr_fnr_estimation      = int (0)
-        
+
+        self.num_of_sync_ads = int(0)        
         if self.consider_delta_updates and self.scale_ind_factor!=1: # if needed, pre-compute values for Lambert function (scaling of the ind' at delta mode)
             bpe                         = self.min_bpe
             self.potential_indSize      = []
@@ -320,7 +321,8 @@ class DataStore (object):
                 self.stale_indicator            = self.genNewSBF ()
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
-            self.num_of_advertisements  += 1
+            self.num_of_advertisements         += 1
+            self.num_of_sync_ads               += 1 
             self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
             return # finished advertising an indicator

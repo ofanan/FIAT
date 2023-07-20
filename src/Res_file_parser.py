@@ -708,7 +708,7 @@ class Res_file_parser (object):
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
                         if period_param!=None:
-                            mode_trace_points = [item for item in salsa_points if item['period_param']==period_param]
+                            mode_trace_points = [item for item in mode_trace_points if item['period_param']==period_param]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
@@ -747,7 +747,7 @@ class Res_file_parser (object):
                 sub_plot_str = '_bCost'
             else:
                 sub_plot_str = ''
-            plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}.pdf', bbox_inches='tight', dpi=100)
+            plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}_pparam{period_param}.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
     def bar_xlabel_positions (self, num_groups, num_bars_per_group):
@@ -800,8 +800,8 @@ def gen_plot_bars_by_uIntFact ():
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2)
+    for DS_size in [4, 16, 64]: 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
     # for DS_size in [4, 16, 64]: 
     #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
         

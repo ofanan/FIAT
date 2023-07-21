@@ -62,7 +62,7 @@ class DistCacheSimulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.period_param}' 
+            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.period_param}.scaleF{self.scale_ind_factor_full}.scaleD{self.scale_ind_factor_delta}' 
         return settings_str
     
     def init_DS_list(self):
@@ -100,7 +100,8 @@ class DistCacheSimulator(object):
             max_fpr                 = self.max_fpr, 
             max_fnr                 = self.max_fnr, 
             verbose                 = self.verbose, 
-            scale_ind_factor        = self.scale_ind_factor,
+            scale_ind_delta_factor  = self.scale_ind_delta_factor,
+            scale_ind_full_factor   = self.scale_ind_full_factor,
             init_mr0_after_each_ad  = self.re_init_after_each_ad,               
             init_mr1_after_each_ad  = self.re_init_after_each_ad,               
             use_fixed_uInterval     = self.use_fixed_uInterval,
@@ -337,10 +338,10 @@ class DistCacheSimulator(object):
             self.ins_cnt                        = np.zeros (self.num_of_DSs)
             self.mr_measure_window              = [self.min_uInterval/10, self.min_uInterval/10] # size of measure window for mr0, mr1. 
             self.q_measure_window               = self.mr_measure_window[0]
-            self.naive_selection_alg            = 'all'
+            self.naive_selection_alg            = 'all_plus_speculative'
             self.use_fna                        = True
             self.num_of_warmup_ads              = [self.DS_size/self.min_uInterval, 3 * self.DS_size/self.min_uInterval] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
-            self.num_of_ads_to_measure          = 5
+            self.num_of_ads_to_measure          = 4
             self.num_of_insertions_between_fpr_fnr_updates = self.mr_measure_window[0] 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
@@ -375,18 +376,22 @@ class DistCacheSimulator(object):
         else:
             self.collect_mr_stat            = self.calc_mr_by_hist and (not (self.use_perfect_hist))
             self.consider_delta_updates     = False
-            self.scale_ind_factor           = 1
+            self.scale_ind_delta_factor     = 1
+            self.scale_ind_full_factor      = 1
 
         if (self.mode == 'salsa0'):
-            self.scale_ind_factor           = 1
+            self.scale_ind_delta_factor     = 1
+            self.scale_ind_full_factor      = 1
             self.consider_delta_updates     = False
                         
         elif (self.mode == 'salsa1'):
-            self.scale_ind_factor           = 1.1
+            self.scale_ind_delta_factor     = 1
+            self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = False
                         
         elif (self.mode == 'salsa2'):
-            self.scale_ind_factor           = 1.1
+            self.scale_ind_delta_factor     = 1
+            self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = True
 
         if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2'])):
@@ -537,8 +542,16 @@ class DistCacheSimulator(object):
         - Assign to self.resolution the resolution (existence/non existence) of self.cur_req.key in each DS.
         - Assign to self.DSs2accs the list of DSs to access, according to the chosen selection alg'.
         - If inserting the item to a DS (happens only upon a miss), then set self.DS2insert = ID of this DS. Else, set self.DS2insert=None. 
-        - Access all the DSs in self.DSs2accs.
-        - If the access is a miss, insert self.cur_req.key into one of the DS, as chosen by self.select_DS_to_insert. 
+        - if self.naive_selection_alg=='cheapest': 
+          - access the DS with the minimal cost (actually, the first in the list, assuming the list is always ordered by non-decreasing costs) among those with positive indications.
+          - if no pos indication exists, access a single, u.a.r. picked, $ with neg' ind. 
+        - if self.naive_selection_alg=='all': 
+          - Access all the DSs with positive indications.
+          - if no pos indication exists, the alg' accesses a single, u.a.r. picked, $ with neg' ind. 
+        - if self.naive_selection_alg=='all_plus_speculative': 
+          - Access all the DSs with positive indications, plus a single u.a.r selected DS with a negative indication.
+          - if no pos indication exists, access a single, u.a.r. picked, $ with neg' ind. 
+        - If the access results in a miss, insert self.cur_req.key into one of the DS, as chosen by self.select_DS_to_insert. 
         - Returns True iff the self.cur_req.key is found in any of the accessed DSs. 
         """
         self.pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
@@ -551,6 +564,10 @@ class DistCacheSimulator(object):
                 self.DSs2accs = [self.pos_indications[0]] # assuming here that the Dss are sorted in an increasing order of accs cost
             elif self.naive_selection_alg=='all':
                 self.DSs2accs = self.pos_indications
+            elif self.naive_selection_alg=='all_plus_speculative':
+                self.DSs2accs = self.pos_indications
+                if len(self.DSs2accs)!=self.num_of_DSs: # not all DSs gave pos indication
+                    self.DSs2accs.append (random.choice([ds for ds in range(self.num_of_DSs) if not (ds in self.pos_indications)]))
             else:
                 MyConfig.error ('handle_single_req_naive_alg was called with an unknown selection algorithm {selection_alg}')
         

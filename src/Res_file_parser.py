@@ -788,7 +788,7 @@ class Res_file_parser (object):
             plt.ylabel (r'$\pi$')
         plt.legend()
         # plt.xlim (0, x_diff*(len(mr)-1))
-        plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
+        plt.savefig (f'../res/{input_file_name}_mr{mr_type}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
 
 def gen_plot_bars_by_uIntFact ():
@@ -799,23 +799,24 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res', 'fnaa_HPC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=5)
     # for DS_size in [4, 16, 64]: 
     #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
         
 def gen_mr_plots ():
 
-    mr_type = 0                    
-    my_Res_file_parser = Res_file_parser ()
-    input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
-                      'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for input_file_name in input_file_names:
-        for ds in range (3): 
+    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative']
+    # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
+    #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
+    for ds in range (3): 
+        for input_file_name in input_file_names:
+            my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
-            my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
+            for mr_type in range(2):
+                my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
+                my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
 # gen_plot_bars_by_uIntFact ()
 # gen_mr_plots ()

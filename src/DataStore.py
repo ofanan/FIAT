@@ -89,7 +89,8 @@ class DataStore (object):
         # self.updated_mr0           = False # indicates whether mr0 wasn't updated since the last advertisement 
         # self.updated_mr1           = False # indicates whether mr1 wasn't updated since the last advertisement
         self.in_delta_mode           = True
-        self.scale_ind_factor        = scale_ind_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+        self.scale_ind_delta_factor  = scale_ind_delta_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+        self.scale_ind_full_factor   = scale_ind_full_factor # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
         self.overall_ad_size         = 0
         self.num_of_full_ads         = 0
         self.num_of_periods_in_delta_ads  = 0
@@ -105,7 +106,7 @@ class DataStore (object):
         if use_CountingBloomFilter: 
             self.updated_indicator   = CBF.CountingBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
-            if (self.scale_ind_factor!=1):
+            if self.scale_ind_delta_factor!=1 or self.scale_ind_full_factor!=1:
                 MyConfig.error ('Sorry. Scaling an indicator is not supported for CountingBloomFilter')
         else:
             self.stale_indicator     = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
@@ -161,13 +162,15 @@ class DataStore (object):
         self.num_of_insertions_between_fpr_fnr_updates  = num_of_insertions_between_fpr_fnr_updates
         self.ins_since_last_fpr_fnr_estimation      = int (0)
 
-        self.num_of_sync_ads = int(0)        
-        if self.consider_delta_updates and self.scale_ind_factor!=1: # if needed, pre-compute values for Lambert function (scaling of the ind' at delta mode)
+        self.num_of_sync_ads = int(0)       
+        
+        # Pre-computation for the potential indicator's sizes  
+        if self.consider_delta_updates and self.scale_ind_delta_factor!=1: # if needed, pre-compute values for Lambert function (scaling of the ind' at delta mode)
             bpe                         = self.min_bpe
             self.potential_indSize      = []
             while bpe <= self.max_bpe:
                 self.potential_indSize.append (int (bpe * self.DS_size))
-                bpe *= self.scale_ind_factor
+                bpe *= self.scale_ind_delta_factor
             self.potential_indSize.append (self.max_bpe*self.DS_size)
             self.potential_indSize.append (self.bpe*self.DS_size)
             self.potential_indSize.sort()
@@ -312,7 +315,7 @@ class DataStore (object):
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, f'\nfinished a period\n')                     
             self.num_of_periods_in_delta_ads += 1
-            if self.scale_ind_factor!=1:                                          
+            if self.scale_ind_delta_factor!=1:                                          
                 self.scale_ind_delta_mode ()
             self.overall_ad_size               += self.ind_size # need to advertise a full ind' once in a period.
             if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
@@ -443,7 +446,7 @@ class DataStore (object):
                 self.tn_cnt, self.spec_accs_cnt = 0,0
                 self.mr0_cur = min (self.mr0_cur, self.initial_mr0)
         
-        if self.scale_ind_factor!=1: # consider scaling the indicator and the uInterval
+        if self.scale_ind_full_factor!=1: # consider scaling the indicator and the uInterval
             scale_ind_by = 1
             if (called_by_str=='mr0'):
                 scale_ind_by = max(1/self.scale_ind_factor, self.min_bpe/self.bpe) 

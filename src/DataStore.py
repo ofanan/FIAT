@@ -52,7 +52,8 @@ class DataStore (object):
          use_CountingBloomFilter    = False, # When True, keep both an "updated" CBF, and a "stale" simple BF, that is generated upon each advertisement. When False, use only a single, simple Bloom filter, that will be generated upon each advertisement (thus becoming stale).
          hit_ratio_based_uInterval  = False, # when True, consider the hit ratio when deciding whether to advertise a new indicator.
          settings_str               = "",    # a string that details the parameters of the current run. Used when writing to output files, as defined by verbose.
-         scale_ind_factor           = 1,     # multiplicative factor for the indicator size. To be used by modes that scale it ('salsa3').
+         scale_ind_delta_factor     = 1,     # multiplicative factor for the indicator size, while in delta mode. To be used by modes that scale it ('salsa2').         
+         scale_ind_full_factor      = 1,     # multiplicative factor for the indicator size, while in full mode. To be used by modes that scale it ('salsa2').
          consider_delta_updates     = False, # when True, calculate the "deltas", namely, number of indicator's bits flipped since the last advertisement.  
          init_mr0_after_each_ad     = False,
          init_mr1_after_each_ad     = False,

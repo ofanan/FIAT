@@ -37,7 +37,7 @@ def run_hetro_costs_sim ():
                     tic()
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$
-                        period_param            = 10, # length of "sync periods" of the indicator's scaling alg.
+                        period_param            = 5, # length of "sync periods" of the indicator's scaling alg.
                         res_file_name           = f'{mode}_HPC',
                         EWMA_alpha_mr0          = 0.85, 
                         EWMA_alpha_mr1          = 0.25, 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     try:
         # run_num_of_DSs_sim ()
         # run_full_ind_oriented_sim ()
-        run_mr_sim ()
-        # run_hetro_costs_sim ()
+        # run_mr_sim ()
+        run_hetro_costs_sim ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

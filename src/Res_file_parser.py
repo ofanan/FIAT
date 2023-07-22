@@ -66,9 +66,12 @@ class Res_file_parser (object):
         self.labelOfMode = {}
 
         self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
+                          'fnaa' : r'HeCS$_{\rm FNA}$',
                           'SALSA' : 'SALSA',
                           'SALSA1' : 'SALSA1',
+                          'salsa2' : 'SALSA2',
                           'SALSA2' : 'SALSA2',
+                          'fullKnow' : 'fullKnow',
                           'SALSA085' : 'SALSA_.85',
                           'SALSA285' : 'SALSA2_.85',
                           # 'SALSA09' : 'SALSA_0.9',
@@ -79,19 +82,8 @@ class Res_file_parser (object):
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : 'navy',
-                            'SALSA'     : 'cyan',
-                            'SALSA1'    : 'cyan',
-                            'SALSA2'    : 'teal',
-                            'SALSA285'  : 'magenta',
-                            'SALSA085'  : 'purple',
-                            # 'SALSA29'   : 'red',
-                            # 'SALSA09'   : 'purple',
-                            'SALSA29'   : 'red',   
-                            'SALSA3'    : 'brown',
-                            # 'others'    : , 'black','magenta','red', 'brown', yellow
-                            'fullKnow'  : 'blue',
-                            'salsa2'    : 'black',
-                            'fnaa'      : 'magenta'
+                            'SALSA2'    : 'magenta',
+                            'FULLKNOW'  : 'green',
                             }
 
         # The markers used for each alg', in the dist' case
@@ -778,7 +770,7 @@ class Res_file_parser (object):
         for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
             x_vec, mr_vec = dict['x_vec'], dict['y_vec']
             measure_mr_mode = dict['measure_mr_mode']
-            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode], label=measure_mr_mode)
+            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode.upper()], label=self.strOfMode[measure_mr_mode])
             plt.xlabel ('Insertion Count')
         if mr_type==0:
             plt.ylim (0.5, 1.02)
@@ -810,10 +802,10 @@ def gen_plot_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for ds in range (3): 
+    for ds in range (1, 2): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'

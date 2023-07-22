@@ -1089,7 +1089,7 @@ class DistCacheSimulator(object):
         np.random.seed(self.rand_seed)
         num_of_req = self.trace_len
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
-        print ('running', self.gen_settings_str (num_of_req=num_of_req))
+        print (f'running {self.gen_settings_str (num_of_req=num_of_req)} with verbose={self.verbose}')
         
         if (self.mode == 'measure_mr_fullKnow'):
             self.run_trace_measure_mr_full_knowledge() 

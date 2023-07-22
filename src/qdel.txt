@@ -1,0 +1,2 @@
+qq > qq.txt
+awk '{print "qdel " $1}' qq.txt >> script.txt

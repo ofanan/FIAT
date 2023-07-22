@@ -52,7 +52,7 @@ def run_hetro_costs_sim ():
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor        = 999999 if mode.startswith('salsa') else 1,
                         verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES]) #MyConfig.VERBOSE_DETAILED_LOG_MR]) # [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/1000) #$$$
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) #$$$
                     toc()
 
 

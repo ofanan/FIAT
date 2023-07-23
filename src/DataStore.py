@@ -326,6 +326,14 @@ class DataStore (object):
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
             self.num_of_advertisements         += 1
+
+            # num_insertions_per_period   = self.period_param * self.min_uInterval
+            cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
+            
+            if cur_bw_of_delta_ads_per_ins > self.bw_budget:
+                print ('Switching back to full cntr mode') #$$$$
+                self.in_delta_mode = False
+
             self.num_of_sync_ads               += 1 
             self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
@@ -398,7 +406,7 @@ class DataStore (object):
             printf (self.q_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
         if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
             printf (self.mr_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
-        self.in_delta_mode                 = False
+        self.in_delta_mode                 = True
         self.ins_cnt_since_last_full_ad    = 0
         self.total_ad_size_in_this_period  = 0
         self.overall_ad_size              += self.delta_ad_size 

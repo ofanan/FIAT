@@ -81,9 +81,9 @@ class Res_file_parser (object):
         
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
-                            'FNAA'      : 'navy',
-                            'SALSA2'    : 'magenta',
-                            'FULLKNOW'  : 'green',
+                            'FNAA'      : '#0072B2', #'#0072B2', #'#56B4E9', #'navy',
+                            'SALSA2'    : '#CC79A7', #'teal', #magenta',
+                            'FULLKNOW'  : 'black',
                             }
 
         # The markers used for each alg', in the dist' case
@@ -793,7 +793,7 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res', 'fnaa_HPC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=5)
     # for DS_size in [4, 16, 64]: 
@@ -814,8 +814,8 @@ def gen_mr_plots ():
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
 # gen_plot_bars_by_uIntFact ()
-gen_mr_plots ()
-# gen_plot_bars ()
+# gen_mr_plots ()
+gen_plot_bars ()
 # my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.parse_files(input_file_names=[], file_type='.mr.res')
 # my_Res_file_parser.plot_mr (input_file_name=['Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative_0.mr.res_mr1'], mr_type=1)

@@ -38,15 +38,8 @@ Implementation of an LRU cache. Source code is taken from:
 Copyright (C) Jay Hutchinson
 https://github.com/jlhutch/pylru
 
-##### CountingBloomFilter.py
-A counting Bloom filter. for documentation, see:
-http://www.maxburstein.com/blog/creating-a-simple-bloom-filter/
-https://hur.st/bloomfilter/
-http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
-Bloom filter survey: https://www.eecs.harvard.edu/~michaelm/postscripts/im2005b.pdf
-
-###### SimpleBloomFilter.py
-A simple Bloom filter. 
+##### SimpleBloomFilter.py, CountingBloomFilter.py, 
+A Simple and a Counting Bloom filter. To study more about Bloom filters, consider the following links: [1](http://www.maxburstein.com/blog/creating-a-simple-bloom-filter), [2](https://hur.st/bloomfilter), [3](http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html), [4](https://www.eecs.harvard.edu/~michaelm/postscripts/im2005b.pdf).
 
 ##### Wiki_parser.py, IBM_parser.py, Twitter_parser.py
 Parse traces and output a .csv file, which includes a row with hashes of the keys in the trace. 

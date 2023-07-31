@@ -61,7 +61,7 @@ class DistCacheSimulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.period_param}.scaleF{self.scale_ind_full_factor}.scaleD{self.scale_ind_delta_factor}' 
+            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.delta_mode_period_param}.scaleF{self.scale_ind_full_factor}.scaleD{self.scale_ind_delta_factor}' 
         return settings_str
     
     def init_DS_list(self):
@@ -106,7 +106,8 @@ class DistCacheSimulator(object):
             use_fixed_uInterval     = self.use_fixed_uInterval,
             min_feasible_uInterval  = self.min_feasible_uInterval,
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
-            period_param            = self.period_param, # length of "sync periods" of the indicator's scaling alg.
+            delta_mode_period_param = self.delta_mode_period_param, # length of "sync periods" of the indicator's scaling alg.
+            full_mode_period_param  = self.full_mode_period_param, # length of "sync periods" of the indicator's scaling alg.
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_fpr_fnr_updates   = self.num_of_insertions_between_fpr_fnr_updates,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
@@ -200,7 +201,8 @@ class DistCacheSimulator(object):
                  calc_mr_by_hist    = True, # when false, calc mr by analysis of the BF
                  use_perfect_hist   = False, # when true AND calc_mr_by_hist, assume that the client always has a perfect knowledge about the fp/fn/tp/tn implied by each previous indication, by each DS (even if this DS wasn't accessed).
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)
-                 period_param       = 10, # length of "sync periods" of the indicator's scaling alg.
+                 delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
+                 full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
                  re_init_after_each_ad = False, 
                  min_feasible_uInterval = 10,
                  mr_type            = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1. 
@@ -316,7 +318,8 @@ class DistCacheSimulator(object):
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
-        self.period_param = period_param
+        self.delta_mode_period_param = delta_mode_period_param
+        self.full_mode_period_param  = full_mode_period_param
         self.initial_mr1                    = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
         if self.mode.startswith('measure_mr'):
             """

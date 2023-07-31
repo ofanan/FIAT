@@ -60,7 +60,8 @@ class DataStore (object):
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
          min_feasible_uInterval     = 10,
-         period_param               = 10, # length of "sync periods" of the indicator's scaling alg.
+         delta_mode_period_param    = 10, # length of "sync periods" of the indicator's scaling alg.
+         full_mode_period_param     = 10, # length of "period" that evaluates the benefits of switching to delta mode while being in full mode
          do_not_advertise_upon_insert = True,
          ):
         """
@@ -146,7 +147,9 @@ class DataStore (object):
         self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
-        self.period_param            = period_param
+        self.delta_mode_period_param = delta_mode_period_param
+        self.full_mode_period_param  = full_mode_period_param
+        self.num_of_ads_in_full_mode_period = 0
         self.re_init_mr0_param       = 10 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
@@ -311,7 +314,7 @@ class DataStore (object):
         In practice, this means merely generate a new indicator (simple Bloom filter).
         """
         
-        if self.ins_cnt_since_last_full_ad>=self.period_param * self.min_uInterval: # time to consider scaling, or at least send a keep-alive full ind'
+        if self.ins_cnt_since_last_full_ad>=self.delta_mode_period_param * self.min_uInterval: # time to consider scaling, or at least send a keep-alive full ind'
 
             if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                 printf (self.mr_output_file, f'\nfinished a period\n')                     
@@ -327,7 +330,6 @@ class DataStore (object):
                 printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
             self.num_of_advertisements         += 1
 
-            # num_insertions_per_period   = self.period_param * self.min_uInterval
             cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
             
             if cur_bw_of_delta_ads_per_ins > self.bw_budget:
@@ -356,8 +358,13 @@ class DataStore (object):
         Advertise an updated indicator, while in full mode:
         """
         if self.ins_cnt_since_last_full_ad == self.min_uInterval * self.uInterval_factor:
-            if self.consider_delta_updates and self.delta_update_is_cheaper():
-                self.advertise_switch_to_delta_update()
+            if self.consider_delta_updates:
+                if self.delta_update_is_cheaper():
+                    self.num_of_ads_in_full_mode_period += 1
+                if self.num_of_ads_in_full_mode_period==self.full_mode_period_param:                 
+                    self.advertise_switch_to_delta_update()
+                self.num_of_delta_ads_in_full_mode  = 0
+                self.num_of_ads_in_full_mode_period = 0
             else:
                 self.advertise_ind_full_mode (called_by_str='max_uInterval')
                 self.ins_cnt_since_last_full_ad = 0 
@@ -393,7 +400,7 @@ class DataStore (object):
         if MyConfig.VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 
         
-        return (self.delta_ad_size / self.ind_size) < 1 - 1/self.period_param
+        return (self.delta_ad_size / self.ind_size) < 1 - 1/self.delta_mode_period_param
     
     def advertise_switch_to_delta_update (self):
         """
@@ -479,9 +486,9 @@ class DataStore (object):
         Update stat, and consider reverting to full_indicator mode, if needed.
         """
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
-        num_insertions_per_period   = self.period_param * self.min_uInterval
-        cur_bw_of_delta_ads_per_ins = self.total_ad_size_in_this_period / num_insertions_per_period 
-        estimated_bw_of_cadnidate   = [cur_bw_of_delta_ads_per_ins * self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize + self.bw_budget/self.period_param  for i in range(len(self.potential_indSize))]
+        num_insertions_per_period   = self.delta_mode_period_param * self.min_uInterval
+        cur_bw_of_delta_ads_per_ins = self.ins_cnt_since_last_full_ad # self.total_ad_size_in_this_period / num_insertions_per_period 
+        estimated_bw_of_cadnidate   = [cur_bw_of_delta_ads_per_ins * self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize + self.bw_budget/self.delta_mode_period_param  for i in range(len(self.potential_indSize))]
         if all([item > self.bw_budget for item in estimated_bw_of_cadnidate]): # Cannot satisfy the BW constraint using delta mode 
             self.min_uInterval      = int (self.ind_size / self.bw_budget) 
             self.in_delta_mode      = False

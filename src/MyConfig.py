@@ -63,8 +63,6 @@ def check_if_input_file_exists (relative_path_to_input_file):
     if not (os.path.isfile (relative_path_to_input_file)):
         error (f'the input file {relative_path_to_input_file} does not exist')
 
-
-
 def calc_num_of_req (trace, DS_size=64000):
     """
     Given a trace and caches size, calculate the number of requests for having a substantial sim.

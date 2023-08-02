@@ -1,7 +1,8 @@
-## Access Strategies for Network Caching with Staleness
+## False-Indications Aware Tactics (FIAT)
 
-This project provides tools to simulate several access strategies for distributed caching. 
-The simulator considers a user who is equipped by several caches, and receives from them periodical updates about the cached content. These updates are not totally accurate. The user selects which caches to access, to obtain the requested datum in the lowest price and maximum certainty possible.
+This project provides tools to simulate access strategies and cache-content advertisement schemes for distributed caching. 
+The simulator considers a user who is equipped by several caches, and receives from them periodical advertisements about the cached content. These advertisements use space-efficient approximated data structures (aka indicators) that are not totally accurate. The user selects which caches to access, to obtain the requested datum in the lowest price and maximum certainty possible.
+Each cache independently runs a content-advertisement algorithm, to decide when to advertise a fresh indicator.
 For details about the problem and the algorithms used, please refer to the following papers:
 
 [1] I. Cohen, Gil Einziger, R. Friedman, and G. Scalosub, [Access Strategies for Network Caching](https://www.researchgate.net/profile/Itamar-Cohen-2/publication/346732877_Access_Strategies_for_Network_Caching/links/5fd27eeea6fdcc697bf6f924/Access-Strategies-for-Network-Caching.pdf), IEEE Transactions on Networking, Vol. 29(2), 2021, pp.609-622.

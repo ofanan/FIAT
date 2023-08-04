@@ -65,23 +65,24 @@ class Res_file_parser (object):
         # List of algorithms' names, used in the plots' legend, for the dist' case
         self.labelOfMode = {}
 
-        self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
-                          'fnaa' : r'HeCS$_{\rm FNA}$',
-                          'SALSA' : 'SALSA',
-                          'SALSA1' : 'SALSA1',
-                          'salsa2' : 'SALSA2',
-                          'SALSA2' : 'SALSA2',
-                          'fullKnow' : 'fullKnow',
-                          'SALSA085' : 'SALSA_.85',
-                          'SALSA285' : 'SALSA2_.85',
+        self.strOfMode = {'FNAA'        : r'HeCS$_{\rm FNA}$',
+                          'fnaa'        : r'HeCS$_{\rm FNA}$',
+                          'SALSA'       : 'SALSA',
+                          'SALSA1'      : 'SALSA1',
+                          'salsa2'      : 'SALSA2',
+                          'SALSA2'      : 'SALSA2',
+                          'fullKnow'    : 'fullKnow',
+                          'SALSA0'      : 'SALSA0',
+                          'SALSA285'    : 'SALSA2_.85',
                           # 'SALSA09' : 'SALSA_0.9',
                           # 'SALSA29' : 'SALSA_2.9',
-                          'SALSA3'    : 'SALSA3'
+                          'SALSA3'      : 'SALSA3'
                            }
         
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : '#0072B2', #'#0072B2', #'#56B4E9', #'navy',
+                            'SALSA0'    : 'teal', #'teal', #magenta',
                             'SALSA2'    : '#CC79A7', #'teal', #magenta',
                             'FULLKNOW'  : 'black',
                             }
@@ -89,7 +90,7 @@ class Res_file_parser (object):
         # The markers used for each alg', in the dist' case
         self.markerOfMode = {'Opt'      : 'o',
                             'FNAA'      : 'v',
-                            'SALSA'     : '^',
+                            'SALSA0'    : '^',
                             'SALSA3'    : 's',
                             'Tetra'     : 'p',
                             'Tetra dyn' : 'X',
@@ -640,7 +641,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F2', 'IBM7', 'Twitter17', 'Twitter45', 'F1', 'IBM1', ], 
-                   modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA', 'SALSA0'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -793,8 +794,8 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4, 16, 64]: 
+    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa0_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+    for DS_size in [64]: 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=5)
     # for DS_size in [4, 16, 64]: 
     #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)

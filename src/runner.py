@@ -37,7 +37,7 @@ def run_hetro_costs_sim ():
                         # bpe                     = 10, #$$$
                         delta_mode_period_param = 5, # length of "sync periods" of the indicator's scaling alg.
                         full_mode_period_param  = 5, # length of "sync periods" of the indicator's scaling alg.
-                        res_file_name           = f'{mode}_PC',
+                        res_file_name           = f'{mode}_HPC',
                         EWMA_alpha_mr0          = 0.85, 
                         EWMA_alpha_mr1          = 0.25, 
                         trace_name              = trace,

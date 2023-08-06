@@ -408,7 +408,9 @@ class DistCacheSimulator(object):
         
         self.init_client_list ()
         self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose):
+        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
+            self.verbose.append (MyConfig.VERBOSE_LOG_MR) # Detailed mr log should include also "basic" mr log.
+        if (MyConfig.VERBOSE_LOG_MR in self.verbose):
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
@@ -1051,9 +1053,9 @@ class DistCacheSimulator(object):
                 if (real_answer == False):
                     self.tn_cnt[ds] += 1
 
-        if (self.use_EWMA): # Use Exp Weighted Moving Avg to calculate mr0 and mr1
+        if self.use_EWMA: # Use Exp Weighted Moving Avg to calculate mr0 and mr1
             for ds in range (self.num_of_DSs):            
-                if (self.pos_ind_cnt[ds] == self.ewma_window_size):
+                if self.pos_ind_cnt[ds] == self.ewma_window_size:
                     
                     self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
                     
@@ -1062,7 +1064,7 @@ class DistCacheSimulator(object):
                                 .format (self.fp_cnt[ds] / self.ewma_window_size, self.mr1_cur[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
-                if (self.neg_ind_cnt[ds] == self.ewma_window_size):
+                if self.neg_ind_cnt[ds] == self.ewma_window_size:
                     self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.ewma_window_size + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
                     if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr0={:.4f}, emwa_mr0={:.4f}\n' 

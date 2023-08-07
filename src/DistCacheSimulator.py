@@ -1012,17 +1012,17 @@ class DistCacheSimulator(object):
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
-        run a single request, when the exclusion probabilities are estimated based on partial history knowledge.
+        run a single request, when the exclu sion probabilities are estimated based on partial history knowledge.
         The history is collected by the DSs themselves.
         """
-        for ds in range (self.num_of_DSs):
-            if MyConfig.VERBOSE_DEBUG in self.verbose:            
+        if MyConfig.VERBOSE_DEBUG in self.verbose:            
+            printf (self.debug_file, '\nreq_cnt={} ' .format(self.req_cnt))
+            for ds in range(self.num_of_DSs):
+                printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur ))
                 # self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else 0.85
-                if self.req_cnt > 7316:
-                    printf (self.debug_file, '\nreq_cnt={self.req_cnt}')
-                    for ds in range(self.num_of_DSs):
-                        printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur ))
-            else:
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+        else:
+            for ds in range (self.num_of_DSs):
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
         if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator

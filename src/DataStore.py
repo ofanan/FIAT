@@ -229,7 +229,7 @@ class DataStore (object):
                 
         return hit 
 
-    def insert (self, key, req_cnt = -1):
+    def insert (self, key, req_cnt=None):
         """
         If using an indicator:
         - If we maintain a Counting Bloom Filter (that should always reflect the list of cached items):         
@@ -241,6 +241,8 @@ class DataStore (object):
             - Inserts a key to the cache and return
         - If it's time to send an update, then send an update.
         """
+        self.req_cnt = req_cnt
+        
         if not (self.use_indicator):
             self.cache[key] = key
             return
@@ -256,7 +258,7 @@ class DataStore (object):
         if (self.send_fpr_fnr_updates):
             self.ins_since_last_fpr_fnr_estimation += 1
             if (self.ins_since_last_fpr_fnr_estimation == self.num_of_insertions_between_fpr_fnr_updates):
-                self.estimate_fnr_fpr_by_analysis (req_cnt) # Update the estimates of fpr and fnr, and check if it's time to send an update
+                self.estimate_fnr_fpr_by_analysis () # Update the estimates of fpr and fnr, and check if it's time to send an update
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0
         
@@ -520,7 +522,7 @@ class DataStore (object):
         self.mr0_cur = self.EWMA_alpha_mr0 * float(self.tn_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha_mr0) * self.mr0_cur
         # self.updated_mr0 = True 
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-            printf (self.mr_output_file, f'in update mr0: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 
+            printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
@@ -551,7 +553,7 @@ class DataStore (object):
         self.mr1_cur = self.EWMA_alpha_mr1 * float(self.fp_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha_mr1) * self.mr1_cur 
         # self.updated_mr1 = True 
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-            printf (self.mr_output_file, 'in update mr1: fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1_cur))
+            printf (self.mr_output_file, 'in update mr1: req_cnt={}, fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.req_cnt, self.fp_cnt, self.reg_accs_cnt, self.mr1_cur))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0_cur, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0_cur), self.mr1_cur, self.pr_of_pos_ind_estimation*self.mr1_cur, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
@@ -591,12 +593,12 @@ class DataStore (object):
             self.updated_sbf = self.genNewSBF () 
         
     
-    def estimate_fnr_fpr_by_analysis (self, req_cnt = -1, key = -1):
+    def estimate_fnr_fpr_by_analysis (self, key=None):
         """
         Estimates the fnr and fpr, based on the diffs between the updated and the stale indicators. 
          (see the paper: "False Rate Analysis of Bloom Filter Replicas in Distributed Systems").
         The new values are written to self.fnr_fpr, where self.fnr_fpr[0] is the fnr, and self.fnr_fpr[1] is the fpr
-        The optional inputs req_cnt and key are used only for debug.
+        The optional input key is used only for debug.
         """
         self.gen_updated_sbf()
         Delta1      = sum (np.bitwise_and (self.updated_sbf.array, ~self.stale_indicator.array)) # # of bits that are set in the updated array, and reset in the stale array.

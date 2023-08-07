@@ -108,10 +108,10 @@ class DistCacheSimulator(object):
             send_fpr_fnr_updates    = not (self.calc_mr_by_hist),
             delta_mode_period_param = self.delta_mode_period_param, # length of "sync periods" of the indicator's scaling alg.
             full_mode_period_param  = self.full_mode_period_param, # length of "sync periods" of the indicator's scaling alg.
+            use_CountingBloomFilter = self.use_CountingBloomFilter,
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_fpr_fnr_updates   = self.num_of_insertions_between_fpr_fnr_updates,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
-            use_CountingBloomFilter                 = self.use_CountingBloomFilter,
         ) for i in range(self.num_of_DSs)]
             
     def init_client_list(self):
@@ -427,7 +427,7 @@ class DistCacheSimulator(object):
         """
         settings_str = self.gen_settings_str (num_of_req=self.trace_len)
         for ds in range (self.num_of_DSs):
-            self.mr_output_file[ds] = open ('../res/{}_ds{}.mr' .format (settings_str, ds), 'w')
+            self.mr_output_file[ds] = open ('../res/{}_ds{}{}.mr' .format (settings_str, ds, '_dbg' if MyConfig.VERBOSE_DEBUG in self.verbose else ''), 'w')
 
     def DS_costs_are_homo (self):
         """
@@ -1012,11 +1012,14 @@ class DistCacheSimulator(object):
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
-        run a single request, when the algorithm mode is 'fnaa' and using practical, partial history knowledge.
+        run a single request, when the exclusion probabilities are estimated based on partial history knowledge.
         The history is collected by the DSs themselves.
         """
-        for ds in range (self.num_of_DSs):            
-            self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+        for ds in range (self.num_of_DSs):
+            if MyConfig.VERBOSE_DEBUG in self.verbose:            
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else 0.85
+            else:
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
         if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
             for client in self.client_list:

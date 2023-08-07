@@ -1017,7 +1017,11 @@ class DistCacheSimulator(object):
         """
         for ds in range (self.num_of_DSs):
             if MyConfig.VERBOSE_DEBUG in self.verbose:            
-                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else 0.85
+                # self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else 0.85
+                if self.req_cnt > 7316:
+                    printf (self.debug_file, '\nreq_cnt={self.req_cnt}')
+                    for ds in range(self.num_of_DSs):
+                        printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur ))
             else:
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
@@ -1144,14 +1148,9 @@ class DistCacheSimulator(object):
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
-        if MyConfig.VERBOSE_DEBUG in self.verbose:
-            if sum(self.indications)>0:
-                print (f'req_cnt={self.req_cnt}')
-                if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
-                    for DS in self.DS_list:
-                        DS.report_mr ()
-            if all([self.DS_list[ds].in_delta_mode for ds in range(self.num_of_DSs)]):
-                printf (self.debug_file, f'num_pos_ind={sum(self.indications)}]\n')
+        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose and sum(self.indications)>0:  
+            for DS in self.DS_list:
+                DS.report_mr ()
         self.insert_key_to_DSs ()
         if (MyConfig.VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
             MyConfig.error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
@@ -1172,7 +1171,7 @@ class DistCacheSimulator(object):
         - Chosen as a "hash" (actually, merely a modulo calculation) of the key 
         """
         for i in range(self.k_loc):
-            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt)
+            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, mr_vec=[DS.mr1_cur for DS in self.DS_list])
                     
     def is_compulsory_miss (self):
         """

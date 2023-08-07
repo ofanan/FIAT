@@ -186,7 +186,7 @@ class DataStore (object):
         """
         return (key in self.cache)
             
-    def access(self, key, is_speculative_accs = False):
+    def access (self, key, is_speculative_accs=False):
         """
         - Accesses a key in the cache.
         - Return True iff the access was a hit.
@@ -229,7 +229,7 @@ class DataStore (object):
                 
         return hit 
 
-    def insert (self, key, req_cnt=None):
+    def insert (self, key, req_cnt=None, mr_vec=None):
         """
         If using an indicator:
         - If we maintain a Counting Bloom Filter (that should always reflect the list of cached items):         
@@ -242,6 +242,7 @@ class DataStore (object):
         - If it's time to send an update, then send an update.
         """
         self.req_cnt = req_cnt
+        self.mr_vec  = mr_vec
         
         if not (self.use_indicator):
             self.cache[key] = key

@@ -294,7 +294,7 @@ class DistCacheSimulator(object):
         self.use_global_uInerval    = use_global_uInerval
         self.min_feasible_uInterval = min_feasible_uInterval
         self.min_uInterval          = min_uInterval
-        self.ewma_window_size       = int(self.min_uInterval/10) #int (self.DS_size/10) # window for parameters' estimation 
+        self.ewma_window_size       = max (100, int(self.min_uInterval/10)) # window for parameters' estimation 
         self.uInterval_factor       = uInterval_factor 
         self.use_CountingBloomFilter=  False # Currently, none of the modes uses CountingBloomFilter. Instead, they use Simple Bloom Filters.
         if self.use_global_uInerval:

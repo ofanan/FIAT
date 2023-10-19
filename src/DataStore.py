@@ -537,7 +537,7 @@ class DataStore (object):
             
         # self.updated_mr0 = True 
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-            printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 
+            printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}, tn_by_pos_ind_cnt={self.tn_by_num_of_pos_ind_cnt}, spec_accs_by_pos_ind_cnt={self.spec_accs_by_num_of_pos_ind_cnt}\n') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 

@@ -64,9 +64,9 @@ class DistCacheSimulator(object):
             settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.delta_mode_period_param}.scaleF{self.scale_ind_full_factor}.scaleD{self.scale_ind_delta_factor}' 
         return settings_str
     
-    def init_DS_list(self):
+    def gen_DSs(self):
         """
-        Init a list of empty DSs (Data Stores == caches)
+        Generate a list of empty DSs (Data Stores == caches)
         """
         if self.mode in ['opt', 'fnaa']: 
             collect_mr_stat = False
@@ -75,6 +75,7 @@ class DistCacheSimulator(object):
             
         self.DS_list = [DataStore.DataStore(
             ID                      = i, 
+            num_of_DSs              = self.num_of_DSs,    
             size                    = self.DS_size, 
             bpe                     = self.bpe,
             min_uInterval           = self.min_uInterval,
@@ -415,7 +416,7 @@ class DistCacheSimulator(object):
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
 
-        self.init_DS_list() #DS_list is the list of DSs
+        self.gen_DSs() #DS_list is the list of DSs
         if MyConfig.VERBOSE_DEBUG in self.verbose:
             self.debug_file = open (f'../res/{self.gen_settings_str(num_of_req=0)}_debug.txt', "w")
 
@@ -1408,7 +1409,7 @@ class DistCacheSimulator(object):
                 mr0 = self.DS_list[DS_id].mr0_cur
                 self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the whole system's data (used for statistics)
                 self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the relevant client's data (used for adaptive / learning alg') 
-            if (self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs)): # hit
+            if (self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=len(self.pos_ind_list))): # hit
                 if (not (hit) and (not (self.indications[DS_id]))): # this is the first hit; for each speculative req, we want to count at most a single hit 
                     self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
                     self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')

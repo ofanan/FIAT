@@ -21,6 +21,7 @@ class DataStore (object):
 
     def __init__(self, 
          ID,                             # datastore ID
+         num_of_DSs,                     # overall number of DSs in the system
          size                   = 1000,  # number of elements that can be stored in the datastore
          bpe                    = 14,    # Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
          EWMA_alpha             = 0.85,  # sliding window parameter for miss-rate estimation
@@ -68,24 +69,25 @@ class DataStore (object):
         Return a DataStore object. 
             For the DataStore's see documentation within the __init__ function.
         """
-        self.ID                      = ID
-        self.verbose                 = verbose
-        self.DS_size              = size
-        self.cache                   = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
-        self.settings_str            = settings_str
+        self.ID                     = ID
+        self.num_of_DSs             = num_of_DSs
+        self.verbose                = verbose
+        self.DS_size                = size
+        self.cache                  = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
+        self.settings_str           = settings_str
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             self.q_output_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
-        self.collect_mr_stat         = collect_mr_stat
-        self.use_indicator           = use_indicator # used e.g. for Opt, that merely checks whether the requested item is indeed cached
+        self.collect_mr_stat        = collect_mr_stat
+        self.use_indicator          = use_indicator # used e.g. for Opt, that merely checks whether the requested item is indeed cached
         if not(self.use_indicator): # if no indicator is used, no need for all the further fields
             return
 
         # inializations related to the indicator, statistics, and advertising mechanism
-        self.init_mr0_after_each_ad  = init_mr0_after_each_ad
-        self.init_mr1_after_each_ad  = init_mr1_after_each_ad
-        self.consider_delta_updates  = consider_delta_updates
-        self.in_delta_mode           = self.consider_delta_updates # if considering delta updates, start in delta updates mode
-        self.use_fixed_uInterval     = use_fixed_uInterval
+        self.init_mr0_after_each_ad = init_mr0_after_each_ad
+        self.init_mr1_after_each_ad = init_mr1_after_each_ad
+        self.consider_delta_updates = consider_delta_updates
+        self.in_delta_mode          = self.consider_delta_updates # if considering delta updates, start in delta updates mode
+        self.use_fixed_uInterval    = use_fixed_uInterval
         self.do_not_advertise_upon_insert = do_not_advertise_upon_insert
         # self.updated_mr0           = False # indicates whether mr0 wasn't updated since the last advertisement 
         # self.updated_mr1           = False # indicates whether mr1 wasn't updated since the last advertisement
@@ -129,6 +131,10 @@ class DataStore (object):
                 self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, mr1_ad_th 
         self.fp_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
         self.tn_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
+        
+        self.tn_by_num_of_pos_ind_cnt        = [0]*self.num_of_DSs
+        self.spec_accs_by_num_of_pos_ind_cnt = [0]*self.num_of_DSs
+        
         self.reg_accs_cnt            = 0
         self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
@@ -186,7 +192,7 @@ class DataStore (object):
         """
         return (key in self.cache)
             
-    def access (self, key, is_speculative_accs=False):
+    def access (self, key, is_speculative_accs=False, num_of_pos_ind=None):
         """
         - Accesses a key in the cache.
         - Return True iff the access was a hit.
@@ -204,8 +210,12 @@ class DataStore (object):
         # Now we know that we have to collect and print some stat
         if is_speculative_accs:
             self.spec_accs_cnt += 1
+            if num_of_pos_ind!=None:
+                self.spec_accs_by_num_of_pos_ind_cnt[num_of_pos_ind] += 1
             if (not(hit)):
                 self.tn_cnt += 1
+                if num_of_pos_ind!=None:
+                    self.tn_by_num_of_pos_ind_cnt[num_of_pos_ind] += 1
             if self.use_EWMA: 
                 if self.spec_accs_cnt % self.mr0_ewma_window_size == 0 and self.spec_accs_cnt>0:
                     self.update_mr0 ()
@@ -328,13 +338,14 @@ class DataStore (object):
             else:
                 self.stale_indicator            = self.genNewSBF ()
             if MyConfig.VERBOSE_LOG_MR: 
-                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n')                     
+                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt} spec by pos ind={self.spec_accs_by_num_of_pos_ind_cnt}\n') 
+                exit () #$$$
             self.num_of_advertisements         += 1
 
             cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
             
             if cur_bw_of_delta_ads_per_ins > self.bw_budget:
-                print ('Switching back to full cntr mode') #$$$$
+                # print ('Switching back to full cntr mode') 
                 self.in_delta_mode = False
 
             self.num_of_sync_ads               += 1 
@@ -351,8 +362,10 @@ class DataStore (object):
             self.stale_indicator                = self.updated_sbf
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt)) 
+                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}, spec by pos ind={}\n' .format 
+                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt, self.spec_accs_by_num_of_pos_ind_cnt))
+                exit () #$$$
+ 
 
     def handle_ind_full_mode (self):
         """
@@ -521,6 +534,10 @@ class DataStore (object):
         If the updated value of mr0 justifies it, advertising an indicator. 
         """
         self.mr0_cur = self.EWMA_alpha_mr0 * float(self.tn_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha_mr0) * self.mr0_cur
+        
+        if MyConfig.VERBOSE_DEBUG in self.verbose and self.mr0_cur>0.999:
+            print (f'Note: mr0_cur={self.mr0_cur} at DS{self.ID}') 
+            
         # self.updated_mr0 = True 
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n') 

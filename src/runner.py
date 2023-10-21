@@ -30,7 +30,7 @@ def run_hetro_costs_sim ():
         for DS_size in [4000]: #[, 16000, 64000]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa2']:
+            for mode in ['salsa0']:
                 for missp in [30]: #[10, 30, 100, 300]:
                     tic()
                     sm = sim.DistCacheSimulator(

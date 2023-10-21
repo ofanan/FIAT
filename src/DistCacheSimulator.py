@@ -989,6 +989,7 @@ class DistCacheSimulator(object):
         Run a full trace where the access strategy is the PGM, as proposed in the journal paper "Access Strategies for Network Caching".
         This algorithm is FNA: False-Negative Aware, namely, it may access a cache despite a negative indication.
         """
+        self.num_of_forced_accs_req = 0 #$$$
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace...
             if self.use_global_uInerval:
@@ -1010,6 +1011,7 @@ class DistCacheSimulator(object):
                 self.access_pgm_fna_hetro ()
             if (MyConfig.VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
+        print (f'num_of_forced_accs_req={self.num_of_forced_accs_req}')
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
@@ -1025,6 +1027,15 @@ class DistCacheSimulator(object):
         else:
             for ds in range (self.num_of_DSs):
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+
+        #$$$ added to measure TN by num of pos ind cnt
+        pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
+        # resolution      = [self.cur_req.key in self.DS_list[ds]                 for ds in range (self.num_of_DSs)]
+        TNs             = [self.cur_req.key in self.DS_list[ds] and (not (self.cur_req.key in self.DS_list[ds].stale_indicator)) for ds in range (self.num_of_DSs)]
+        if sum (TNs)>0: #$$$
+            if len(pos_indications)>0:
+                self.num_of_forced_accs_req += 1
+
         self.access_pgm_fna_hetro ()
         if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
             for client in self.client_list:

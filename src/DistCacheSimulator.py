@@ -989,7 +989,7 @@ class DistCacheSimulator(object):
         Run a full trace where the access strategy is the PGM, as proposed in the journal paper "Access Strategies for Network Caching".
         This algorithm is FNA: False-Negative Aware, namely, it may access a cache despite a negative indication.
         """
-        self.num_of_forced_accs_req = 0 #$$$
+        self.num_of_FN_n_TP = self.num_of_FN_n_FP = 0 #$$$
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace...
             if self.use_global_uInerval:
@@ -1011,7 +1011,7 @@ class DistCacheSimulator(object):
                 self.access_pgm_fna_hetro ()
             if (MyConfig.VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
-        print (f'num_of_forced_accs_req={self.num_of_forced_accs_req}')
+        print (f'num_of_FN_n_TP={self.num_of_FN_n_TP}, num_of_FN_n_FP={self.num_of_FN_n_FP}') #$$$
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """
@@ -1028,13 +1028,69 @@ class DistCacheSimulator(object):
             for ds in range (self.num_of_DSs):
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
 
+        #$$$ Added patch below
         #$$$ added to measure TN by num of pos ind cnt
-        pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
+        # pos_indications = [ds for ds in range(self.num_of_DSs) if self.cur_req.key in self.DS_list[ds].stale_indicator]
         # resolution      = [self.cur_req.key in self.DS_list[ds]                 for ds in range (self.num_of_DSs)]
-        TNs             = [self.cur_req.key in self.DS_list[ds] and (not (self.cur_req.key in self.DS_list[ds].stale_indicator)) for ds in range (self.num_of_DSs)]
-        if sum (TNs)>0: #$$$
-            if len(pos_indications)>0:
-                self.num_of_forced_accs_req += 1
+        FNs = [self.cur_req.key in self.DS_list[ds] and (not (self.cur_req.key in self.DS_list[ds].stale_indicator)) for ds in range (self.num_of_DSs)]
+        
+        TP = False
+        FP = False
+        FN = False
+        num_of_non_spec_DSs = 0
+        for DS in self.DS_list:
+            if DS.mr0_cur > 0.99:
+                num_of_non_spec_DSs += 1
+            if not (self.cur_req.key in DS.stale_indicator) and self.cur_req.key in DS: 
+                FN = True
+                continue
+            if self.cur_req.key in DS.stale_indicator: # pos ind
+                if self.cur_req.key in DS: 
+                    TP = True
+                else: 
+                    FP = True
+        if FN: 
+            if TP:
+                self.num_of_FN_n_TP += 1
+            if FP:
+                self.num_of_FN_n_FP += 1
+            # self.num_of_FP_n_FN += 1
+            # if num_of_non_spec_DSs>0:
+            #     print ('Halleluya2') 
+            #     self.num_of_FP_n_FN_after_blk_spec += 1
+        
+        # if len(pos_indications)>0 and 
+        # if sum (FNs)>0: #$$$
+        #     if len(pos_indications)>0:
+        #         self.num_of_forced_accs_req += 1
+        #
+        #
+        #
+        #                 hit = False
+        # for DS_id in final_sol.DSs_IDs:
+        #     is_speculative_accs = not (self.indications[DS_id])
+        #     if (is_speculative_accs): #A speculative accs 
+        #         mr0 = self.DS_list[DS_id].mr0_cur
+        #         self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the whole system's data (used for statistics)
+        #         self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the relevant client's data (used for adaptive / learning alg') 
+        #     if (self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=len(self.pos_ind_list))): # hit
+        #         if (not (hit) and (not (self.indications[DS_id]))): # this is the first hit; for each speculative req, we want to count at most a single hit 
+        #             self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
+        #             self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
+        #         hit = True
+        #
+        #         # If mr is not evaluated by history, then upon hit, the DS sends the updated evaluation of fpr, fnr, to the clients 
+        #         if (not (self.calc_mr_by_hist)): 
+        #             self.client_list [self.client_id].fnr[DS_id] = self.DS_list[DS_id].fnr;  
+        #             self.client_list [self.client_id].fpr[DS_id] = self.DS_list[DS_id].fpr;  
+        # if (hit):   
+        #     self.client_list[self.client_id].hit_cnt += 1
+        # else: # Miss
+        #     self.handle_miss ()
+                
+                
+                
+                
 
         self.access_pgm_fna_hetro ()
         if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator

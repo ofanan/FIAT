@@ -291,7 +291,6 @@ def characterize_trace (trace,
     uniq_keys       = np.unique(keys)
     print ('trace={}, {:.0f}K req, {:.0f}K uniques' .format (trace, req_cnt/1000, len(uniq_keys)/1000))
 
-
 def get_trace_name (trace_file_name):
     """
     Given the file name of the trace (possibly including the path), return a short trace name.
@@ -306,6 +305,15 @@ def get_trace_name (trace_file_name):
     #for i in range(int(np.log2(count_df.max())) + 1):
     #    hist_array[i] = sum(count_df[(count_df >= 2**i) & (count_df < 2**(i+1))])
 # parse_list_of_keys (input_file_name='arc/P3.lis.txt', print_output_to_file=True, print_num_of_uniques=True)
+
+def getMachineStr ():
+    """
+    Returns a string that identifies the machine on which the program is running - e.g., on 'PC', or on 'HPC'. 
+    """
+    pwdStr = os.getcwd()
+    if (pwdStr.find ('itamarc')>-1): # the string 'HPC' appears in the path only in HPC runs
+        return 'HPC' # indicates that this sim runs on my PC
+    return 'PC' # indicates that this sim runs on an HPC       
 
 def main ():
     num_of_req = INF_INT

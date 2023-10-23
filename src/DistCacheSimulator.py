@@ -476,7 +476,7 @@ class DistCacheSimulator(object):
                 printf (res_file, '({:.0f}, {:.07f})' .format (2**(bin+1), self.FN_by_staleness[bin]/self.PI_hits_by_staleness[bin]))
 
         self.total_access_cost  = np.sum ( [client.total_access_cost for client in self.client_list ] ) 
-        self.hit_cnt            = np.sum ( [client.hit_cnt for client in self.client_list ] )
+        self.hit_cnt            = np.sum ( [client.hit_cnt for client in self.client_list] )
         self.hit_ratio          = float(self.hit_cnt) / self.req_cnt
         self.non_comp_miss_cnt  = np.sum( [client.non_comp_miss_cnt for client in self.client_list ] )
         self.comp_miss_cnt      = np.sum( [client.comp_miss_cnt for client in self.client_list ] )
@@ -1050,10 +1050,17 @@ class DistCacheSimulator(object):
         #         self.num_of_FN_n_TP += 1
         #     if FP:
         #         self.num_of_FN_n_FP += 1
-        
-        if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and any(self.indications): # if there's at least 1 pos ind --> access all DSs.
+
+        # MyConfig.error (find (self.indications==True))
+        if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and sum(self.indications)==1: # if there's a single pos ind
+
+            pos_ind         = self.indications.index(True)
+            first_neg_ind   = self.indications.index(False)
+            DSs2accs        = [self.indications.index(True), self.indications.index(False)]
+            self.client_list[self.client_id].total_access_cost += sum (np.take(self.client_DS_cost[self.client_id] ,DSs2accs))
+
             hit = False
-            for ds in range(self.num_of_DSs):
+            for ds in DSs2accs:
                 is_speculative_accs = not (self.indications[ds])
                 if (is_speculative_accs): #A speculative accs 
                     mr0 = self.DS_list[ds].mr0_cur
@@ -1393,7 +1400,6 @@ class DistCacheSimulator(object):
                 'mr': np.take (self.mr_of_DS, DSs_in_leaf[leaf_num]), #miss rate
                 'ac': np.take (self.client_DS_cost[self.client_id], DSs_in_leaf[leaf_num]) #access cost
             })
-
 
             df_of_DSs_in_cur_leaf.sort_values(by=['mr'], inplace=True) # sort the DSs in non-dec. order of miss rate
 

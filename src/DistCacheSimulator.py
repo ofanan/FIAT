@@ -1052,7 +1052,8 @@ class DistCacheSimulator(object):
         #         self.num_of_FN_n_FP += 1
 
         # MyConfig.error (find (self.indications==True))
-        if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and sum(self.indications)==1: # if there's a single pos ind
+        num_of_pos_indications = sum(self.indications)
+        if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and num_of_pos_indications==1: # if there's a single pos ind
 
             pos_ind         = self.indications.index(True)
             first_neg_ind   = self.indications.index(False)
@@ -1066,7 +1067,7 @@ class DistCacheSimulator(object):
                     mr0 = self.DS_list[ds].mr0_cur
                     self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the whole system's data (used for statistics)
                     self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the relevant client's data (used for adaptive / learning alg') 
-                if (self.DS_list[ds].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=len(self.pos_ind_list))): # hit
+                if (self.DS_list[ds].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=num_of_pos_indications)): # hit
                     if (not (hit) and (not (self.indications[ds]))): # this is the first hit; for each speculative req, we want to count at most a single hit 
                         self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
                         self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')

@@ -110,6 +110,7 @@ class DistCacheSimulator(object):
             delta_mode_period_param = self.delta_mode_period_param, # length of "sync periods" of the indicator's scaling alg.
             full_mode_period_param  = self.full_mode_period_param, # length of "sync periods" of the indicator's scaling alg.
             use_CountingBloomFilter = self.use_CountingBloomFilter,
+            assume_ind_DSs          = self.assume_ind_DSs,
             do_not_advertise_upon_insert         = self.do_not_advertise_upon_insert,
             num_of_insertions_between_fpr_fnr_updates   = self.num_of_insertions_between_fpr_fnr_updates,
             hit_ratio_based_uInterval               = self.hit_ratio_based_uInterval,
@@ -376,15 +377,14 @@ class DistCacheSimulator(object):
             self.collect_mr_stat            = True 
             self.use_fixed_uInterval        = False
             self.hit_ratio_based_uInterval  = False 
-            self.assume_ind_DSs = (self.mode.startswith('salsa_dep'))
-            MyConfig.error (self.assume_ind_DSs) #$$
+            self.assume_ind_DSs = not (self.mode.startswith('salsa_dep'))
         else:
             self.collect_mr_stat            = self.calc_mr_by_hist and (not (self.use_perfect_hist))
             self.consider_delta_updates     = False
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
 
-        if (self.mode == 'salsa0'):
+        if (self.mode == 'salsa0') or (self.mode == 'salsa_dep0'):
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
             self.consider_delta_updates     = False
@@ -999,8 +999,6 @@ class DistCacheSimulator(object):
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
             self.indications = [self.cur_req.key in self.DS_list[i].stale_indicator for i in range (self.num_of_DSs)]
-            self.pos_ind_list = np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.updated_indicator) ]) if self.use_only_updated_ind else \
-                                np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.stale_indicator) ])
             if self.calc_mr_by_hist: # SALSA
                 if self.use_perfect_hist:
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
@@ -1092,6 +1090,8 @@ class DistCacheSimulator(object):
         #
         # else: # no pos' indications --> self.access_pgm_fna_hetro () 
         
+        if not(self.assume_ind_DSs): # in salsa_dep, need to know the number of positive indications
+            self.num_of_pos_inds = sum(self.indications)
         self.access_pgm_fna_hetro ()
 
         if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
@@ -1469,23 +1469,28 @@ class DistCacheSimulator(object):
 
         # perform access
         self.sol = final_sol.DSs_IDs
-        hit = False
+        already_hit = False # will become True once accessing at least one DS for the current request results in a hit 
         for DS_id in final_sol.DSs_IDs:
             is_speculative_accs = not (self.indications[DS_id])
             if (is_speculative_accs): #A speculative accs 
                 self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the whole system's data (used for statistics)
                 self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the relevant client's data (used for adaptive / learning alg') 
-            if (self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=len(self.pos_ind_list))): # hit
-                if (not (hit) and (not (self.indications[DS_id]))): # this is the first hit; for each speculative req, we want to count at most a single hit 
+            if self.assume_ind_DSs: 
+                # accs_was_hit will become True iff this concrete accss to this DS resulted in a hit
+                accs_was_hit = self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs)
+            else: 
+                accs_was_hit = self.DS_list[DS_id].access_salsa_dep(self.cur_req.key, is_speculative_accs, num_of_pos_ind=self.num_of_pos_inds)
+            if accs_was_hit: # hit
+                if not (already_hit) and is_speculative_accs: # this is the first hit; for each speculative req, we want to count at most a single hit 
                     self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
                     self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
-                hit = True
+                already_hit = True
                 
                 # If mr is not evaluated by history, then upon hit, the DS sends the updated evaluation of fpr, fnr, to the clients 
                 if (not (self.calc_mr_by_hist)): 
                     self.client_list [self.client_id].fnr[DS_id] = self.DS_list[DS_id].fnr;  
                     self.client_list [self.client_id].fpr[DS_id] = self.DS_list[DS_id].fpr;  
-        if (hit):   
+        if already_hit:   
             self.client_list[self.client_id].hit_cnt += 1
         else: # Miss
             self.handle_miss ()

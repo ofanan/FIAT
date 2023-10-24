@@ -60,6 +60,7 @@ class DataStore (object):
          init_mr1_after_each_ad     = False,
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
+         assume_ind_DSs             = True, # assume that the DSs, and in particular the exclusion prob' (the prob' that a req' datum isn't in the $, given its ind') are  mutuallyindependent.
          min_feasible_uInterval     = 10,
          delta_mode_period_param    = 10, # length of "sync periods" of the indicator's scaling alg.
          full_mode_period_param     = 10, # length of "period" that evaluates the benefits of switching to delta mode while being in full mode
@@ -117,11 +118,20 @@ class DataStore (object):
         self.EWMA_alpha_mr1          = EWMA_alpha_mr1 # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 
         self.initial_mr0             = initial_mr0
         self.initial_mr1             = initial_mr1
-        self.mr0_cur                 = self.initial_mr0
-        self.mr1_cur                 = self.initial_mr1
-        self.mr1_ewma_window_size    = mr1_ewma_window_size
-        self.mr0_ewma_window_size    = mr1_ewma_window_size
-        self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
+        self.assume_ind_DSs          = assume_ind_DSs
+        if self.assume_ind_DSs:
+            self.mr0_cur                 = self.initial_mr0
+            self.mr1_cur                 = self.initial_mr1
+            self.mr1_ewma_window_size    = mr1_ewma_window_size
+            self.mr0_ewma_window_size    = mr1_ewma_window_size
+            self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
+            self.fp_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
+            self.tn_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
+            self.spec_accs_cnt           = int(0)
+        else:
+            self.tn_cnt         = [0]               *self.num_of_DSs 
+            self.spec_accs_cnt  = [0]               *self.num_of_DSs
+            self.mr0_cur        = [self.initial_mr0]*self.num_of_DSs
         if not (self.use_fixed_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
@@ -129,14 +139,9 @@ class DataStore (object):
                 self.non_comp_accs_th = non_comp_accs_th
             else:
                 self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, mr1_ad_th 
-        self.fp_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
-        self.tn_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
         
-        self.tn_by_num_of_pos_ind_cnt        = [0]*self.num_of_DSs
-        self.spec_accs_by_num_of_pos_ind_cnt = [0]*self.num_of_DSs
         
         self.reg_accs_cnt            = 0
-        self.spec_accs_cnt           = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.DS_size, self.ind_size, self.num_of_hashes)
@@ -192,7 +197,43 @@ class DataStore (object):
         """
         return (key in self.cache)
             
-    def access (self, key, is_speculative_accs=False, num_of_pos_ind=None):
+    def access_salsa_dep (self, key, is_speculative_accs=False, num_of_pos_ind):
+        """
+        - Accesses a key in the cache using the salsa_dep alg'.
+        - Return True iff the access was a hit.
+        - Update the relevant cntrs (regular / spec access cnt, fp / tn cnt).
+        - Update the mr0, mr1 (prob' of a miss, given a neg / pos ind'), if needed.
+        """
+        hit = key in self.cache          
+        if hit: 
+            self.cache[key] #Touch the element, so as to update the LRU mechanism
+
+        # Now we know that we have to collect and print some stat
+        if is_speculative_accs:
+            self.spec_accs_cnt[num_of_pos_ind] += 1
+            if (not(hit)):
+                self.tn_cnt[num_of_pos_ind] += 1
+                self.mr0_cur[num_of_pos_ind] = float(self.tn_cnt[num_of_pos_ind]) / float (self.spec_accs_cnt[num_of_pos_ind])
+                # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
+                if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
+                    printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}\n')
+        else: # regular accs
+            self.reg_accs_cnt += 1
+            if (not(hit)):
+                self.fp_cnt += 1
+            if self.use_EWMA: 
+                if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
+                    self.update_mr1 ()
+            else: # use "flat" history
+                self.mr1_cur = float(self.fp_cnt) / float (self.reg_accs_cnt) 
+                # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
+                if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                    printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1_cur))
+                
+        return hit 
+
+    
+    def access (self, key, is_speculative_accs=False):
         """
         - Accesses a key in the cache.
         - Return True iff the access was a hit.
@@ -210,12 +251,8 @@ class DataStore (object):
         # Now we know that we have to collect and print some stat
         if is_speculative_accs:
             self.spec_accs_cnt += 1
-            if num_of_pos_ind!=None:
-                self.spec_accs_by_num_of_pos_ind_cnt[num_of_pos_ind] += 1
             if (not(hit)):
                 self.tn_cnt += 1
-                if num_of_pos_ind!=None:
-                    self.tn_by_num_of_pos_ind_cnt[num_of_pos_ind] += 1
             if self.use_EWMA: 
                 if self.spec_accs_cnt % self.mr0_ewma_window_size == 0 and self.spec_accs_cnt>0:
                     self.update_mr0 ()
@@ -313,12 +350,12 @@ class DataStore (object):
         sbf = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
         sbf.add_all (keys=[key for key in self.cache])
         return sbf
-    
-    def handle_ind_delta_mode (self, 
+
+    def handle_ind_delta_mode_salsa_dep (self, 
                        called_by_str = 'Unknown' # an optional string, identifying the caller.     
                        ):
         """
-        Advertise an updated indicator, while in delta mode:
+        Advertise an updated indicator, while in delta mode, and using the salsa_dep alg':
         - Assign the "stale BF" as the current update BF.
         - Update the advertisements bit count, ins cnt and bw accordingly.
         - If a full period have passed, reset the relevant counters.
@@ -327,7 +364,7 @@ class DataStore (object):
         
         if self.ins_cnt_since_last_full_ad>=self.delta_mode_period_param * self.min_uInterval: # time to consider scaling, or at least send a keep-alive full ind'
 
-            if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
                 printf (self.mr_output_file, f'\nfinished a period\n')                     
             self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_delta_factor!=1:                                          
@@ -338,7 +375,7 @@ class DataStore (object):
             else:
                 self.stale_indicator            = self.genNewSBF ()
             if MyConfig.VERBOSE_LOG_MR: 
-                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt} spec by pos ind={self.spec_accs_by_num_of_pos_ind_cnt}\n') 
+                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n') 
             self.num_of_advertisements         += 1
 
             cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
@@ -361,8 +398,63 @@ class DataStore (object):
             self.stale_indicator                = self.updated_sbf
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}, spec by pos ind={}\n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt, self.spec_accs_by_num_of_pos_ind_cnt))
+                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
+                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt))
+
+    
+    def handle_ind_delta_mode (self, 
+                       called_by_str = 'Unknown' # an optional string, identifying the caller.     
+                       ):
+        """
+        Advertise an updated indicator, while in delta mode:
+        - Assign the "stale BF" as the current update BF.
+        - Update the advertisements bit count, ins cnt and bw accordingly.
+        - If a full period have passed, reset the relevant counters.
+        In practice, this means merely generate a new indicator (simple Bloom filter).
+        """
+        
+        if not (self.assume_ind_DSs):
+            self.handle_ind_delta_mode_salsa_dep(called_by_str=called_by_str)
+        
+        
+        if self.ins_cnt_since_last_full_ad>=self.delta_mode_period_param * self.min_uInterval: # time to consider scaling, or at least send a keep-alive full ind'
+
+            if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                printf (self.mr_output_file, f'\nfinished a period\n')                     
+            self.num_of_periods_in_delta_ads += 1
+            if self.scale_ind_delta_factor!=1:                                          
+                self.scale_ind_delta_mode ()
+            self.overall_ad_size               += self.ind_size # need to advertise a full ind' once in a period.
+            if self.use_CountingBloomFilter: # extract the SBF from the updated CBF
+                self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
+            else:
+                self.stale_indicator            = self.genNewSBF ()
+            if MyConfig.VERBOSE_LOG_MR: 
+                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0_cur}, spec_cnt={self.spec_accs_cnt}\n') 
+            self.num_of_advertisements         += 1
+
+            cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
+            
+            if cur_bw_of_delta_ads_per_ins > self.bw_budget:
+                # print ('Switching back to full cntr mode') 
+                self.in_delta_mode = False
+
+            self.num_of_sync_ads               += 1 
+            self.ins_cnt_since_last_full_ad     = 0
+            self.total_ad_size_in_this_period   = 0
+            return # finished advertising an indicator
+        
+        if self.ins_cnt_since_last_full_ad % self.min_feasible_uInterval == 0:
+
+            self.gen_updated_sbf()
+            ad_size                             = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
+            self.total_ad_size_in_this_period  += ad_size
+            self.overall_ad_size               += ad_size                              
+            self.stale_indicator                = self.updated_sbf
+            self.num_of_advertisements         += 1
+            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
+                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0_cur, self.spec_accs_cnt))
 
     def handle_ind_full_mode (self):
         """
@@ -432,6 +524,51 @@ class DataStore (object):
         self.gen_updated_sbf () # generate a new self.updated_sbf  
         self.stale_indicator               = self.updated_sbf
 
+    def advertise_ind_full_mode_salsa_dep (self, called_by_str):
+        
+        """
+        Advertise an indicator while in the "full indicator" mode, when the alg' used is "salsa_dep".
+        - Write to log files, if requested by the self.verbose.
+        - If required, scale the indicator. We assume that only SBF (Simple Bloom Filter) can scale. Counting Bloom Filter doesnn't scale. 
+        - Assign self.stale_indicator to the list of current cached items. 
+          At this very moment self.stale_indicator will be fresh, but from now and on, until the next advertisement, it will gradually become stale again.
+        - Later, if needed, analyzes the number of set bits in the self.stale_indicator.
+        - Update counters.
+        
+        """
+        if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+            printf (self.mr_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
+
+        if self.ins_cnt_in_this_period >= self.re_init_mr0_param * self.min_uInterval: 
+
+            self.ins_cnt_in_this_period = 0 
+            # self.mr0_cur = min (self.mr0_cur, self.initial_mr0) #$$$
+            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+                printf (self.mr_output_file, 'RE-INIT MR0. mr0={:.3f}\n' .format (self.mr0_cur))
+        if self.init_mr1_after_each_ad and not(self.in_delta_mode):
+            self.fp_cnt, self.reg_accs_cnt = 0,0
+            self.mr1_cur = self.initial_mr1 
+        if self.init_mr0_after_each_ad and not(self.in_delta_mode):
+            # self.tn_cnt, self.spec_accs_cnt = 0,0
+            self.mr0_cur = [min (self.mr0_cur[num_of_pos_ind], self.initial_mr0) for num_of_pos_ind in range(self.num_of_DSs)]
+        
+        if self.scale_ind_full_factor!=1: # consider scaling the indicator and the uInterval
+            scale_ind_by = 1
+            if (called_by_str=='mr0'):
+                scale_ind_by = max(1/self.scale_ind_factor, self.min_bpe/self.bpe) 
+            elif (called_by_str=='mr1'): # too many FPs --> enlarge the indicator
+                scale_ind_by = min(self.scale_ind_factor, self.max_bpe/self.bpe)
+            if scale_ind_by!=1: # need to scale the ind'
+                self.scale_ind_full_mode(factor=scale_ind_by)
+                if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                    printf (self.mr_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
+
+        self.stale_indicator         = self.genNewSBF () # Assume here that we don't use CountingBloomFilter
+        self.num_of_advertisements  += 1
+        self.num_of_full_ads        += 1
+        self.overall_ad_size        += self.ind_size
+
+    
     def advertise_ind_full_mode (self, called_by_str):
         
         """
@@ -444,6 +581,8 @@ class DataStore (object):
         - Update counters.
         
         """
+        if not (self.assume_ind_DSs): # salsa_dep
+            return self.advertise_ind_full_mode (called_by_str)
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
@@ -537,7 +676,7 @@ class DataStore (object):
             
         # self.updated_mr0 = True 
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-            printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}, tn_by_pos_ind_cnt={self.tn_by_num_of_pos_ind_cnt}, spec_accs_by_pos_ind_cnt={self.spec_accs_by_num_of_pos_ind_cnt}\n') 
+            printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0_cur}, tn_by_pos_ind_cnt={self.tn_cnt}, spec_accs_by_pos_ind_cnt={self.spec_accs_cnt}\n') 
             
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 

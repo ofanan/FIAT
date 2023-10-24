@@ -375,7 +375,9 @@ class DistCacheSimulator(object):
             self.calc_mr_by_hist            = True
             self.collect_mr_stat            = True 
             self.use_fixed_uInterval        = False
-            self.hit_ratio_based_uInterval  = False
+            self.hit_ratio_based_uInterval  = False 
+            self.assume_ind_DSs = (self.mode.startswith('salsa_dep'))
+            MyConfig.error (self.assume_ind_DSs) #$$
         else:
             self.collect_mr_stat            = self.calc_mr_by_hist and (not (self.use_perfect_hist))
             self.consider_delta_updates     = False
@@ -1014,6 +1016,17 @@ class DistCacheSimulator(object):
             if (MyConfig.VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
         print (f'num_of_FN_n_TP={self.num_of_FN_n_TP}, num_of_FN_n_FP={self.num_of_FN_n_FP}') #$$$
+
+    def calc_mr_of_DS_salsa (self):
+        """
+        calc mr (aka "Exclusion probability": namely, the prob' that the data isn't in a DS, given the indication for this DS).
+        This func' is used by salsa algorithms only.
+        """
+        if self.assume_ind_DSs: # assume independent exclusion prob'
+            for ds in range (self.num_of_DSs):
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+            return
+        
 
     def handle_single_req_pgm_fna_mr_by_practical_hist (self):
         """

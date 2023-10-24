@@ -199,6 +199,8 @@ class DataStore (object):
         - Update the relevant cntrs (regular / spec access cnt, fp / tn cnt).
         - Update the mr0, mr1 (prob' of a miss, given a neg / pos ind'), if needed.
         """
+        if num_of_pos_ind==1: #$$$
+            MyConfig.error ('Halleluya')
         hit = key in self.cache          
         if hit: 
             self.cache[key] #Touch the element, so as to update the LRU mechanism

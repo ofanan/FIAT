@@ -997,6 +997,8 @@ class DistCacheSimulator(object):
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
             self.indications = [self.cur_req.key in self.DS_list[i].stale_indicator for i in range (self.num_of_DSs)]
+            self.pos_ind_list = np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.updated_indicator) ]) if self.use_only_updated_ind else \
+                                np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.stale_indicator) ])
             if self.calc_mr_by_hist: # SALSA
                 if self.use_perfect_hist:
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
@@ -1004,7 +1006,7 @@ class DistCacheSimulator(object):
                     if self.hit_ratio_based_uInterval:
                         for ds_id in range(self.num_of_DSs): #$$$ we assume here there exists only a single client
                             self.DS_list[ds_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id]     
-                    self.handle_single_req_pgm_fna_mr_by_practical_hist ()
+                    self.handle_single_req_pgm_fna_mr_by_practical_hist () # SALSA
 
             else: # Use analysis to estimate mr0, mr1  (FNAA)
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
@@ -1052,34 +1054,32 @@ class DistCacheSimulator(object):
         #         self.num_of_FN_n_FP += 1
 
         # MyConfig.error (find (self.indications==True))
-        num_of_pos_indications = sum(self.indications)
-        if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and num_of_pos_indications==1: # if there's a single pos ind
-
-            pos_ind         = self.indications.index(True)
-            first_neg_ind   = self.indications.index(False)
-            DSs2accs        = [self.indications.index(True), self.indications.index(False)]
-            self.client_list[self.client_id].total_access_cost += sum (np.take(self.client_DS_cost[self.client_id] ,DSs2accs))
-
-            hit = False
-            for ds in DSs2accs:
-                is_speculative_accs = not (self.indications[ds])
-                if (is_speculative_accs): #A speculative accs 
-                    mr0 = self.DS_list[ds].mr0_cur
-                    self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the whole system's data (used for statistics)
-                    self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the relevant client's data (used for adaptive / learning alg') 
-                if (self.DS_list[ds].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=num_of_pos_indications)): # hit
-                    if (not (hit) and (not (self.indications[ds]))): # this is the first hit; for each speculative req, we want to count at most a single hit 
-                        self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
-                        self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
-                    hit = True
-                    
-            if (hit):   
-                self.client_list[self.client_id].hit_cnt += 1
-            else: # Miss
-                self.handle_miss ()
-                
-        else: # no pos' indications
-            self.access_pgm_fna_hetro ()
+        # if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and num_of_pos_indications==1: # if there's a single pos ind
+        #
+        #     num_of_pos_indications = sum(self.indications)
+        #     DSs2accs        = [self.indications.index(True), self.indications.index(False)]
+        #     self.client_list[self.client_id].total_access_cost += sum (np.take(self.client_DS_cost[self.client_id] ,DSs2accs))
+        #
+        #     hit = False
+        #     for ds in DSs2accs:
+        #         is_speculative_accs = not (self.indications[ds])
+        #         if (is_speculative_accs): #A speculative accs 
+        #             self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the whole system's data (used for statistics)
+        #             self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the relevant client's data (used for adaptive / learning alg') 
+        #         if (self.DS_list[ds].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=num_of_pos_indications)): # hit
+        #             if not (hit) and is_speculative_accs: # this is the first hit; for each speculative req, we want to count at most a single hit 
+        #                 self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
+        #                 self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
+        #             hit = True
+        #
+        #     if (hit):   
+        #         self.client_list[self.client_id].hit_cnt += 1
+        #     else: # Miss
+        #         self.handle_miss ()
+        #
+        # else: # no pos' indications --> self.access_pgm_fna_hetro () 
+        
+        self.access_pgm_fna_hetro ()
 
         if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
             for client in self.client_list:

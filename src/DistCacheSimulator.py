@@ -406,8 +406,8 @@ class DistCacheSimulator(object):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
             self.fp_cnt         = np.zeros (self.num_of_DSs)
             self.tn_cnt         = np.zeros (self.num_of_DSs)
-            self.mr0_cur        = np.ones  (self.num_of_DSs)
-            self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
+            self.mr0        = np.ones  (self.num_of_DSs)
+            self.mr1        = self.initial_mr1 * np.ones (self.num_of_DSs)
         
         self.init_client_list ()
         self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
@@ -1028,21 +1028,21 @@ class DistCacheSimulator(object):
         if MyConfig.VERBOSE_DEBUG in self.verbose:            
             printf (self.debug_file, '\nreq_cnt={} ' .format(self.req_cnt))
             for ds in range(self.num_of_DSs):
-                printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur ))
-                # self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else 0.85
-                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+                printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1 if self.indications[ds] else self.DS_list[ds].mr0 ))
+                # self.mr_of_DS[ds] = self.DS_list[ds].mr1 if self.indications[ds] else 0.85
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1 if self.indications[ds] else self.DS_list[ds].mr0  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         if self.assume_ind_DSs: # assume independent exclusion prob'
             for ds in range (self.num_of_DSs):
-                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1 if self.indications[ds] else self.DS_list[ds].mr0  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
             return
 
         # Now we know that this is an alg that considers DS inter-dependencies (aka salsa_dep)
         self.num_of_pos_inds = sum(self.indications)
         for ds in range (self.num_of_DSs):
             if self.indications[ds]:
-                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur 
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1 
             else: 
-                self.mr_of_DS[ds] = self.DS_list[ds].mr0_cur[self.num_of_pos_inds]
+                self.mr_of_DS[ds] = self.DS_list[ds].mr0[self.num_of_pos_inds]
         
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
@@ -1059,11 +1059,11 @@ class DistCacheSimulator(object):
             
             # The lines below reset the estimators and counters when the DS advertises a new indicator. 
             if (self.DS_list[ds].ins_since_last_ad==0): # This DS has just sent an indicator --> reset all counters and estimations
-                self.mr0_cur[ds] = 1
-                self.mr1_cur[ds] = self.initial_mr1
+                self.mr0[ds] = 1
+                self.mr1[ds] = self.initial_mr1
                 self.fp_cnt[ds], self.tn_cnt[ds], self.pos_ind_cnt[ds], self.neg_ind_cnt[ds] = 0, 0, 0, 0  
             
-            self.mr_of_DS[ds] = self.mr1_cur[ds] if self.indications[ds] else self.mr0_cur[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+            self.mr_of_DS[ds] = self.mr1[ds] if self.indications[ds] else self.mr0[ds]  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
         self.access_pgm_fna_hetro ()
         for ds in range (self.num_of_DSs):
             real_answer = (self.cur_req.key in self.DS_list[ds]) 
@@ -1080,24 +1080,24 @@ class DistCacheSimulator(object):
             for ds in range (self.num_of_DSs):            
                 if self.pos_ind_cnt[ds] == self.ewma_window_size:
                     
-                    self.mr1_cur[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1_cur[ds]
+                    self.mr1[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1[ds]
                     
                     if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr1={}, emwa_mr1={}\n' 
-                                .format (self.fp_cnt[ds] / self.ewma_window_size, self.mr1_cur[ds]))
+                                .format (self.fp_cnt[ds] / self.ewma_window_size, self.mr1[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if self.neg_ind_cnt[ds] == self.ewma_window_size:
-                    self.mr0_cur[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.ewma_window_size + (1 - self.EWMA_alpha) * self.mr0_cur[ds]
+                    self.mr0[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.ewma_window_size + (1 - self.EWMA_alpha) * self.mr0[ds]
                     if (MyConfig.VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr0={:.4f}, emwa_mr0={:.4f}\n' 
-                                .format (self.tn_cnt[ds] / self.ewma_window_size, self.mr0_cur[ds]))
+                                .format (self.tn_cnt[ds] / self.ewma_window_size, self.mr0[ds]))
                     self.tn_cnt[ds] = 0
                     self.neg_ind_cnt [ds] = 0
         else: # not using exp weighted moving avg --> use a simple flat history estimation
             for ds in range (self.num_of_DSs):
-                self.mr0_cur[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
-                self.mr1_cur[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.initial_mr1
+                self.mr0[ds] = (self.tn_cnt[ds] / self.neg_ind_cnt[ds]) if (self.neg_ind_cnt[ds] > 0) else 1
+                self.mr1[ds] = (self.fp_cnt[ds] / self.pos_ind_cnt[ds]) if (self.pos_ind_cnt[ds] > 0) else self.initial_mr1
 
 
     def print_est_mr_func (self):
@@ -1148,7 +1148,7 @@ class DistCacheSimulator(object):
         Update the estimated miss rate ("exclusion probability") of each DS, based on the history.
         This estimation is good only for false-negative-oblivious algorithms, i.e. algorithms that don't access caches with negative ind'  
         """
-        self.mr_of_DS = np.array([DS.mr1_cur for DS in self.DS_list]) # For each 1 <= i<= n, Copy the miss rate estimation of DS i to mr_of_DS(i)
+        self.mr_of_DS = np.array([DS.mr1 for DS in self.DS_list]) # For each 1 <= i<= n, Copy the miss rate estimation of DS i to mr_of_DS(i)
 
     def handle_compulsory_miss (self):
         """
@@ -1187,7 +1187,7 @@ class DistCacheSimulator(object):
         - Chosen as a "hash" (actually, merely a modulo calculation) of the key 
         """
         for i in range(self.k_loc):
-            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, mr_vec=[DS.mr1_cur for DS in self.DS_list])
+            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, mr_vec=[DS.mr1 for DS in self.DS_list])
                     
     def is_compulsory_miss (self):
         """

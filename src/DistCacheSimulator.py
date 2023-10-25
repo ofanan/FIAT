@@ -1000,13 +1000,18 @@ class DistCacheSimulator(object):
             self.client_id = self.calc_client_id ()
             self.indications = [self.cur_req.key in self.DS_list[i].stale_indicator for i in range (self.num_of_DSs)]
             if self.calc_mr_by_hist: # SALSA
-                if self.use_perfect_hist:
+                if self.use_perfect_hist: # theoretical SALSA, w perfect hist
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
                 else:
                     if self.hit_ratio_based_uInterval:
                         for ds_id in range(self.num_of_DSs): #$$$ we assume here there exists only a single client
                             self.DS_list[ds_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id]     
-                    self.handle_single_req_pgm_fna_mr_by_practical_hist () # SALSA
+                    self.calc_mr_of_DS_salsa  ()
+                    self.access_pgm_fna_hetro ()
+            
+                    if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
+                        for client in self.client_list:
+                            client.update_q (self.indications)
 
             else: # Use analysis to estimate mr0, mr1  (FNAA)
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
@@ -1015,21 +1020,10 @@ class DistCacheSimulator(object):
                 self.mid_report ()
         print (f'num_of_FN_n_TP={self.num_of_FN_n_TP}, num_of_FN_n_FP={self.num_of_FN_n_FP}') #$$$
 
-    def calc_mr_of_DS_salsa (self):
+    def calc_mr_of_DS_salsa (self): 
         """
         calc mr (aka "Exclusion probability": namely, the prob' that the data isn't in a DS, given the indication for this DS).
         This func' is used by salsa algorithms only.
-        """
-        if self.assume_ind_DSs: # assume independent exclusion prob'
-            for ds in range (self.num_of_DSs):
-                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
-            return
-        
-
-    def handle_single_req_pgm_fna_mr_by_practical_hist (self):
-        """
-        run a single request, when the exclu sion probabilities are estimated based on partial history knowledge.
-        The history is collected by the DSs themselves.
         """
         if MyConfig.VERBOSE_DEBUG in self.verbose:            
             printf (self.debug_file, '\nreq_cnt={} ' .format(self.req_cnt))
@@ -1037,66 +1031,19 @@ class DistCacheSimulator(object):
                 printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur ))
                 # self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else 0.85
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
-        else:
+        if self.assume_ind_DSs: # assume independent exclusion prob'
             for ds in range (self.num_of_DSs):
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur if self.indications[ds] else self.DS_list[ds].mr0_cur  # Set the mr (exclusion probability), given either a pos, or a neg, indication.
+            return
 
-        #$$$ Added patch below
-        #$$$ added to measure TN by num of pos ind cnt
-        # TP = False
-        # FP = False
-        # FN = False
-        # num_of_non_spec_DSs = 0
-        # for DS in self.DS_list:
-        #     if DS.mr0_cur > 0.99:
-        #         num_of_non_spec_DSs += 1
-        #     if not (self.cur_req.key in DS.stale_indicator) and self.cur_req.key in DS: 
-        #         FN = True
-        #         continue
-        #     if self.cur_req.key in DS.stale_indicator: # pos ind
-        #         if self.cur_req.key in DS: 
-        #             TP = True
-        #         else: 
-        #             FP = True
-        # if FN: 
-        #     if TP:
-        #         self.num_of_FN_n_TP += 1
-        #     if FP:
-        #         self.num_of_FN_n_FP += 1
-
-        # MyConfig.error (find (self.indications==True))
-        # if MyConfig.VERBOSE_DEPENDENT_DS_PATH in self.verbose and num_of_pos_indications==1: # if there's a single pos ind
-        #
-        #     num_of_pos_indications = sum(self.indications)
-        #     DSs2accs        = [self.indications.index(True), self.indications.index(False)]
-        #     self.client_list[self.client_id].total_access_cost += sum (np.take(self.client_DS_cost[self.client_id] ,DSs2accs))
-        #
-        #     hit = False
-        #     for ds in DSs2accs:
-        #         is_speculative_accs = not (self.indications[ds])
-        #         if (is_speculative_accs): #A speculative accs 
-        #             self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the whole system's data (used for statistics)
-        #             self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][ds] # Update the relevant client's data (used for adaptive / learning alg') 
-        #         if (self.DS_list[ds].access(self.cur_req.key, is_speculative_accs, num_of_pos_ind=num_of_pos_indications)): # hit
-        #             if not (hit) and is_speculative_accs: # this is the first hit; for each speculative req, we want to count at most a single hit 
-        #                 self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 
-        #                 self.client_list [self.client_id].speculate_hit_cnt += 1  # Update the relevant client's speculative hit cnt (used for adaptive / learning alg')
-        #             hit = True
-        #
-        #     if (hit):   
-        #         self.client_list[self.client_id].hit_cnt += 1
-        #     else: # Miss
-        #         self.handle_miss ()
-        #
-        # else: # no pos' indications --> self.access_pgm_fna_hetro () 
+        # Now we know that this is an alg that considers DS inter-dependencies (aka salsa_dep)
+        self.num_of_pos_inds = sum(self.indications)
+        for ds in range (self.num_of_DSs):
+            if self.indications[ds]:
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur 
+            else: 
+                self.DS_list[ds].mr0_cur = self.DS_list[ds].mr0_cur[self.num_of_pos_inds]
         
-        if not(self.assume_ind_DSs): # in salsa_dep, need to know the number of positive indications
-            self.num_of_pos_inds = sum(self.indications)
-        self.access_pgm_fna_hetro ()
-
-        if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
-            for client in self.client_list:
-                client.update_q (self.indications)
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):
         """
@@ -1479,7 +1426,7 @@ class DistCacheSimulator(object):
                 # accs_was_hit will become True iff this concrete accss to this DS resulted in a hit
                 accs_was_hit = self.DS_list[DS_id].access(self.cur_req.key, is_speculative_accs)
             else: 
-                accs_was_hit = self.DS_list[DS_id].access_salsa_dep(self.cur_req.key, is_speculative_accs, num_of_pos_ind=self.num_of_pos_inds)
+                accs_was_hit = self.DS_list[DS_id].access_salsa_dep(self.cur_req.key, is_speculative_accs, num_of_pos_inds=self.num_of_pos_inds)
             if accs_was_hit: # hit
                 if not (already_hit) and is_speculative_accs: # this is the first hit; for each speculative req, we want to count at most a single hit 
                     self.                             speculate_hit_cnt += 1  # Update the whole system's speculative hit cnt (used for statistics) 

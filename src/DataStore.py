@@ -516,6 +516,7 @@ class DataStore (object):
         self.num_of_advertisements  += 1
         self.num_of_full_ads        += 1
         self.overall_ad_size        += self.ind_size
+        self.fn_cnt = self.spec_accs_cnt = [0]*self.num_of_DSs
 
     
     def advertise_ind_full_mode (self, called_by_str):

@@ -399,13 +399,13 @@ class DistCacheSimulator(object):
             self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = True
 
-        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2'])):
+        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2', 'salsa_dep0'])):
             MyConfig.error ('sorry. Mode {} is not supported' .format(self.mode) )                                             
             
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
-            self.fp_cnt         = np.zeros  (self.num_of_DSs)
-            self.tn_cnt         = np.zeros  (self.num_of_DSs)
+            self.fp_cnt         = np.zeros (self.num_of_DSs)
+            self.tn_cnt         = np.zeros (self.num_of_DSs)
             self.mr0_cur        = np.ones  (self.num_of_DSs)
             self.mr1_cur        = self.initial_mr1 * np.ones (self.num_of_DSs)
         
@@ -1042,7 +1042,7 @@ class DistCacheSimulator(object):
             if self.indications[ds]:
                 self.mr_of_DS[ds] = self.DS_list[ds].mr1_cur 
             else: 
-                self.DS_list[ds].mr0_cur = self.DS_list[ds].mr0_cur[self.num_of_pos_inds]
+                self.mr_of_DS[ds] = self.DS_list[ds].mr0_cur[self.num_of_pos_inds]
         
 
     def handle_single_req_pgm_fna_mr_by_perfect_hist (self):

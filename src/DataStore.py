@@ -119,13 +119,13 @@ class DataStore (object):
         self.initial_mr0             = initial_mr0
         self.initial_mr1             = initial_mr1
         self.assume_ind_DSs          = assume_ind_DSs
+        self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
+        self.mr1_ewma_window_size    = mr1_ewma_window_size
+        self.mr1_cur                 = self.initial_mr1
+        self.fp_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
         if self.assume_ind_DSs:
             self.mr0_cur                 = self.initial_mr0
-            self.mr1_cur                 = self.initial_mr1
-            self.mr1_ewma_window_size    = mr1_ewma_window_size
             self.mr0_ewma_window_size    = mr1_ewma_window_size
-            self.use_EWMA                = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
-            self.fp_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
             self.tn_cnt                  = int(0) # Number of False Positive events that happened in the current estimation window
             self.spec_accs_cnt           = int(0)
         else:
@@ -528,7 +528,8 @@ class DataStore (object):
         
         """
         if not (self.assume_ind_DSs): # salsa_dep
-            return self.advertise_ind_full_mode (called_by_str)
+            return self.advertise_ind_full_mode_salsa_dep(called_by_str)
+
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 

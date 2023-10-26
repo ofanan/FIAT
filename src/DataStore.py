@@ -74,6 +74,8 @@ class DataStore (object):
         self.num_of_DSs             = num_of_DSs
         self.verbose                = verbose
         self.DS_size                = size
+        self.min_ins_cnt_for_stat   = 0.05*self.DS_size
+        self.min_spec_accs_cnt_for_stat = 100
         self.cache                  = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str           = settings_str
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
@@ -214,7 +216,7 @@ class DataStore (object):
             self.spec_accs_cnt[self.num_of_pos_inds] += 1
             if (not(hit)):
                 self.tn_cnt[self.num_of_pos_inds] += 1
-                if self.spec_accs_cnt[self.num_of_pos_inds]<100:
+                if self.spec_accs_cnt[self.num_of_pos_inds]<self.min_spec_accs_cnt_for_stat or self.ins_cnt_since_last_full_ad < self.min_ins_cnt_for_stat:
                     self.mr0[self.num_of_pos_inds] = self.initial_mr0
                 else:
                     self.mr0[self.num_of_pos_inds] = float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds])

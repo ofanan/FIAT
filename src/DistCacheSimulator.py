@@ -1188,6 +1188,9 @@ class DistCacheSimulator(object):
         """
         for i in range(self.k_loc):
             self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt)
+            if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
+                for ds in range (self.num_of_DSs):
+                    printf (self.mr_output_file[ds], f'inserting missed req {self.req_cnt} to DS {self.select_DS_to_insert(i).ID}\n')
                     
     def is_compulsory_miss (self):
         """

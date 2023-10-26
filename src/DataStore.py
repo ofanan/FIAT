@@ -221,8 +221,8 @@ class DataStore (object):
                 else:
                     self.mr0[self.num_of_pos_inds] = float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds])
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
-                if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
-                    printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
+            if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
+                printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
@@ -246,6 +246,8 @@ class DataStore (object):
         - Update the relevant cntrs (regular / spec access cnt, fp / tn cnt).
         - Update the mr0, mr1 (prob' of a miss, given a neg / pos ind'), if needed.
         """
+        if not(self.assume_ind_DSs):
+            MyConfig.error ('Datastrore.access() instead of Datastrore.access_salsa_dep() was called while running salsa dep.')
         hit = key in self.cache          
         if hit: 
             self.cache[key] #Touch the element, so as to update the LRU mechanism

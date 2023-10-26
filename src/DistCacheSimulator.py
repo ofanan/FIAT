@@ -999,14 +999,14 @@ class DistCacheSimulator(object):
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.client_id = self.calc_client_id ()
             self.indications = [self.cur_req.key in self.DS_list[i].stale_indicator for i in range (self.num_of_DSs)]
-            if self.calc_mr_by_hist: # SALSA
-                if self.use_perfect_hist: # theoretical SALSA, w perfect hist
+            if self.calc_mr_by_hist: 
+                if self.use_perfect_hist: # theoretical alg', w perfect hist
                     self.handle_single_req_pgm_fna_mr_by_perfect_hist ()
-                else:
+                else: # SALSA
                     if self.hit_ratio_based_uInterval:
                         for ds_id in range(self.num_of_DSs): #$$$ we assume here there exists only a single client
                             self.DS_list[ds_id].pr_of_pos_ind_estimation = self.client_list[0].pr_of_pos_ind_estimation[ds_id]     
-                    self.calc_mr_of_DS_salsa  ()
+                    self.calc_mr_of_DSs_salsa  ()
                     self.access_pgm_fna_hetro ()
             
                     if self.hit_ratio_based_uInterval and all([DS.num_of_advertisements>0 for DS in self.DS_list]): # Need to calculate the "q", namely, the prbob of pos ind, for each CS, and all the DSs have already advertised at least one indicator
@@ -1020,7 +1020,7 @@ class DistCacheSimulator(object):
                 self.mid_report ()
         print (f'num_of_FN_n_TP={self.num_of_FN_n_TP}, num_of_FN_n_FP={self.num_of_FN_n_FP}') #$$$
 
-    def calc_mr_of_DS_salsa (self): 
+    def calc_mr_of_DSs_salsa (self): 
         """
         calc mr (aka "Exclusion probability": namely, the prob' that the data isn't in a DS, given the indication for this DS).
         This func' is used by salsa algorithms only.
@@ -1187,13 +1187,13 @@ class DistCacheSimulator(object):
         - Chosen as a "hash" (actually, merely a modulo calculation) of the key 
         """
         for i in range(self.k_loc):
-            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt, mr_vec=[DS.mr1 for DS in self.DS_list])
+            self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt)
                     
     def is_compulsory_miss (self):
         """
         Returns true iff the access is compulsory miss, namely, the requested datum is indeed not found in any DS.
         """
-        return (np.array([DS_id for DS_id in range(self.num_of_DSs) if (self.cur_req.key in self.DS_list[DS_id])]).size == 0) # cur_req is indeed not stored in any DS 
+        return (np.array([DS for DS in self.DS_list if self.cur_req.key in DS]).size == 0) # cur_req is indeed not stored in any DS 
 
     def find_homo_sol (self, sorted_list_of_DSs):
         """

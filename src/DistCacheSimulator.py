@@ -1420,6 +1420,9 @@ class DistCacheSimulator(object):
         # perform access
         self.sol = final_sol.DSs_IDs
         already_hit = False # will become True once accessing at least one DS for the current request results in a hit 
+        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
+            for ds in range(self.num_of_DSs):
+                printf (self.mr_output_file[ds], f'sol for req {self.req_cnt} is {self.sol}\n')
         for DS_id in final_sol.DSs_IDs:
             is_speculative_accs = not (self.indications[DS_id])
             if (is_speculative_accs): #A speculative accs 

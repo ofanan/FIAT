@@ -201,8 +201,6 @@ if __name__ == '__main__':
         # run_num_of_DSs_sim ()
         # run_full_ind_oriented_sim ()
         # run_mr_sim ()
-        # ind = [False, False, False]
-        # MyConfig.error (ind.index(False))
         run_hetro_costs_sim ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

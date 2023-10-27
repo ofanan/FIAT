@@ -314,12 +314,12 @@ def getMachineStr ():
         return 'HPC' # indicates that this sim runs on my PC
     return 'PC' # indicates that this sim runs on an HPC       
 
-def main ():
-    num_of_req = INF_INT
-    for num_of_req in [300000]:
-        characterize_trace (trace = 'IBM1', 
-                            num_of_req                  = num_of_req
-                            )
+# def main ():
+#     num_of_req = INF_INT
+#     for num_of_req in [300000]:
+#         characterize_trace (trace = 'IBM1', 
+#                             num_of_req                  = num_of_req
+#                             )
     # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
     #                     num_of_req                  = num_of_req,
     #                     print_output_to_file        = True,

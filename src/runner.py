@@ -149,7 +149,7 @@ def run_full_ind_oriented_sim ():
     requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
     tic()
     sm = sim.DistCacheSimulator(
-        res_file_name           = 'salsa2_PC',
+        res_file_name           = f'salsa2__{MyConfig.getMachineStr()}',
         EWMA_alpha_mr0          = 0.85, 
         EWMA_alpha_mr1          = 0.25, 
         trace_name              = trace,

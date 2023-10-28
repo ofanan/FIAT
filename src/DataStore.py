@@ -221,6 +221,8 @@ class DataStore (object):
                     self.spec_accs_cnt[self.num_of_pos_inds], self.tn_cnt[self.num_of_pos_inds] = 0, 0 
             if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
+            if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): #$$$$
+                MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
             if self.mr0[0]>0.98: #$$$$
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
@@ -667,7 +669,9 @@ class DataStore (object):
             printf (self.mr_output_file, 'in update mr1: req_cnt={}, fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.req_cnt, self.fp_cnt, self.reg_accs_cnt, self.mr1))
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
-                    .format (self.pr_of_pos_ind_estimation, self.mr0, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0), self.mr1, self.pr_of_pos_ind_estimation*self.mr1, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
+                    .format (self.pr_of_pos_ind_estimation, self.mr0, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0), self.mr1, self.pr_of_pos_ind_estimation*self.mr1, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad))
+        if self.mr1<0 or self.mr1>=1: 
+            MyConfig.error ('DS {} got mr0={self.mr0}, mr1={self.mr1}') 
         self.fp_cnt = int(0)
         
     def should_advertise_by_mr1 (self):

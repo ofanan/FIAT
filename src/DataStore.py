@@ -219,8 +219,8 @@ class DataStore (object):
                 if self.spec_accs_cnt[self.num_of_pos_inds]>self.min_spec_accs_cnt_for_stat and self.ins_cnt_since_last_full_ad >= self.mr0_ewma_window_size:
                     self.mr0[self.num_of_pos_inds] = self.EWMA_alpha*float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds]) + (1-self.EWMA_alpha)*self.mr0[self.num_of_pos_inds]
                     self.spec_accs_cnt[self.num_of_pos_inds], self.tn_cnt[self.num_of_pos_inds] = 0, 0 
-            if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
-                printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
+            if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
+                printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
             if self.mr0[0]>0.98: #$$$$
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
@@ -268,7 +268,7 @@ class DataStore (object):
                 self.mr0 = float(self.tn_cnt) / float (self.spec_accs_cnt)
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
                 if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
-                    printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
+                    printf (self.mr_output_file, f'access: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):

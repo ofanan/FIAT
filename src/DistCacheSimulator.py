@@ -388,7 +388,7 @@ class DistCacheSimulator(object):
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
             self.consider_delta_updates     = False
-            self.ewma_window_size           = max (100, int(self.min_uInterval/5)) # window for parameters' estimation 
+            self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
                         
         elif (self.mode == 'salsa1'):
             self.scale_ind_delta_factor     = 1
@@ -498,7 +498,7 @@ class DistCacheSimulator(object):
         if (self.mode=='opt'):
             printf (res_file, '\n')
             return
-        printf (res_file, '// estimation window = {}\n' .format (self.ewma_window_size))
+        printf (res_file, '// ewma_window = {}\n' .format (self.ewma_window_size))
         num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
         if (self.mode == 'fnaa' and not(self.calc_mr_by_hist)):
             printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_fpr_fnr_updates))
@@ -1167,6 +1167,7 @@ class DistCacheSimulator(object):
         self.client_list[self.client_id].non_comp_miss_cnt += 1
         if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose and sum(self.indications)>0:  
             for DS in self.DS_list:
+                printf (self.mr_output_file[DS.ID], f'in DistCacheSimulator.handle_non_comp_miss(): ')
                 DS.report_mr ()
         self.insert_key_to_DSs ()
         if (MyConfig.VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):

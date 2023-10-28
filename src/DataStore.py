@@ -74,7 +74,8 @@ class DataStore (object):
         self.num_of_DSs             = num_of_DSs
         self.verbose                = verbose
         self.DS_size                = size
-        self.min_ins_cnt_for_stat   = 0.05*self.DS_size
+        self.min_uInterval          = min_uInterval
+        # self.min_ins_cnt_for_stat   = self.min_uInterval/5
         self.min_spec_accs_cnt_for_stat = 100
         self.cache                  = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str           = settings_str
@@ -122,12 +123,12 @@ class DataStore (object):
         self.initial_mr1                = initial_mr1
         self.assume_ind_DSs             = assume_ind_DSs
         self.use_EWMA                   = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
-        self.mr1_ewma_window_size       = mr1_ewma_window_size
         self.mr1                        = self.initial_mr1
         self.fp_cnt                     = int(0) # Number of False Positive events that happened in the current estimation window
+        self.mr1_ewma_window_size       = mr1_ewma_window_size
+        self.mr0_ewma_window_size       = mr1_ewma_window_size
         if self.assume_ind_DSs:
             self.mr0                    = self.initial_mr0
-            self.mr0_ewma_window_size   = mr1_ewma_window_size
             self.tn_cnt                 = int(0) # Number of False Positive events that happened in the current estimation window
             self.spec_accs_cnt          = int(0)
         else:
@@ -155,7 +156,6 @@ class DataStore (object):
         self.num_of_advertisements   = 0
         self.ins_cnt_in_this_period = 0 # cnt of insertions since the last advertisement of fresh indicator
         self.num_of_fpr_fnr_updates  = int (0) 
-        self.min_uInterval           = min_uInterval
         self.min_feasible_uInterval  = min_feasible_uInterval
         self.uInterval_factor        = uInterval_factor
         self.delta_mode_period_param = delta_mode_period_param
@@ -216,13 +216,13 @@ class DataStore (object):
             self.spec_accs_cnt[self.num_of_pos_inds] += 1
             if (not(hit)):
                 self.tn_cnt[self.num_of_pos_inds] += 1
-                if self.spec_accs_cnt[self.num_of_pos_inds]<self.min_spec_accs_cnt_for_stat or self.ins_cnt_since_last_full_ad < self.min_ins_cnt_for_stat:
-                    self.mr0[self.num_of_pos_inds] = self.initial_mr0
-                else:
-                    self.mr0[self.num_of_pos_inds] = float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds])
-                # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
+                if self.spec_accs_cnt[self.num_of_pos_inds]>self.min_spec_accs_cnt_for_stat and self.ins_cnt_since_last_full_ad >= self.mr0_ewma_window_size:
+                    self.mr0[self.num_of_pos_inds] = self.EWMA_alpha*float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds]) + (1-self.EWMA_alpha)*self.mr0[self.num_of_pos_inds]
+                    self.spec_accs_cnt[self.num_of_pos_inds], self.tn_cnt[self.num_of_pos_inds] = 0, 0 
             if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
                 printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
+            if self.mr0[0]>0.98: #$$$$
+                MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):
@@ -538,7 +538,7 @@ class DataStore (object):
             return self.advertise_ind_full_mode_salsa_dep(called_by_str)
 
         if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            printf (self.q_output_file, 'advertising full ind. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
+            printf (self.q_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
 

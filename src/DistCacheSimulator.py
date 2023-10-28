@@ -388,6 +388,7 @@ class DistCacheSimulator(object):
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
             self.consider_delta_updates     = False
+            self.ewma_window_size           = max (100, int(self.min_uInterval/5)) # window for parameters' estimation 
                         
         elif (self.mode == 'salsa1'):
             self.scale_ind_delta_factor     = 1

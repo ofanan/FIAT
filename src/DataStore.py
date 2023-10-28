@@ -124,7 +124,7 @@ class DataStore (object):
         self.assume_ind_DSs             = assume_ind_DSs
         self.use_EWMA                   = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
         self.mr1                        = self.initial_mr1
-        self.fp_cnt                     = int(0) # Number of False Positive events that happened in the current estimation window
+        self.fp_cnt                     = 0 # Number of False Positive events that happened in the current estimation window
         self.mr1_ewma_window_size       = mr1_ewma_window_size
         self.mr0_ewma_window_size       = mr1_ewma_window_size
         if self.assume_ind_DSs:
@@ -142,8 +142,7 @@ class DataStore (object):
                 self.non_comp_accs_th = non_comp_accs_th
             else:
                 self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, mr1_ad_th 
-        
-        
+               
         self.reg_accs_cnt            = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
@@ -500,7 +499,7 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
         if self.init_mr1_after_each_ad and not(self.in_delta_mode):
-            self.fp_cnt, self.reg_accs_cnt = 0,0
+            self.fp_cnt, self.reg_accs_cnt = 0, 0
             self.mr1 = self.initial_mr1 
         if self.init_mr0_after_each_ad and not(self.in_delta_mode):
             # self.tn_cnt, self.spec_accs_cnt = 0,0
@@ -560,7 +559,7 @@ class DataStore (object):
                 if MyConfig.VERBOSE_LOG_MR in self.verbose:
                     printf (self.mr_output_file, 'RE-INIT MR0. mr0={:.3f}\n' .format (self.mr0))
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
-                self.fp_cnt, self.reg_accs_cnt = 0,0
+                self.fp_cnt, self.reg_accs_cnt = 0, 0
                 self.mr1 = self.initial_mr1 
             if self.init_mr0_after_each_ad and not(self.in_delta_mode):
                 self.tn_cnt, self.spec_accs_cnt = 0,0
@@ -616,8 +615,8 @@ class DataStore (object):
         """
         report the status of the various counters and estimators. Used for logging and debugging.
         """
-        printf (self.mr_output_file, f'ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}, ')
-        printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.ID, self.fp_cnt, self.reg_accs_cnt, self.mr1))
+        printf (self.mr_output_file, f'in report_mr. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}, ')
+        printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1))
     
     def update_mr0(self):
         """
@@ -663,7 +662,7 @@ class DataStore (object):
         """
         update the miss-probability in case of a positive indication, using an exponential moving average.
         """
-        self.mr1 = self.EWMA_alpha_mr1 * float(self.fp_cnt) / float (self.mr1_ewma_window_size) + (1 - self.EWMA_alpha_mr1) * self.mr1 
+        self.mr1 = self.EWMA_alpha_mr1 * (self.fp_cnt / self.mr1_ewma_window_size) + (1 - self.EWMA_alpha_mr1) * self.mr1 
         # self.updated_mr1 = True 
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, 'in update mr1: req_cnt={}, fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.req_cnt, self.fp_cnt, self.reg_accs_cnt, self.mr1))

@@ -207,7 +207,8 @@ class DistCacheSimulator(object):
                  full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
                  re_init_after_each_ad = False, 
                  min_feasible_uInterval = 10,
-                 mr_type            = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1. 
+                 mr_type            = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1.
+                 begin_log_mr_at_req_cnt = float ('inf') # the first request cnt at which a "detailed log mr" verbose mode will be applied.  
                  ):
         """
         Return a DistCacheSimulator object with the following attributes:
@@ -323,6 +324,7 @@ class DistCacheSimulator(object):
         self.delta_mode_period_param = delta_mode_period_param
         self.full_mode_period_param  = full_mode_period_param
         self.initial_mr1                    = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
+        self.begin_log_mr_at_req_cnt        = begin_log_mr_at_req_cnt
         if self.mode.startswith('measure_mr'):
             """
             simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
@@ -995,6 +997,15 @@ class DistCacheSimulator(object):
         self.num_of_FN_n_TP = self.num_of_FN_n_FP = 0 #$$$
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace...
+            if self.req_cnt==self.begin_log_mr_at_req_cnt:
+                self.verbose.append (MyConfig.VERBOSE_DETAILED_LOG_MR)
+                self.verbose.append (MyConfig.VERBOSE_LOG_MR)
+                self.init_mr_output_files ()
+                for ds in range (self.num_of_DSs):
+                    self.DS_list[ds].mr_output_file = self.mr_output_file[ds]
+
+            if self.req_cnt==self.begin_log_mr_at_req_cnt + 20:
+                MyConfig.error (f'DistCacheSimulator is aborting sim at req cnt {self.req_cnt}')
             if self.use_global_uInerval:
                 self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  

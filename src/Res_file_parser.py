@@ -669,6 +669,8 @@ class Res_file_parser (object):
 
         for missp in missp_vals: 
             points_w_this_missp      = [item for item in non_opt_points if item['missp']==missp]
+            # print ('points_w_this_missp:') #$$$
+            # MyConfig.print_list (points_w_this_missp) #$$$$
 
             opt_points_w_this_missp  = [item for item in all_opt_points if item['missp']==missp]
             trace_label_positions = self.bar_xlabel_positions (num_groups=len(traces), num_bars_per_group=len(modes)) 
@@ -703,6 +705,8 @@ class Res_file_parser (object):
                         mode_trace_points = [item for item in mode_trace_points if
                                              item['mr0_th'] == mr0_th and
                                              item['mr1_th'] == mr1_th]
+                        # print ('mode_trace_points:') #$$$
+                        # MyConfig.print_list (mode_trace_points) #$$$$
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
                         if period_param!=None:
@@ -801,9 +805,7 @@ def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa_dep0_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
-    # for DS_size in [4, 16, 64]: 
-    #     my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=999999, period_param=10)
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
         
 def gen_mr_plots ():
 

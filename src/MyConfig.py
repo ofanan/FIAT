@@ -55,6 +55,10 @@ trace_csv_file_name = {'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
                        }
 
 
+def print_list (list):
+    for item in list:
+        print (f'{item}')
+
 def check_if_input_file_exists (relative_path_to_input_file):
     """
     Check whether an input file, given by its relative path, exists.

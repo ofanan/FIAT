@@ -147,7 +147,14 @@ class Res_file_parser (object):
         bwCost        = None # default value, to be checked later
         if (len(splitted_line)>2):
             bwCost    = float(splitted_line[2].split(" = ")[1])
+        # splitted_line = settings.split (" ")[0]
+        unsplitted_line = splitted_line.copy ()
         splitted_line = settings.split (".")
+        if len(splitted_line)<alg_idx+1:
+            MyConfig.error (f'Parsing error. unsplitted_line={unsplitted_line}')
+        mode_token = splitted_line[alg_idx].split(" ")
+        if len(mode_token)<1:
+            MyConfig.error (f'Parsing error. splitted_line={splitted_line}. mode_token={mode_token}')
         mode          = splitted_line[alg_idx].split(" ")[0]
         self.dict = {
             'trace'         : splitted_line        [trace_idx],
@@ -296,7 +303,8 @@ class Res_file_parser (object):
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, DS_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
-                        MyConfig.error (f'no results for opt for trace={trace_to_print}, missp={missp}')
+                        print (f'no results for opt for trace={trace_to_print}, missp={missp}')
+                        continue
                     opt_serviceCost = point[0]['serviceCost']
                     uInterval = 1000
                     point = self.gen_filtered_list(self.list_of_dicts, 
@@ -601,7 +609,8 @@ class Res_file_parser (object):
                         print (f'no points for {trace}.C{DS_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
                     if (opt_points==[]):
-                        MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                        print (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                        continue
                     opt_serviceCost = opt_points[0]['serviceCost']
                     point = salsa_points[0]
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
@@ -691,7 +700,8 @@ class Res_file_parser (object):
                                          item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000] 
                     if normalize_by_Opt:
                         if (opt_trace_points==[]): 
-                            MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                            print (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                            continue
                         else:
                             opt_serviceCost = opt_trace_points[0]['serviceCost']
                     else:
@@ -804,8 +814,8 @@ def gen_plot_bars_by_uIntFact ():
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa_dep0_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
+    for DS_size in [16]: 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
         
 def gen_mr_plots ():
 

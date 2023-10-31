@@ -24,10 +24,10 @@ alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: 
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
 mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
 uIntFact_idx            = 14 # mr0 th for SALSA's advertisement decision
-minFU_idx               = 15
-alpha0_idx              = 16
-alpha1_idx              = 18
-period_param_idx        = 20
+minFU_idx               = 16
+alpha0_idx              = 17
+alpha1_idx              = 19
+period_param_idx        = 21
 min_num_of_fields       = alg_idx + 1
 
 BAR_WIDTH               = 0.25
@@ -136,9 +136,9 @@ class Res_file_parser (object):
         """
         Parse a single line of a .res file.
         """
+        unsplitted_line = line 
         splitted_line = line.split ("|")
          
-        settings      = splitted_line[0]
         if len (splitted_line)<2:
             MyConfig.error (f'parse_line encountered format error in file {self.relative_path_to_input_file}. splitted_line={splitted_line}')
         if len (splitted_line[1].split(" = "))<2:
@@ -148,40 +148,40 @@ class Res_file_parser (object):
         if (len(splitted_line)>2):
             bwCost    = float(splitted_line[2].split(" = ")[1])
         # splitted_line = settings.split (" ")[0]
-        unsplitted_line = splitted_line.copy ()
-        splitted_line = settings.split (".")
-        if len(splitted_line)<alg_idx+1:
-            print (f'Parsing error. unsplitted_line={unsplitted_line}')
+        settings_str = splitted_line[0]
+        splitted_settings_str = settings_str.split (".")
+        if len(splitted_settings_str)<alg_idx+1:
+            print (f'Parsing error. settings_str={settings_str}')
             return False
-        mode_token = splitted_line[alg_idx].split(" ")
+        mode_token = splitted_settings_str[alg_idx].split(" ")
         if len(mode_token)<1:
-            MyConfig.error (f'Parsing error. splitted_line={splitted_line}. mode_token={mode_token}')
-        mode          = splitted_line[alg_idx].split(" ")[0]
+            MyConfig.error (f'Parsing error. settings_str={settings_str}. mode_token={mode_token}')
+        mode          = splitted_settings_str[alg_idx].split(" ")[0]
         self.dict = {
-            'trace'         : splitted_line        [trace_idx],
-            'DS_size'       : int (splitted_line   [DS_size_idx].split("C")[1].split("K")[0]),   
-            'num_of_req'    : int (splitted_line   [num_of_req_idx].split("Kreq")[0]),
-            'num_of_DSs'    : int (splitted_line   [num_of_DSs_idx].split("DSs")[0]), 
-            'Kloc'          : int (splitted_line   [kloc_idx]      .split("Kloc")[1]),
-            'missp'         : int (splitted_line   [missp_idx]     .split("M")[1]),
-            'designed_bw'   : int(splitted_line    [bw_idx]        .split('B')[1]), 
+            'trace'         : splitted_settings_str        [trace_idx],
+            'DS_size'       : int (splitted_settings_str   [DS_size_idx].split("C")[1].split("K")[0]),   
+            'num_of_req'    : int (splitted_settings_str   [num_of_req_idx].split("Kreq")[0]),
+            'num_of_DSs'    : int (splitted_settings_str   [num_of_DSs_idx].split("DSs")[0]), 
+            'Kloc'          : int (splitted_settings_str   [kloc_idx]      .split("Kloc")[1]),
+            'missp'         : int (splitted_settings_str   [missp_idx]     .split("M")[1]),
+            'designed_bw'   : int(splitted_settings_str    [bw_idx]        .split('B')[1]), 
             'mode'      : mode,
             'serviceCost'   : serviceCost
             }
         if mode=='Opt': # Opt doesn't have meaningful fields for bpe, uInterval or bw
             return True
         
-        if len (splitted_line) < min_num_of_fields:
-            print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
+        if len (splitted_settings_str) < min_num_of_fields:
+            print (f'encountered a format error. settings_str={settings_str}')
             return False
 
-        self.dict['bpe'] = int (splitted_line [bpe_idx].split("bpe")[1])
+        self.dict['bpe'] = int (splitted_settings_str [bpe_idx].split("bpe")[1])
         if (bwCost != None):
             self.dict['bwCost'] = bwCost
             
-        uInterval_fld = splitted_line [uInterval_idx].split('U')
+        uInterval_fld = splitted_settings_str [uInterval_idx].split('U')
         if len(uInterval_fld)<2:
-                print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
+                print ('encountered a format error. settings_str={settings_str}')
                 return False
         uInterval_str = uInterval_fld[1] 
         uInterval_val = uInterval_str.split('-')
@@ -195,17 +195,26 @@ class Res_file_parser (object):
         if len(uInterval_val)>1: # a single uInterval val is given
             self.dict['max_uInterval'] = int(uInterval_val[1]) # for backward compatibility, keep also this field
 
-        if len (splitted_line) <= mr0th_idx:
+        if len (splitted_settings_str) <= mr0th_idx:
             return True# no further data in this .res entry
-        self.dict['mr0_th']         = float ('0.' + splitted_line [mr0th_idx+1])
-        self.dict['mr1_th']         = float ('0.' + splitted_line [mr1th_idx+1])
-        self.dict['uIntFact']       = float (splitted_line [uIntFact_idx].split("uIntFact")[1])
-        if len(splitted_line)>period_param_idx:
-            per_param_token = splitted_line [period_param_idx].split('per_param')
+        self.dict['mr0_th']         = float ('0.' + splitted_settings_str [mr0th_idx+1])
+        self.dict['mr1_th']         = float ('0.' + splitted_settings_str [mr1th_idx+1])
+
+        uIntFactToken = settings_str.split ('uIntFact')
+        if len(uIntFactToken)!=2:
+            print (f'Parsing error. uIntFactToken={uIntFactToken}\nsettings_str={settings_str}\nsplitted settings str={splitted_settings_str}')
+            return False
+        uIntFactToken = uIntFactToken[1].split('.minFU')
+        if len(uIntFactToken)!=2:
+            print (f'Parsing error. uIntFactToken={uIntFactToken}\nsettings_str={settings_str}\nsplitted settings str={splitted_settings_str}')
+            return False
+        self.dict['uIntFact'] = float (uIntFactToken[0])
+        if len(splitted_settings_str)>period_param_idx:
+            per_param_token = splitted_settings_str [period_param_idx].split('per_param')
             if len(per_param_token)==2:
-                self.dict['period_param']   = int (splitted_line [period_param_idx].split('per_param')[1])
+                self.dict['period_param']   = int (splitted_settings_str [period_param_idx].split('per_param')[1])
             else:
-                print (f'Parsing error. Problematic line is {unsplitted_line}\nsplitted line={splitted_line}. problematic token={per_param_token}')
+                print (f'Parsing error. settings_str={settings_str}\nsplitted settings str={splitted_settings_str}. problematic token={per_param_token}')
                 return False
         return True
          
@@ -816,8 +825,8 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa_dep0_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [16]: 
+    my_Res_file_parser.parse_files(['salsa_dep0_HPC.res', 'opt_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+    for DS_size in [4]: 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
         
 def gen_mr_plots ():

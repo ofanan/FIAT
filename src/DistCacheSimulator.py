@@ -61,7 +61,8 @@ class DistCacheSimulator(object):
                 'ewma' if self.use_EWMA else 'flat')  # either exp-weighted-moving-avg, or simple, flat avg
         
         if (self.mode.startswith('salsa')):
-            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{self.uInterval_factor}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.delta_mode_period_param}.scaleF{self.scale_ind_full_factor}.scaleD{self.scale_ind_delta_factor}' 
+            uIntFactToken = '{:.1f}' .format (self.uInterval_factor)
+            settings_str = f'{settings_str}.mr0th{self.mr0_ad_th}.mr1th{self.mr1_ad_th}.uIntFact{uIntFactToken}.minFU{self.min_feasible_uInterval}.alpha0{self.EWMA_alpha_mr0}.alpha1{self.EWMA_alpha_mr1}.per_param{self.delta_mode_period_param}.scaleF{self.scale_ind_full_factor}.scaleD{self.scale_ind_delta_factor}' 
         return settings_str
     
     def gen_DSs(self):

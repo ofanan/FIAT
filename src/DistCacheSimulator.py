@@ -68,11 +68,6 @@ class DistCacheSimulator(object):
         """
         Generate a list of empty DSs (Data Stores == caches)
         """
-        if self.mode in ['opt', 'fnaa']: 
-            collect_mr_stat = False
-        else: 
-            collect_mr_stat = self.calc_mr_by_hist and (not (self.use_perfect_hist))
-            
         self.DS_list = [DataStore.DataStore(
             ID                      = i, 
             num_of_DSs              = self.num_of_DSs,    
@@ -252,10 +247,7 @@ class DistCacheSimulator(object):
         self.rand_seed          = rand_seed
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
         self.mode               = mode
-        if (self.mode=='Opt'):
-            print ('note: running Opt. Setting self.calc_mr_by_hist = False')
-            self.calc_mr_by_hist = False
-        else: 
+        if not (self.mode=='opt'): 
             self.calc_mr_by_hist = calc_mr_by_hist
         self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.
         self.num_of_clients     = client_DS_cost.shape[0]
@@ -355,6 +347,9 @@ class DistCacheSimulator(object):
                 self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_bpe{:.0f}_measure_mr_{}_{}{}.mr' .format (
                         self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
 
+        if (not(self.mode in ['opt', 'fnaa'])) and (not(self.mode.startswith('salsa'))) and (not(self.mode.startswith('measure_'))):
+            MyConfig.error (f'Sorry, the selected mode {self.mode} is not supported.')
+
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
@@ -367,6 +362,7 @@ class DistCacheSimulator(object):
             self.calc_mr_by_hist            = False
             self.use_fixed_uInterval        = True
             self.hit_ratio_based_uInterval  = False
+            self.assume_ind_DSs             = False
 
         if (self.mode == 'fnaa'):
             self.collect_mr_stat            = False

@@ -151,7 +151,8 @@ class Res_file_parser (object):
         unsplitted_line = splitted_line.copy ()
         splitted_line = settings.split (".")
         if len(splitted_line)<alg_idx+1:
-            MyConfig.error (f'Parsing error. unsplitted_line={unsplitted_line}')
+            print (f'Parsing error. unsplitted_line={unsplitted_line}')
+            return False
         mode_token = splitted_line[alg_idx].split(" ")
         if len(mode_token)<1:
             MyConfig.error (f'Parsing error. splitted_line={splitted_line}. mode_token={mode_token}')
@@ -168,7 +169,7 @@ class Res_file_parser (object):
             'serviceCost'   : serviceCost
             }
         if mode=='Opt': # Opt doesn't have meaningful fields for bpe, uInterval or bw
-            return
+            return True
         
         if len (splitted_line) < min_num_of_fields:
             print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
@@ -188,14 +189,14 @@ class Res_file_parser (object):
         self.dict['uInterval']     = int(uInterval_val[0]) # for backward compatibility, keep also this field 
 
         if not(mode.startswith('SALSA')):
-            return 
+            return True
         
         # Now we know that the mode is one of the flavors of SALSA, and hence need to parse SALSA's specific fields    
         if len(uInterval_val)>1: # a single uInterval val is given
             self.dict['max_uInterval'] = int(uInterval_val[1]) # for backward compatibility, keep also this field
 
         if len (splitted_line) <= mr0th_idx:
-            return # no further data in this .res entry
+            return True# no further data in this .res entry
         self.dict['mr0_th']         = float ('0.' + splitted_line [mr0th_idx+1])
         self.dict['mr1_th']         = float ('0.' + splitted_line [mr1th_idx+1])
         self.dict['uIntFact']       = float (splitted_line [uIntFact_idx].split("uIntFact")[1])
@@ -204,8 +205,9 @@ class Res_file_parser (object):
             if len(per_param_token)==2:
                 self.dict['period_param']   = int (splitted_line [period_param_idx].split('per_param')[1])
             else:
-                MyConfig.error (f'Parsing error. Problematic line is {splitted_line}. problematic token is {per_param_token}')
-         
+                print (f'Parsing error. Problematic line is {unsplitted_line}\nsplitted line={splitted_line}. problematic token={per_param_token}')
+                return False
+        return True
          
     def print_tbl (self):
         """
@@ -505,7 +507,8 @@ class Res_file_parser (object):
                     continue
                
                 if file_type=='.res':
-                    self.parse_line(line)
+                    if not (self.parse_line(line)):
+                        MyConfig.error (f'problematic file is {input_file_name}')
                 elif file_type=='.mr.res':
                     self.parse_mr_res_line(line)
                 else:

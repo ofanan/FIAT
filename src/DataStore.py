@@ -247,8 +247,6 @@ class DataStore (object):
         - Update the relevant cntrs (regular / spec access cnt, fp / tn cnt).
         - Update the mr0, mr1 (prob' of a miss, given a neg / pos ind'), if needed.
         """
-        if not(self.assume_ind_DSs):
-            MyConfig.error ('Datastrore.access() instead of Datastrore.access_salsa_dep() was called while running salsa dep.')
         hit = key in self.cache          
         if hit: 
             self.cache[key] #Touch the element, so as to update the LRU mechanism
@@ -257,6 +255,9 @@ class DataStore (object):
         if (not(self.collect_mr_stat)):
             return hit 
         
+        if not(self.assume_ind_DSs):
+            MyConfig.error ('Datastrore.access() instead of Datastrore.access_salsa_dep() was called while running salsa dep.')
+
         # Now we know that we have to collect and print some stat
         if is_speculative_accs:
             self.spec_accs_cnt += 1

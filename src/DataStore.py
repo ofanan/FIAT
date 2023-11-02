@@ -1,4 +1,4 @@
-"""
+ """
 The class for a DataStore (cache).
 The cache stores items using the LRU policy.
 It also implements the cache-side algorithm for estimating FPR (false-positive ratio) and FNR (false-negative ratio),
@@ -60,7 +60,7 @@ class DataStore (object):
          init_mr1_after_each_ad     = False,
          use_fixed_uInterval        = True,
          use_global_uInerval        = False,
-         assume_ind_DSs             = True, # assume that the DSs, and in particular the exclusion prob' (the prob' that a req' datum isn't in the $, given its ind') are  mutuallyindependent.
+         assume_ind_DSs             = True, # assume that the DSs, and in particular the exclusion prob' (the prob' that a req' datum isn't in the $, given its ind') are  mutually independent.
          min_feasible_uInterval     = 10,
          delta_mode_period_param    = 10, # length of "sync periods" of the indicator's scaling alg.
          full_mode_period_param     = 10, # length of "period" that evaluates the benefits of switching to delta mode while being in full mode
@@ -201,6 +201,8 @@ class DataStore (object):
     def access_salsa_dep (self, key, is_speculative_accs=False, num_of_pos_inds=0):
         """
         - Accesses a key in the cache using the salsa_dep alg'.
+        - Salsa_dep is a version of salsa that consider the dependencies between the prob' that a requested item isn't in the cache, given its indication.
+        - To do that, salsa_dep counts not only the overall # of speculative accesses and TN events, as done by regular salsa, but also counts that for each distinct # of positive indications that the client sees.  
         - Return True iff the access was a hit.
         - Update the relevant cntrs (regular / spec access cnt, fp / tn cnt).
         - Update the mr0, mr1 (prob' of a miss, given a neg / pos ind'), if needed.
@@ -220,7 +222,7 @@ class DataStore (object):
                     self.spec_accs_cnt[self.num_of_pos_inds], self.tn_cnt[self.num_of_pos_inds] = 0, 0 
             if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
-            if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): #$$$$
+            if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): 
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
             if self.mr0[0]>0.98: #$$$$
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
@@ -493,16 +495,16 @@ class DataStore (object):
         if MyConfig.VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
 
-        if self.ins_cnt_in_this_period >= self.re_init_mr0_param * self.min_uInterval: 
+        if self.ins_cnt_in_this_period >= self.re_init_mr0_param * self.min_uInterval: # passed the time to re-init mr0 params?
 
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
             self.ins_cnt_in_this_period = 0 
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
-        if self.init_mr1_after_each_ad and not(self.in_delta_mode):
+        if self.init_mr1_after_each_ad:
             self.fp_cnt, self.reg_accs_cnt = 0, 0
             self.mr1 = self.initial_mr1 
-        if self.init_mr0_after_each_ad and not(self.in_delta_mode):
+        if self.init_mr0_after_each_ad:
             # self.tn_cnt, self.spec_accs_cnt = 0,0
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
         
@@ -654,7 +656,7 @@ class DataStore (object):
                 if self.assume_ind_DSs: 
                     if self.mr0 < self.mr0_ad_th: 
                         return True
-                else: #salsa_dep
+                else: #salsa_dep: check if ANY of the mr0 estimators is below the advertisement threshold.
                     if any ([(self.mr0[num_of_pos_inds] < self.mr0_ad_th) for num_of_pos_inds in range (self.num_of_DSs)]):
                         return True
         return False

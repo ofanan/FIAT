@@ -1046,6 +1046,7 @@ class DistCacheSimulator(object):
             return
 
         # Now we know that this is an alg that considers DS inter-dependencies (aka salsa_dep)
+        # Hence, for mr1, consider the single mr1 counter at each DS. For mr0, test the concrete counter with the corresponding # of pos indications as in the current request.
         self.num_of_pos_inds = sum(self.indications)
         for ds in range (self.num_of_DSs):
             if self.indications[ds]:

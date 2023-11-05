@@ -370,7 +370,7 @@ class DistCacheSimulator(object):
             self.calc_mr_by_hist            = False
             self.use_fixed_uInterval        = True
             self.hit_ratio_based_uInterval  = False
-            self.assume_ind_DSs             = False
+            self.assume_ind_DSs             = True
         
         if self.mode.startswith('salsa'):
             self.calc_mr_by_hist            = True

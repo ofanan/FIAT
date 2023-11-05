@@ -205,16 +205,13 @@ class Res_file_parser (object):
             print (f'Parsing error. uIntFactToken={uIntFactToken}\nsettings_str={settings_str}\nsplitted settings str={splitted_settings_str}')
             return False
         uIntFactToken = uIntFactToken[1].split('.minFU')
-        if len(uIntFactToken)!=2:
-            print (f'Parsing error. uIntFactToken={uIntFactToken}\nsettings_str={settings_str}\nsplitted settings str={splitted_settings_str}')
-            return False
         self.dict['uIntFact'] = float (uIntFactToken[0])
         if len(splitted_settings_str)>period_param_idx:
             per_param_token = splitted_settings_str [period_param_idx].split('per_param')
             if len(per_param_token)==2:
                 self.dict['period_param']   = int (splitted_settings_str [period_param_idx].split('per_param')[1])
             else:
-                print (f'Parsing error. settings_str={settings_str}\nsplitted settings str={splitted_settings_str}. problematic token={per_param_token}')
+                print (f'Parsing error. settings_str={settings_str}\nsplitted settings str={splitted_settings_str}. period param token={per_param_token}')
                 return False
         return True
          
@@ -825,7 +822,7 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['salsa_dep0_HPC.res', 'opt_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['salsa_dep0_PC.res', 'opt_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4]: 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
         

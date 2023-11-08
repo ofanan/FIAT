@@ -224,8 +224,6 @@ class DataStore (object):
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
             if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): 
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
-            if self.mr0[0]>0.98: #$$$$
-                MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
             self.reg_accs_cnt += 1
             if (not(hit)):

@@ -1028,7 +1028,6 @@ class DistCacheSimulator(object):
                 self.access_pgm_fna_hetro ()
             if (MyConfig.VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
-        print (f'num_of_FN_n_TP={self.num_of_FN_n_TP}, num_of_FN_n_FP={self.num_of_FN_n_FP}') #$$$
 
     def calc_mr_of_DSs_salsa (self): 
         """

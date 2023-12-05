@@ -201,9 +201,9 @@ class DistCacheSimulator(object):
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)
                  delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
                  full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
-                 re_init_after_each_ad = False, 
-                 min_feasible_uInterval = 10,
-                 mr_type            = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1.
+                 re_init_after_each_ad   = False, 
+                 min_feasible_uInterval  = 10,
+                 mr_type                 = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1.
                  begin_log_mr_at_req_cnt = float ('inf') # the first request cnt at which a "detailed log mr" verbose mode will be applied.  
                  ):
         """
@@ -998,6 +998,7 @@ class DistCacheSimulator(object):
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace...
             if self.req_cnt==self.begin_log_mr_at_req_cnt:
+                settings.error ('in DistCacheSimulator.begin_log_mr_at_req_cnt') #$$$$$
                 self.verbose.append (MyConfig.VERBOSE_DETAILED_LOG_MR)
                 self.verbose.append (MyConfig.VERBOSE_LOG_MR)
                 self.init_mr_output_files ()

@@ -383,7 +383,7 @@ class DataStore (object):
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:
                 self.stale_indicator            = self.genNewSBF ()
-            if MyConfig.VERBOSE_LOG_MR: 
+            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
                 printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0}, spec_cnt={self.spec_accs_cnt}\n') 
             self.num_of_advertisements         += 1
 
@@ -509,9 +509,9 @@ class DataStore (object):
         if self.scale_ind_full_factor!=1: # consider scaling the indicator and the uInterval
             scale_ind_by = 1
             if (called_by_str=='mr0'):
-                scale_ind_by = max(1/self.scale_ind_factor, self.min_bpe/self.bpe) 
+                scale_ind_by = max(1/self.scale_ind_full_factor, self.min_bpe/self.bpe) 
             elif (called_by_str=='mr1'): # too many FPs --> enlarge the indicator
-                scale_ind_by = min(self.scale_ind_factor, self.max_bpe/self.bpe)
+                scale_ind_by = min(self.scale_ind_full_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
                 if MyConfig.VERBOSE_LOG_MR in self.verbose: 
@@ -569,9 +569,9 @@ class DataStore (object):
         if self.scale_ind_full_factor!=1: # consider scaling the indicator and the uInterval
             scale_ind_by = 1
             if (called_by_str=='mr0'):
-                scale_ind_by = max(1/self.scale_ind_factor, self.min_bpe/self.bpe) 
+                scale_ind_by = max(1/self.scale_ind_full_factor, self.min_bpe/self.bpe) 
             elif (called_by_str=='mr1'): # too many FPs --> enlarge the indicator
-                scale_ind_by = min(self.scale_ind_factor, self.max_bpe/self.bpe)
+                scale_ind_by = min(self.scale_ind_full_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
                 if MyConfig.VERBOSE_LOG_MR in self.verbose: 

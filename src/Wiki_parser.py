@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import matplotlib as plt
-import datetime, mmh3, sys, hashlib
+import mmh3, sys, hashlib
 import MyConfig 
 from MyConfig import getTracesPath 
 from numpy import infty

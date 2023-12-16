@@ -73,9 +73,7 @@ class Res_file_parser (object):
                           'SALSA2'      : 'SALSA2',
                           'fullKnow'    : 'fullKnow',
                           'SALSA_DEP0'  : 'SALSA_DEP0',
-                          'SALSA285'    : 'SALSA2_.85',
-                          # 'SALSA09' : 'SALSA_0.9',
-                          # 'SALSA29' : 'SALSA_2.9',
+                          'SALSA_DEP2'  : 'SALSA_DEP2',
                           'SALSA3'      : 'SALSA3'
                            }
         
@@ -83,6 +81,7 @@ class Res_file_parser (object):
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : '#0072B2', #'#0072B2', #'#56B4E9', #'navy',
                             'SALSA_DEP0'    : 'teal', #'teal', #magenta',
+                            'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
                             'SALSA2'    : '#CC79A7', #'teal', #magenta',
                             'FULLKNOW'  : 'black',
                             }
@@ -91,11 +90,8 @@ class Res_file_parser (object):
         self.markerOfMode = {'Opt'          : 'o',
                             'FNAA'          : 'v',
                             'SALSA_DEP0'    : '^',
-                            'SALSA3'        : 's',
-                            'Tetra'         : 'p',
-                            'Tetra dyn'     : 'X',
-                            'CEDAR'         : '<',
-                            'Morris'        : '>'}
+                            'SALSA_DEP2'    : 'p',
+                            'SALSA3'        : 's'}
         self.list_of_dicts  = [] # list of dictionaries, that will hold all the data parsed from .res files.
         self.add_plot_opt   = '\t\t\\addplot [color = green, mark=+, line width = \\plotLineWidth] coordinates {\n\t\t'
         self.add_plot_str1  = '\t\t\\addplot [color = blue, mark=square, line width = \\plotLineWidth] coordinates {\n\t\t'
@@ -663,7 +659,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F2', 'IBM7', 'Twitter17', 'Twitter45', 'F1', 'IBM1', ], 
-                   modes            = ['FNAA', 'SALSA_DEP0'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA', 'SALSA_DEP2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -822,9 +818,9 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['salsa_dep0_PC.res', 'opt_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['salsa_dep2_HPC.res', 'opt_PC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=1, period_param=5)
         
 def gen_mr_plots ():
 

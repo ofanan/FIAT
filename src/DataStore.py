@@ -407,8 +407,13 @@ class DataStore (object):
             self.stale_indicator                = self.updated_sbf
             self.num_of_advertisements         += 1
             if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-                printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
-                        (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0, self.spec_accs_cnt))
+                if len(self.mr0)==1:
+                    printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
+                            (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0, self.spec_accs_cnt))
+                else:
+                    printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0[0]={:.3f}, r0[1]={:.3f}, spec_cnt={}\n' .format 
+                            (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0[0], self.mr0[1], self.spec_accs_cnt))
+
 
     def handle_ind_full_mode (self):
         """

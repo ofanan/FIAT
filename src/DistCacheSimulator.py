@@ -994,7 +994,6 @@ class DistCacheSimulator(object):
         Run a full trace where the access strategy is the PGM, as proposed in the journal paper "Access Strategies for Network Caching".
         This algorithm is FNA: False-Negative Aware, namely, it may access a cache despite a negative indication.
         """
-        self.num_of_FN_n_TP = self.num_of_FN_n_FP = 0 #$$$
         self.PGM_FNA_partition () # Performs the partition stage in the PGM-Staleness-Aware alg'.
         for self.req_cnt in range(self.trace_len): # for each request in the trace...
             if self.req_cnt==self.begin_log_mr_at_req_cnt:
@@ -1436,10 +1435,10 @@ class DistCacheSimulator(object):
         already_hit = False # will become True once accessing at least one DS for the current request results in a hit 
         if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
             for ds in range(self.num_of_DSs):
-                printf (self.mr_output_file[ds], f'sol for req {self.req_cnt} is {self.sol}\n')
-        for DS_id in final_sol.DSs_IDs:
+                printf (self.mr_output_file[ds], f'req_cnt={self.req_cnt}, inds={self.indications}, sol={self.sol}\n')
+        for DS_id in self.sol:
             is_speculative_accs = not (self.indications[DS_id])
-            if (is_speculative_accs): #A speculative accs 
+            if is_speculative_accs: #A speculative accs 
                 self.                             speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the whole system's data (used for statistics)
                 self.client_list [self.client_id].speculate_accs_cost += self.client_DS_cost [self.client_id][DS_id] # Update the relevant client's data (used for adaptive / learning alg') 
             if self.assume_ind_DSs: 

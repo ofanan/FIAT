@@ -220,7 +220,7 @@ class DataStore (object):
                 if self.spec_accs_cnt[self.num_of_pos_inds]>self.min_spec_accs_cnt_for_stat and self.ins_cnt_since_last_full_ad >= self.mr0_ewma_window_size:
                     self.mr0[self.num_of_pos_inds] = self.EWMA_alpha*float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds]) + (1-self.EWMA_alpha)*self.mr0[self.num_of_pos_inds]
                     self.spec_accs_cnt[self.num_of_pos_inds], self.tn_cnt[self.num_of_pos_inds] = 0, 0 
-            if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
+            if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
             if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): 
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
@@ -396,6 +396,12 @@ class DataStore (object):
             self.num_of_sync_ads               += 1 
             self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
+
+            # re-init mr0 after each period
+            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
+            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+                printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
+            
             return # finished advertising an indicator
         
         if self.ins_cnt_since_last_full_ad % self.min_feasible_uInterval == 0:
@@ -411,7 +417,7 @@ class DataStore (object):
                     printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
                             (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0, self.spec_accs_cnt))
                 else:
-                    printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0[0]={:.3f}, r0[1]={:.3f}, spec_cnt={}\n' .format 
+                    printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0[0]={:.3f}, mr0[1]={:.3f}, spec_cnt={}\n' .format 
                             (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0[0], self.mr0[1], self.spec_accs_cnt))
 
 

@@ -220,6 +220,10 @@ class DataStore (object):
                 if self.spec_accs_cnt[self.num_of_pos_inds]>self.min_spec_accs_cnt_for_stat and self.ins_cnt_since_last_full_ad >= self.mr0_ewma_window_size:
                     self.mr0[self.num_of_pos_inds] = self.EWMA_alpha*float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds]) + (1-self.EWMA_alpha)*self.mr0[self.num_of_pos_inds]
                     self.spec_accs_cnt[self.num_of_pos_inds], self.tn_cnt[self.num_of_pos_inds] = 0, 0 
+                    if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
+                        if self.should_advertise_by_mr0 (): 
+                            self.advertise_ind_full_mode (called_by_str='mr0')
+                            self.ins_cnt_since_last_full_ad = 0
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
             if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): 
@@ -231,6 +235,11 @@ class DataStore (object):
             if self.use_EWMA: 
                 if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
                     self.update_mr1 ()
+                    if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
+                        if self.should_advertise_by_mr1 ():
+                            self.advertise_ind_full_mode (called_by_str='mr1')
+                            self.ins_cnt_since_last_full_ad = 0
+                            return hit
             else: # use "flat" history
                 self.mr1 = float(self.fp_cnt) / float (self.reg_accs_cnt) 
                 # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
@@ -265,7 +274,7 @@ class DataStore (object):
                 self.tn_cnt += 1
             if self.use_EWMA: 
                 if self.spec_accs_cnt % self.mr0_ewma_window_size == 0 and self.spec_accs_cnt>0:
-                    self.update_mr0 ()
+                    self.update_mr0 ()                    
             else: # use "flat" history
                 self.mr0 = float(self.tn_cnt) / float (self.spec_accs_cnt)
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
@@ -283,7 +292,6 @@ class DataStore (object):
                 # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
                 if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
                     printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1))
-                
         return hit 
 
     def insert (self, key, req_cnt=None):
@@ -319,7 +327,7 @@ class DataStore (object):
                 self.num_of_fpr_fnr_updates           += 1
                 self.ins_since_last_fpr_fnr_estimation = 0
         
-        if self.do_not_advertise_upon_insert: # advertisements are dictated by central cntrlr - no need to locally consider  advertisement 
+        if self.do_not_advertise_upon_insert: # advertisements are dictated by central cntrlr - no need to locally consider advertisement 
             return
 
         if self.use_fixed_uInterval:
@@ -390,7 +398,8 @@ class DataStore (object):
             cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
             
             if cur_bw_of_delta_ads_per_ins > self.bw_budget:
-                # print ('Switching back to full cntr mode') 
+                if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                    printf (self.mr_output_file, f'Switching to full mode\n') 
                 self.in_delta_mode = False
 
             self.num_of_sync_ads               += 1 
@@ -426,16 +435,15 @@ class DataStore (object):
         Advertise an updated indicator, while in full mode:
         """
         if self.ins_cnt_since_last_full_ad == self.min_uInterval * self.uInterval_factor:
-            if self.consider_delta_updates:
-                if self.delta_update_is_cheaper():
-                    self.num_of_ads_in_full_mode_period += 1
-                if self.num_of_ads_in_full_mode_period==self.full_mode_period_param:                 
-                    self.advertise_switch_to_delta_update()
-                self.num_of_delta_ads_in_full_mode  = 0
-                self.num_of_ads_in_full_mode_period = 0
-            else:
-                self.advertise_ind_full_mode (called_by_str='max_uInterval')
-                self.ins_cnt_since_last_full_ad = 0 
+            # if self.consider_delta_updates:
+            #     if self.delta_update_is_cheaper():
+            #         self.num_of_ads_in_full_mode_period += 1
+            #     if self.num_of_ads_in_full_mode_period==self.full_mode_period_param:                 
+            #         self.advertise_switch_to_delta_update()
+            #     self.num_of_ads_in_full_mode_period = 0
+            # else:
+            self.advertise_ind_full_mode (called_by_str='max_uInterval')
+            self.ins_cnt_since_last_full_ad = 0 
             return
        
         # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
@@ -444,16 +452,18 @@ class DataStore (object):
                 self.advertise_switch_to_delta_update()
                 return
             
-        if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
-            if self.should_advertise_by_mr0 (): 
-                self.advertise_ind_full_mode (called_by_str='mr0')
-                self.ins_cnt_since_last_full_ad = 0
-                return
+        # $$$ Moved to after update_mr0 
+        # if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
+        #     if self.should_advertise_by_mr0 (): 
+        #         self.advertise_ind_full_mode (called_by_str='mr0')
+        #         self.ins_cnt_since_last_full_ad = 0
+        #         return
         
-            if self.should_advertise_by_mr1 ():
-                self.advertise_ind_full_mode (called_by_str='mr1')
-                self.ins_cnt_since_last_full_ad = 0
-                return
+        # $$$ Moved to after update_mr1 
+            # if self.should_advertise_by_mr1 ():
+            #     self.advertise_ind_full_mode (called_by_str='mr1')
+            #     self.ins_cnt_since_last_full_ad = 0
+            #     return
        
     def delta_update_is_cheaper (self):
         """

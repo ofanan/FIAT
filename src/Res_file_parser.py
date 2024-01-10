@@ -799,4 +799,8 @@ def gen_mr_plots ():
             my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
             my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
-gen_mr_plots ()
+my_Res_file_parser = Res_file_parser ()
+my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'fnaa_PC.res', 'salsa2_HPC.res'], file_type='.res')
+for DS_size in [4, 16]:
+    my_Res_file_parser.plot_bars (missp_vals=[30, 300], plot_serviceCost = False, normalize_by_Opt = False, DS_size=DS_size)
+# gen_mr_plots ()

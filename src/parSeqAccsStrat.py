@@ -100,14 +100,17 @@ class parSeqAccsStrat (object):
 
 my_parSeqAccsStrat = parSeqAccsStrat ()
 resFile = open ('../res/parSeqAccsHomo.txt', 'w')
-printf (resFile, '// gSol, oSol are the greedy solution, and optimal solution, resp.\n\n')
-for q in [0.1*i for i in range (11)]:
+# printf (resFile, '// gSol, oSol are the greedy solution, and optimal solution, resp.\n\n')
+for q in [0.1*i for i in range (1, 10)]:
     for missp in [5, 10, 100, 500]:
-        for maxNumRsrc in range (1, 10):
-          for T in range (1, maxNumRsrc+1):
-            [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()
-            [optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol ()
-            if greedySolCost!=optSolCost:
-                print ('q={}, missp={}, R={}, T={}, greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
-                       (q, missp, maxNumRsrc, T, greedySol, greedySolCost, optSol, optSolCost))
-            printf (resFile, '{}\n' .format (optSol))
+        for T in range (1, 11):
+            for maxNumRsrc in range (3, 10):
+                if T>maxNumRsrc:
+                    continue
+                printf (resFile, '// R={}, T={}, q={:.01}, missp={}\n' .format (maxNumRsrc, T, q, missp))
+                [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()
+                [optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol ()
+                if greedySolCost!=optSolCost:
+                    print ('q={}, missp={}, R={}, T={}, greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
+                           (q, missp, maxNumRsrc, T, greedySol, greedySolCost, optSol, optSolCost))
+                printf (resFile, '{}\n' .format (optSol))

@@ -1,6 +1,7 @@
 import itertools
 from itertools import combinations
 from numpy import infty
+import MyConfig
 from printf import printf
 
 class parSeqAccsStrat (object):
@@ -61,36 +62,35 @@ class parSeqAccsStrat (object):
         The alg' assumes that once it's not beneficial to add a rsrc, we've reached an optimal sol. 
         Returns [greedySol, greedyCost], where greedySol is the solution vector, and greedyCost is its (expected) cost.  
         """
-        if T==0:
+        if T==0: # If the # of time slots is 0, the sol is empty, and its cost is the missp.
             return [[], missp]
         
-        curSol             = [0]
+        curSol             = [0] # access no resources. 
         self.greedySol     = curSol.copy () # default local opt sol 
         self.greedySolCost = self.calcSolCost(curSol)
     
         while (sum (curSol) < maxNumRsrc):
             self.updatedGreedySol = False
-            if (curSol==[0]):
+            if (curSol==[0]): # handle first the special case of a solution that doesn't accs any resource.
                 curSol  = [1]
                 solCost = self.calcSolCost(curSol)
                 self.updateGreedySol (curSol)
                 continue
-            for slot in range (len(curSol)):
+            for slot in range (len(curSol)): # Try to add 1 to the num of rsrcs accessed in the cur sol, and check whether this reduces the sol's cost
                 suggestedSol        = curSol.copy ()
                 suggestedSol[slot] += 1
                 self.updateGreedySol (suggestedSol)
-            if (len(curSol) < T):
+            if (len(curSol) < T): # If not all slots are used, try to add 1 to the first slot
                 suggestedSol = curSol.copy ()
-                suggestedSol.append (1)
+                suggestedSol.append (1) # we add only when all other slots are 1. Hence, we can use "append" instead of adding 1 before the first used slot.
                 self.updateGreedySol (suggestedSol)
             curSol = self.greedySol.copy ()
-            if (not(self.updatedGreedySol)): # didn't decrease the cost for all options of incrementing the sol size by 1 (trying 1 more rsrc w.r.t. the previous opt sol).
+            if (not(self.updatedGreedySol)): # didn't decrease the cost for all options of incrementing the sol size by 1 (trying 1 more rsrc w.r.t. the previous opt sol). Hence, adding even more rsrcs is useless.
                 break
         return [self.greedySol, self.greedySolCost]
 
 my_parSeqAccsStrat = parSeqAccsStrat ()
 resFile = open ('../res/parSeqAccsHomo.txt', 'w')
-# printf (resFile, '// gSol, oSol are the greedy solution, and optimal solution, resp.\n\n')
 for q in [0.1*i for i in range (1, 10)]:
     for missp in [5, 10, 100, 500]:
         for T in range (1, 11):

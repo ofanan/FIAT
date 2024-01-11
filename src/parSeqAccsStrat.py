@@ -17,7 +17,7 @@ class parSeqAccsStrat (object):
             solCost = sol_t + q**sol_t * solCost
         return solCost 
     
-    def exhaustSearchForOptSol (self):
+    def exhaustSearchForOptSol (self, q, missp, T, numRsrc):
         """
         Finds an optimal solution using an exhaustive search over all feasible solutions.
         A feasible solution is a vector where all entries are strictly positive integers.
@@ -54,7 +54,7 @@ class parSeqAccsStrat (object):
             self.greedySol         = sol.copy ()
             self.updatedGreedySol     = True
     
-    def greedyAlg (self):
+    def greedyAlg (self, q, missp, T, numRsrc):
         """
         Finds a solution using a greedy algorithm.
         The alg' begins with the solution [0] (don't accs any rsrc). 
@@ -98,8 +98,8 @@ for q in [0.1*i for i in range (1, 10)]:
                 if T>maxNumRsrc:
                     continue
                 printf (resFile, '// R={}, T={}, q={:.01}, missp={}\n' .format (maxNumRsrc, T, q, missp))
-                [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg ()
-                [optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol ()
+                [greedySol, greedySolCost] = my_parSeqAccsStrat.greedyAlg               (q=q, missp=missp, T=T, numRsrc=maxNumRsrc)
+                [optSol,    optSolCost   ] = my_parSeqAccsStrat.exhaustSearchForOptSol  (q=q, missp=missp, T=T, numRsrc=maxNumRsrc)
                 if greedySolCost!=optSolCost:
                     print ('q={}, missp={}, R={}, T={}, greedySol={}, greedyCost={}, optSol={}, optCost={}' .format 
                            (q, missp, maxNumRsrc, T, greedySol, greedySolCost, optSol, optSolCost))

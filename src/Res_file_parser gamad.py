@@ -606,7 +606,6 @@ class Res_file_parser (object):
                     opt_points      = [item for item in opt_points_w_this_missp if 
                                        item['trace']      == trace and
                                        item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000]
-                    # print (f'num of req of {trace}={MyConfig.calc_num_of_req (trace, DS_size*1000)/1000}') #$$$
                     salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if 
                                        item['trace']      == trace and 
                                        item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
@@ -659,7 +658,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F2', 'IBM7', 'Twitter17', 'Twitter45', 'F1', 'IBM1', ], 
-                   modes            = ['FNAA','SALSA_DEP2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['SALSA_DEP2', 'FNAA', ],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -718,8 +717,12 @@ class Res_file_parser (object):
                         mode_trace_points = [item for item in mode_trace_points if
                                              item['mr0_th'] == mr0_th and
                                              item['mr1_th'] == mr1_th]
+
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
+                            # if trace=='IBM7': #$$$
+                            #     print ('mode_trace_points:') #$$$
+                            #     MyConfig.print_list (mode_trace_points) #$$$$
                         if period_param!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['period_param']==period_param]
                         if mode_trace_points==[]: # no results for this setting
@@ -727,31 +730,47 @@ class Res_file_parser (object):
                     point = mode_trace_points[0]
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost  
                     mode_bwCost     [traceIdx] = point['bwCost']
+                    # if mode=='FNAA': #$$$
+                    #     print ('mode service cost={}' .format(mode_serviceCost) )
+                    # if mode=='FNAA' and trace=='IBM7': #$$$
+                    #     print ('in if IBM7. mode={}. mode service cost={}' .format(mode, mode_serviceCost[traceIdx]) )
+                    # print (f' b4 plot_serviceCost: trace={trace}, service cost={mode_serviceCost[traceIdx]}') #$$$
+                    if plot_serviceCost:
+                        # if mode=='FNAA': #$$$
+                        #     print ('mode service cost={}' .format(mode_serviceCost) )
+                        # if mode=='FNAA' and trace=='IBM7': #$$$
+                        #     print ('in if IBM7. mode={}. mode service cost={}' .format(mode, mode_serviceCost[traceIdx]) )
+                        # print (f'after plot_serviceCost: trace={trace}, service cost={mode_serviceCost[traceIdx]}') #$$$
+                        if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
+                            plt.subplot (1, 2, 1)
+                        plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none')
+                        # plt.show ()
+                        # print (trace) #$$
+                        # if trace=='IBM7': #$$$
+                        # #     print ('mode_trace_points:') #$$$
+                        #     MyConfig.error (f'mode_serviceCost={mode_serviceCost[traceIdx]}') #$$$
+                        
+                        plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
+                        plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
+                        plt.tick_params(bottom = False)
+                        plt.legend (frameon=False)
+                        plt.ylim (1)
+                        if not(USE_FRAME):
+                            seaborn.despine(left=True, bottom=True, right=True)
+                    if plot_bwCost:
+                        # plt.subplot (1, 2, 2)
+                        plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
+                        plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
+                        x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
+                        plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
+                        plt.tick_params(bottom = False)
+                        plt.legend (frameon=False)
+                        if not(USE_FRAME):
+                            seaborn.despine(left=True, bottom=True, right=True)
+                    if plot_serviceCost and plot_bwCost:
+                        plt.subplots_adjust(wspace=WSAPCE_BETWEEN_SUBPLOTS)
 
-                if plot_serviceCost:
-                    if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
-                        plt.subplot (1, 2, 1) # Use the first (left) sub-plot
-                    plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
-                    plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
-                    plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
-                    plt.tick_params(bottom = False)
-                    plt.legend (frameon=False)
-                    if not(USE_FRAME):
-                        seaborn.despine(left=True, bottom=True, right=True)
-                if plot_bwCost:
-                    if plot_serviceCost: # plot both serviceCost and bwCost, so use sub-plots
-                        plt.subplot (1, 2, 2) # Use the 2nd (right) sub-plot
-                    plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
-                    plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
-                    x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
-                    plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
-                    plt.tick_params(bottom = False)
-                    plt.legend (frameon=False)
-                    if not(USE_FRAME):
-                        seaborn.despine(left=True, bottom=True, right=True)
-                if plot_serviceCost and plot_bwCost:
-                    plt.subplots_adjust(wspace=WSAPCE_BETWEEN_SUBPLOTS)
-                    plt.box(on=None)
+                    # plt.box(on=None)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
             elif not (plot_serviceCost) and plot_bwCost:

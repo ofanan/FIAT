@@ -216,6 +216,7 @@ class DataStore (object):
         if is_speculative_accs:
             self.spec_accs_cnt[self.num_of_pos_inds] += 1
             if (not(hit)):
+                ## The code below is actually an imp' of self.update_mr0() for the mode salsa_dep
                 self.tn_cnt[self.num_of_pos_inds] += 1
                 if self.spec_accs_cnt[self.num_of_pos_inds]>self.min_spec_accs_cnt_for_stat and self.ins_cnt_since_last_full_ad >= self.mr0_ewma_window_size:
                     self.mr0[self.num_of_pos_inds] = self.EWMA_alpha*float(self.tn_cnt[self.num_of_pos_inds]) / float (self.spec_accs_cnt[self.num_of_pos_inds]) + (1-self.EWMA_alpha)*self.mr0[self.num_of_pos_inds]
@@ -235,7 +236,7 @@ class DataStore (object):
             if self.use_EWMA: 
                 if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
                     self.update_mr1 ()
-                    if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
+                    if not(self.in_delta_mode) and (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
                         if self.should_advertise_by_mr1 ():
                             self.advertise_ind_full_mode (called_by_str='mr1')
                             self.ins_cnt_since_last_full_ad = 0
@@ -402,7 +403,7 @@ class DataStore (object):
             self.num_of_sync_ads               += 1 
             self.ins_cnt_since_last_full_ad     = 0
             self.total_ad_size_in_this_period   = 0
-
+            
             # re-init mr0 after each period
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
@@ -604,7 +605,7 @@ class DataStore (object):
         """
         curIndSize_lg_curIndSize    = self.ind_size * np.log2 (self.ind_size)
         num_insertions_per_period   = self.delta_mode_period_param * self.min_uInterval
-        cur_bw_of_delta_ads_per_ins = self.ins_cnt_since_last_full_ad # self.total_ad_size_in_this_period / num_insertions_per_period 
+        cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
         estimated_bw_of_cadnidate   = [cur_bw_of_delta_ads_per_ins * self.potential_indSize_lg_indSize[i]/curIndSize_lg_curIndSize + self.bw_budget/self.delta_mode_period_param  for i in range(len(self.potential_indSize))]
         if all([item > self.bw_budget for item in estimated_bw_of_cadnidate]): # Cannot satisfy the BW constraint using delta mode 
             self.min_uInterval      = int (self.ind_size / self.bw_budget) 

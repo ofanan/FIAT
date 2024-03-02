@@ -381,8 +381,6 @@ class DataStore (object):
         
         if self.ins_cnt_since_last_full_ad>=self.delta_mode_period_param * self.min_uInterval: # time to consider scaling, or at least send a keep-alive full ind'
 
-            if (MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                printf (self.mr_output_file, f'\nfinished a period\n')                     
             self.num_of_periods_in_delta_ads += 1
             if self.scale_ind_delta_factor!=1:                                          
                 self.scale_ind_delta_mode ()
@@ -391,11 +389,10 @@ class DataStore (object):
                 self.stale_indicator            = self.updated_indicator.gen_SimpleBloomFilter ()
             else:
                 self.stale_indicator            = self.genNewSBF ()
-            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
-                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0}, spec_cnt={self.spec_accs_cnt}\n') 
             self.num_of_advertisements         += 1
-
             cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
+            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0}, spec_cnt={self.spec_accs_cnt}, total_ad_size_in_this_period={self.total_ad_size_in_this_period}, ind_size={self.ind_size}, ins_cnt_since_last_full_ad={self.ins_cnt_since_last_full_ad}, bw during this period={cur_bw_of_delta_ads_per_ins}, bw_budget={self.bw_budget}\n') 
             
             if cur_bw_of_delta_ads_per_ins > self.bw_budget:
                 if MyConfig.VERBOSE_LOG_MR in self.verbose: 
@@ -435,18 +432,13 @@ class DataStore (object):
         Advertise an updated indicator, while in full mode:
         """
         if self.ins_cnt_since_last_full_ad == self.min_uInterval * self.uInterval_factor:
-            # if self.consider_delta_updates:
-            #     if self.delta_update_is_cheaper():
-            #         self.num_of_ads_in_full_mode_period += 1
-            #     if self.num_of_ads_in_full_mode_period==self.full_mode_period_param:                 
-            #         self.advertise_switch_to_delta_update()
-            #     self.num_of_ads_in_full_mode_period = 0
-            # else:
+            # No need to consider delta updates in this case, 
+            # as we already know that earlier, when the ins_cnt was only self.min_uInterval, the alg' decided
+            # to not use delta update.  
             self.advertise_ind_full_mode (called_by_str='max_uInterval')
             self.ins_cnt_since_last_full_ad = 0 
             return
        
-        # now we know that this is an alg' that dynamically-scales the uInterval, in Full mode 
         if (self.ins_cnt_since_last_full_ad==self.min_uInterval):
             if self.consider_delta_updates and self.delta_update_is_cheaper():
                 self.advertise_switch_to_delta_update()

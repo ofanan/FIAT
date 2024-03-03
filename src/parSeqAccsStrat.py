@@ -33,8 +33,8 @@ class parSeqAccsStrat (object):
                     break
                 for c in combinations(range(1, numRsrc + numUsedTimeSlots), numUsedTimeSlots - 1):
                     sol = [b - a - 1 for a, b in zip((-1,) + c, c + (numRsrc + numUsedTimeSlots - 1,))]
-                    if not (all(x > 0 for x in sol)): # illegal sol --> skip
-                        continue
+                    if not (all(x >= 0 for x in sol)): # illegal sol --> skip
+                             continue
                     solCost = self.calcSolCost(sol)
                     if (solCost < optSolCost):
                         optSol     = sol.copy ()

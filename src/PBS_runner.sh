@@ -4,6 +4,7 @@
 #PBS -k eod
 #PBS -e log.err
 #PBS -o log.out
+#PBS -l ncpus=36
 
 ### #PBS -l walltime=240:00:00
 

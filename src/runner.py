@@ -2,8 +2,9 @@
 Run a simulation, looping over all requested values of parameters 
 (miss penalty, cache sizes, number of caches etc.).
 """
+import os, pickle, sys, time
 from datetime import datetime
-import os, pickle, sys
+from pathlib  import Path
 
 import MyConfig
 import numpy as np
@@ -18,7 +19,9 @@ def run_hetro_costs_sim ():
     """
     min_feasible_uInterval = 10
     DS_sizes = [1]
+    missps   = [30]
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    start_time = time.time() 
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     for trace in ['Wiki']:        
@@ -33,7 +36,7 @@ def run_hetro_costs_sim ():
             max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=1000) #max_num_of_req)  
             for mode in ['salsa_dep2']: #'salsa_dep0', 'fnaa'
-                for missp in [30]: #[10, 30, 100, 300]:
+                for missp in missps: 
                     tic()
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$
@@ -57,6 +60,13 @@ def run_hetro_costs_sim ():
                         ) # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_DETAILED_LOG_MR
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
                     toc()
+        
+        run_times_log_file_name = 'run_times.log'
+        if Path(run_times_log_file_name).is_file() and settings.VERBOSE_RES in verbose: # does this res file already exist?
+            run_times_log_file = open (run_times_log_file_name,  'a')
+        else:
+            run_times_log_file = open (run_times_log_file_name,  'w')
+        printf (run_times_log_file, f'// finished running DS_size={DS_sizes}, missp={missps} after {time.time() - start_time}\n')
 
 
 def run_num_of_DSs_sim ():
@@ -196,10 +206,11 @@ def run_mr_sim ():
                     min_uInterval           = 3200,
                     bpe                     = 12,
                     uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                    verbose                 = [])
+                    verbose                 = [settings.VERBOSE_RES])
                 sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                 toc()
-    
+
+   
 if __name__ == '__main__':
     try:
         # run_num_of_DSs_sim ()

@@ -153,7 +153,7 @@ class DistCacheSimulator(object):
         full_path_res_file_name = '../res/{}.res' .format(res_file_name)
         
         if Path(full_path_res_file_name).is_file(): # does this res file already exist?
-            return ( open (full_path_res_file_name,  "a"))
+            return (open (full_path_res_file_name,  "a"))
         else:
             res_file =  open (full_path_res_file_name,  "w")
             printf (res_file, '// format: e.g., scarab.C10K.bpe14.1000Kreq.3DSs.Kloc1.M30.B0.U1000.SALSA.m0_0.1_m1_0.01, where:\n' )

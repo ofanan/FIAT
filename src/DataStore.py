@@ -90,7 +90,7 @@ class DataStore (object):
         self.init_mr0_after_each_ad = init_mr0_after_each_ad
         self.init_mr1_after_each_ad = init_mr1_after_each_ad
         self.consider_delta_updates = consider_delta_updates
-        self.in_delta_mode          = self.consider_delta_updates # if considering delta updates, start in delta updates mode
+        self.in_delta_mode          = False # self.consider_delta_updates # if considering delta updates, start in delta updates mode
         self.use_fixed_uInterval    = use_fixed_uInterval
         self.do_not_advertise_upon_insert = do_not_advertise_upon_insert
         # self.updated_mr0           = False # indicates whether mr0 wasn't updated since the last advertisement 

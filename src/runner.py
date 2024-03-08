@@ -17,11 +17,11 @@ def run_hetro_costs_sim ():
     Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
-    DS_sizes = [16]
+    DS_sizes = [1]
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
-    # for trace in ['Wiki']:        
+    for trace in ['Wiki']:        
     # for trace in ['Scarab']:       
     # for trace in ['F1']: 
     # for trace in ['F2']: 
@@ -31,7 +31,7 @@ def run_hetro_costs_sim ():
     # for trace in ['Twitter45']:
         for DS_size in [1000*item for item in DS_sizes]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
-            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
+            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=1000) #max_num_of_req)  
             for mode in ['salsa_dep2']: #'salsa_dep0', 'fnaa'
                 for missp in [30]: #[10, 30, 100, 300]:
                     tic()
@@ -52,7 +52,7 @@ def run_hetro_costs_sim ():
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
                         uInterval_factor        = 2 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES], # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+                        verbose                 = [], # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
                         # begin_log_mr_at_req_cnt = 74075,
                         ) # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_DETAILED_LOG_MR
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 

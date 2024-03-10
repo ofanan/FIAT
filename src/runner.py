@@ -19,7 +19,7 @@ def run_hetro_costs_sim ():
     """
     min_feasible_uInterval = 10
     DS_sizes = [16]
-    missps   = [30]
+    missps   = [300]
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     start_time = time.time() 
     for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
@@ -61,12 +61,12 @@ def run_hetro_costs_sim ():
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
                     toc()
         
-        run_times_log_file_name = 'run_times.log'
-        if Path(run_times_log_file_name).is_file() and settings.VERBOSE_RES in verbose: # does this res file already exist?
-            run_times_log_file = open (run_times_log_file_name,  'a')
-        else:
-            run_times_log_file = open (run_times_log_file_name,  'w')
-        printf (run_times_log_file, f'// finished running DS_size={DS_sizes}, missp={missps} after {time.time() - start_time}\n')
+    run_times_log_file_name = 'run_times.log'
+    if Path(run_times_log_file_name).is_file() and MyConfig.VERBOSE_RES in verbose: # does this res file already exist?
+        run_times_log_file = open (run_times_log_file_name,  'a')
+    else:
+        run_times_log_file = open (run_times_log_file_name,  'w')
+    printf (run_times_log_file, f'// finished running DS_size={DS_sizes}, missp={missps} after {time.time() - start_time}\n')
 
 
 def run_num_of_DSs_sim ():
@@ -206,7 +206,7 @@ def run_mr_sim ():
                     min_uInterval           = 3200,
                     bpe                     = 12,
                     uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                    verbose                 = [settings.VERBOSE_RES])
+                    verbose                 = [MyConfig.VERBOSE_RES])
                 sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                 toc()
 

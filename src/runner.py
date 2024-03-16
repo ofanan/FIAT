@@ -18,7 +18,7 @@ def run_hetro_costs_sim ():
     Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
-    DS_sizes    = [1]
+    DS_sizes    = [16]
     missps      = [300]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
@@ -35,7 +35,7 @@ def run_hetro_costs_sim ():
     # for trace in ['Twitter17']:
     # for trace in ['Twitter45']:
         for DS_size in [1000*item for item in DS_sizes]:
-            max_num_of_req = 1000 #MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
+            max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa_dep2']: #'salsa_dep0', 'fnaa'
                 for missp in missps: 

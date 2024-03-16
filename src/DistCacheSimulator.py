@@ -518,7 +518,7 @@ class DistCacheSimulator(object):
             printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
             MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
-        if self.mode=='salsa2':
+        if self.mode.startswith('salsa2'):
             printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
             printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
         printf (res_file, '\n')
@@ -1147,7 +1147,6 @@ class DistCacheSimulator(object):
         elif (self.mode == 'fno'):
             self.run_trace_pgm_fno_hetro ()
             self.gather_statistics ()
-
         elif self.mode in ['fnaa'] or self.mode.startswith('salsa'):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()

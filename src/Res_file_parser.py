@@ -807,13 +807,13 @@ class Res_file_parser (object):
 def gen_plot_bars_by_uIntFact ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'salsa2_PC.res'])
-    for DS_size in [4]: 
+    for DS_size in [16, 64]: 
         my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, uIntFactVals=[2, 999999], normalize_by_Opt=False)
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep2_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [16]: #, 16, 64 
+    for DS_size in [4]: #, 16, 64 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2.0, period_param=5)
         
 def gen_mr_plots ():

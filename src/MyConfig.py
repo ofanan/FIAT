@@ -24,6 +24,7 @@ VERBOSE_LOG_Q                   = 7 # Write a log file detailing the q (prob' of
 VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
+VERBOSE_SHORT_LOG               = 12  # Write to a log file only major events.
 
 num_of_req = {'Wiki'      : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
               'Scarab'    : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 :  4000000},

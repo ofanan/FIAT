@@ -162,7 +162,7 @@ class DataStore (object):
         self.num_of_ads_in_full_mode_period = 0
         self.re_init_mr0_param       = 10 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
-        if MyConfig.VERBOSE_LOG_MR in self.verbose:
+        if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
         self.ins_cnt_since_last_full_ad = 0 # cnt of insertions since the last advertisement of fresh indicator
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
@@ -396,7 +396,7 @@ class DataStore (object):
                 printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0}, spec_cnt={self.spec_accs_cnt}, total_ad_size_in_this_period={self.total_ad_size_in_this_period}, ind_size={self.ind_size}, ins_cnt_since_last_full_ad={self.ins_cnt_since_last_full_ad}, bw during this period={cur_bw_of_delta_ads_per_ins}, bw_budget={self.bw_budget}\n') 
             
             if cur_bw_of_delta_ads_per_ins > self.bw_budget:
-                if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
                     printf (self.mr_output_file, f'Switching to full mode\n') 
                 self.in_delta_mode = False
 
@@ -482,7 +482,7 @@ class DataStore (object):
         """
         if MyConfig.VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
-        if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+        if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
             printf (self.mr_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
         self.in_delta_mode                 = True
         self.ins_cnt_since_last_full_ad    = 0
@@ -528,7 +528,7 @@ class DataStore (object):
                 scale_ind_by = min(self.scale_ind_full_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
-                if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose:
                     printf (self.mr_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
 
         self.stale_indicator         = self.genNewSBF () # Assume here that we don't use CountingBloomFilter
@@ -588,7 +588,7 @@ class DataStore (object):
                 scale_ind_by = min(self.scale_ind_full_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
-                if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+                if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
                     printf (self.mr_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
 
         if not (self.use_CountingBloomFilter):
@@ -611,7 +611,7 @@ class DataStore (object):
             self.min_uInterval      = int (self.ind_size / self.bw_budget) 
             self.in_delta_mode      = False
 
-            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+            if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
                 printf (self.mr_output_file, 'Switching back to full mode. indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
                         (self.ind_size, estimated_bw_of_cadnidate[0]))
             return         
@@ -623,7 +623,7 @@ class DataStore (object):
             self.ind_size               = new_ind_size
             self.bpe                    = int (self.ind_size / self.DS_size)
             self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
-            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+            if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
                 printf (self.mr_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))
                    
     def report_mr (self): 

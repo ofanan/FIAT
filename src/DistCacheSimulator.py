@@ -416,7 +416,7 @@ class DistCacheSimulator(object):
         self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
         if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
             self.verbose.append (MyConfig.VERBOSE_LOG_MR) # Detailed mr log should include also "basic" mr log.
-        if (MyConfig.VERBOSE_LOG_MR in self.verbose):
+        if MyConfig.VERBOSE_LOG_MR in self.verbose of MyConfig.VERBOSE_SHORT_LOG in self.verbose:
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 

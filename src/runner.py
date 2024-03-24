@@ -23,12 +23,12 @@ def run_hetro_costs_sim ():
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [MyConfig.VERBOSE_SHORT_LOG] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     start_time = time.time() 
-    # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki']:        
     # for trace in ['Scarab']:       
-    for trace in ['F1']: 
+    # for trace in ['F1']: 
     # for trace in ['F2']: 
     # for trace in ['IBM1']: 
     # for trace in ['IBM7']: 
@@ -37,7 +37,7 @@ def run_hetro_costs_sim ():
         for DS_size in [1000*item for item in DS_sizes]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa_dep2']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
+            for mode in ['salsa_dep3']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
                 for missp in missps: 
                     tic()
                     sm = sim.DistCacheSimulator(

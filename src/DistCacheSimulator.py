@@ -402,8 +402,14 @@ class DistCacheSimulator(object):
             self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
 
-        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2', 'salsa_dep0', 'salsa_dep1', 'salsa_dep2'])):
-            MyConfig.error ('sorry. Mode {} is not supported' .format(self.mode) )                                             
+        if self.mode in ['salsa3', 'salsa_dep3']:
+            self.scale_ind_delta_factor     = 1.1
+            self.scale_ind_full_factor      = 1.1
+            self.consider_delta_updates     = True
+            self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
+
+        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2', 'salsa_dep0', 'salsa_dep1', 'salsa_dep2', 'salsa_dep3'])):
+            MyConfig.error ('In DistCacheSimulator.init(). sorry. Mode {} is not supported' .format(self.mode) )                                             
             
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)

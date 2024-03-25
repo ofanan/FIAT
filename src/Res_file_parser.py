@@ -74,6 +74,7 @@ class Res_file_parser (object):
                           'fullKnow'    : 'fullKnow',
                           'SALSA_DEP0'  : 'SALSA_DEP0',
                           'SALSA_DEP2'  : 'SALSA_DEP2',
+                          'SALSA_DEP3'  : 'SALSA_DEP3',
                           'SALSA3'      : 'SALSA3'
                            }
         
@@ -82,6 +83,7 @@ class Res_file_parser (object):
                             'FNAA'      : '#0072B2', #'#0072B2', #'#56B4E9', #'navy',
                             'SALSA_DEP0'    : 'teal', #'teal', #magenta',
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
+                            'SALSA_DEP3'    : '#CC79A7', #'teal', #magenta',
                             'SALSA2'    : '#CC79A7', #'teal', #magenta',
                             'FULLKNOW'  : 'black',
                             }
@@ -91,6 +93,7 @@ class Res_file_parser (object):
                             'FNAA'          : 'v',
                             'SALSA_DEP0'    : '^',
                             'SALSA_DEP2'    : 'p',
+                            'SALSA_DEP3'    : 's',
                             'SALSA3'        : 's'}
         self.list_of_dicts  = [] # list of dictionaries, that will hold all the data parsed from .res files.
         self.add_plot_opt   = '\t\t\\addplot [color = green, mark=+, line width = \\plotLineWidth] coordinates {\n\t\t'
@@ -659,7 +662,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F2', 'IBM7', 'Twitter17', 'Twitter45', 'F1', 'IBM1', ], 
-                   modes            = ['FNAA','SALSA_DEP2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA','SALSA_DEP2', 'SALSA_DEP3'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 

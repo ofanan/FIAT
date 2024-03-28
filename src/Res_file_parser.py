@@ -30,6 +30,17 @@ alpha1_idx              = 19
 period_param_idx        = 21
 min_num_of_fields       = alg_idx + 1
 
+# Color-blind friendly pallette
+BLACK       = '#000000' 
+ORANGE      = '#E69F00'
+SKY_BLUE    = '#56B4E9'
+GREEN       = '#009E73'
+YELLOW      = '#F0E442'
+BLUE        = '#0072B2'
+VERMILION   = '#D55E00'
+PURPLE      = '#CC79A7'
+
+# convenient proportions for bar plots
 BAR_WIDTH               = 0.25
 BAR_WIDTH_BETWEEN_GRPS  = 0.25
 MARKER_SIZE             = 16

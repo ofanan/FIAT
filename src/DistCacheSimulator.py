@@ -390,10 +390,16 @@ class DistCacheSimulator(object):
             self.consider_delta_updates     = False
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
                         
-        if self.mode in ['salsa1', 'salsa_dep1']:
+        if self.mode in ['salsa1']:
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = False
+            self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
+                        
+        if self.mode in ['salsa1', 'salsa_dep1']:
+            self.scale_ind_delta_factor     = 1
+            self.scale_ind_full_factor      = 1
+            self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
                         
         if self.mode in ['salsa2', 'salsa_dep2']:

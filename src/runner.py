@@ -18,8 +18,8 @@ def run_hetro_costs_sim ():
     Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
-    DS_sizes    = [64]
-    missps      = [30]
+    DS_sizes    = [4]
+    missps      = [300]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     start_time = time.time() 

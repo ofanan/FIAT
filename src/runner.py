@@ -43,7 +43,7 @@ def run_hetro_costs_sim ():
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$
                         delta_mode_period_param = 5, # length of "sync periods" of the indicator's scaling alg.
-                        full_mode_period_param  = 5, # length of "sync periods" of the indicator's scaling alg.
+                        full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
                         res_file_name           = f'{mode}_{MyConfig.getMachineStr()}',
                         EWMA_alpha_mr0          = 0.5, 
                         EWMA_alpha_mr1          = 0.25, 

@@ -160,7 +160,7 @@ class DataStore (object):
         self.delta_mode_period_param = delta_mode_period_param
         self.full_mode_period_param  = full_mode_period_param
         self.num_of_ads_in_full_mode_period = 0
-        self.re_init_mr0_param       = 10 
+        self.re_init_mr0_param       = self.full_mode_period_param 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
         if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 

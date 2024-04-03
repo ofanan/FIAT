@@ -673,7 +673,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45'], 
-                   modes            = ['FNAA','SALSA_DEP1','SALSA_DEP2', 'SALSA_DEP3'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA', 'SALSA_DEP1', 'SALSA_DEP2', 'SALSA_DEP3'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -826,7 +826,7 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep1_HPC.res', 'salsa_dep1_PC.res', 'salsa_dep2_PC.res', 'salsa_dep3_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep1_PC.res', 'salsa_dep2_PC.res', 'salsa_dep3_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: #, 16, 64 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2.0, period_param=10)
         

@@ -18,8 +18,8 @@ def run_hetro_costs_sim ():
     Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
-    DS_sizes    = [4]
-    missps      = [300]
+    DS_sizes    = [16]
+    missps      = [30]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     start_time = time.time() 
@@ -37,7 +37,7 @@ def run_hetro_costs_sim ():
         for DS_size in [1000*item for item in DS_sizes]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa_dep1']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
+            for mode in ['salsa_dep3']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
                 for missp in missps: 
                     tic()
                     sm = sim.DistCacheSimulator(
@@ -56,7 +56,7 @@ def run_hetro_costs_sim ():
                         min_uInterval           = DS_size/10,
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
-                        uInterval_factor        = 2 if mode.startswith('salsa') else 1,
+                        uInterval_factor        = 4 if mode.startswith('salsa') else 1,
                         verbose                 = verbose
                         # begin_log_mr_at_req_cnt = 74075,
                         ) # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_DETAILED_LOG_MR

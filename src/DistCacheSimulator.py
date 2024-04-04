@@ -234,9 +234,11 @@ class DistCacheSimulator(object):
         self.mr1_ad_th          = 0.01 
         self.verbose            = verbose # Defines the log/res data printed out to files       
         self.use_perfect_hist   = use_perfect_hist       
+        self.mode               = mode
         
         if MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES in self.verbose:
-            self.res_file = self.init_res_file (res_file_name)
+            if not(self.mode.startswith('measure_mr')): # 'measure_mr' opens its own .mr.res files. 
+                self.res_file = self.init_res_file (res_file_name)
         if (MyConfig.VERBOSE_FULL_RES in self.verbose):
             self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
         
@@ -247,7 +249,6 @@ class DistCacheSimulator(object):
         self.bpe                = bpe
         self.rand_seed          = rand_seed
         self.DS_insert_mode     = 1  #DS_insert_mode: mode of DS insertion (1: fix, 2: distributed, 3: ego). Currently only insert mode 1 is used
-        self.mode               = mode
         if not (self.mode=='opt'): 
             self.calc_mr_by_hist = calc_mr_by_hist
         self.use_EWMA           = use_EWMA # use Exp Weighted Moving Avg to estimate the current mr0, mr1.

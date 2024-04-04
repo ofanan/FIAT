@@ -18,16 +18,16 @@ def run_hetro_costs_sim ():
     Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
-    DS_sizes    = [16]
+    DS_sizes    = [4]
     missps      = [30]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+    verbose     = [MyConfig.VERBOSE_SHORT_LOG] #[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     start_time = time.time() 
-    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki']:        
-    # for trace in ['Scarab']:       
+    for trace in ['Scarab']:       
     # for trace in ['F1']: 
     # for trace in ['F2']: 
     # for trace in ['IBM1']: 
@@ -42,7 +42,7 @@ def run_hetro_costs_sim ():
                     tic()
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$
-                        delta_mode_period_param = 5, # length of "sync periods" of the indicator's scaling alg.
+                        delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
                         full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
                         res_file_name           = f'{mode}_{MyConfig.getMachineStr()}',
                         EWMA_alpha_mr0          = 0.5, 
@@ -91,7 +91,7 @@ def run_num_of_DSs_sim ():
             tic()
             sm = sim.DistCacheSimulator(
                 res_file_name           = f'{mode}_{MyConfig.getMachineStr()}',
-                EWMA_alpha_mr0          = 0.85, 
+                EWMA_alpha_mr0          = 0.5, 
                 EWMA_alpha_mr1          = 0.25, 
                 trace_name              = trace,
                 mode                    = mode,
@@ -165,7 +165,7 @@ def run_full_ind_oriented_sim ():
     tic()
     sm = sim.DistCacheSimulator(
         res_file_name           = f'salsa2__{MyConfig.getMachineStr()}',
-        EWMA_alpha_mr0          = 0.85, 
+        EWMA_alpha_mr0          = 0.5, 
         EWMA_alpha_mr1          = 0.25, 
         trace_name              = trace,
         mode                    = 'salsa2',
@@ -190,13 +190,13 @@ def run_mr_sim ():
     for trace in ['Wiki']: #, 'Wiki', 'F1', 'Twitter45']: #  ], 'IBM7', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
         max_num_of_req = MyConfig.calc_num_of_req (trace)  
         requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-        for mode in ['measure_mr_by_fnaa']: #, 'measure_mr_fullKnow', 'measure_mr_by_fnaa', 'measure_mr_by_salsa']: 
+        for mode in ['measure_mr_by_salsa_dep']: #, 'measure_mr_fullKnow', 'measure_mr_by_fnaa', 'measure_mr_by_salsa']: 
             for mr_type in range (1, 2): 
                 tic()
                 sm = sim.DistCacheSimulator(
                     mr_type                 = mr_type,
                     res_file_name           = '',
-                    EWMA_alpha_mr0          = 0.85, 
+                    EWMA_alpha_mr0          = 0.5, 
                     EWMA_alpha_mr1          = 0.25, 
                     trace_name              = trace,
                     mode                    = mode,

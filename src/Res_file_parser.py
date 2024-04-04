@@ -583,7 +583,7 @@ class Res_file_parser (object):
                    missp_vals       = [],
                    plot_serviceCost = True, 
                    plot_bwCost      = True,
-                   mode             = 'SALSA2',
+                   mode             = 'SALSA_DEP3',
                    uIntFactVals     = [2, 32],
                    normalize_by_Opt = True, # When true, normalize the service cost by that of Opt
                    ):
@@ -622,8 +622,7 @@ class Res_file_parser (object):
                                        item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000]
                     # print (f'num of req of {trace}={MyConfig.calc_num_of_req (trace, DS_size*1000)/1000}') #$$$
                     salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if 
-                                       item['trace']      == trace and 
-                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                                       item['trace']      == trace]
                     if salsa_points==[]: # no results for this settings
                         print (f'no points for {trace}.C{DS_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
@@ -820,9 +819,9 @@ class Res_file_parser (object):
 
 def gen_plot_bars_by_uIntFact ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'salsa2_PC.res'])
-    for DS_size in [16, 64]: 
-        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, uIntFactVals=[2, 999999], normalize_by_Opt=False)
+    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa_dep3_PC.res'])
+    for DS_size in [4]: #[16, 64]: 
+        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, uIntFactVals=[2, 4, 8], normalize_by_Opt=False)
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
@@ -846,7 +845,7 @@ def gen_mr_plots ():
 
 # gen_plot_bars_by_uIntFact ()
 # gen_mr_plots ()
-gen_plot_bars ()
+gen_plot_bars_by_uIntFact()
 # my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.parse_files(input_file_names=[], file_type='.mr.res')
 # my_Res_file_parser.plot_mr (input_file_name=['Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative_0.mr.res_mr1'], mr_type=1)

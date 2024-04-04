@@ -797,6 +797,86 @@ class DistCacheSimulator(object):
                 return  
     
 
+    def run_trace_estimate_mr_by_salsa_dep (self):
+        """
+        Estimate using SALSA_DEP estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
+        mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
+        mr1, aka "the positive exclusion prob'", is the probability that an item isn't cached, given a positive indication for that item.
+        Estimate mr0 and print to an output .res file mr0.
+        mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
+        The alg' runs the chosen naive selection alg' - that is, either "all" - which accesses all the DSs with positive ind', or "cheapest", which accesses the cheapest DS with a pos' ind'.
+        Only the estimation uses a SALSA_DEP-like mechanism; in order to make a meaningful comparison with the other estimations/measurements of mr0, 
+        the selection alg' is NOT salsa, but a naive DS selection alg'.   
+        The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
+        If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
+        """
+        if self.mr_type==0:
+            neg_ind_cnt         = np.zeros([self.num_of_DSs,self.num_of_DSs])
+            tn_cnt              = np.zeros([self.num_of_DSs,self.num_of_DSs])
+            estimated_mr        = np.zeros([self.num_of_DSs,self.num_of_DSs]) 
+        else:
+            pos_ind_cnt         = [0     for _ in range(self.num_of_DSs)]
+            fp_cnt              = [0     for _ in range(self.num_of_DSs)]
+            printed_mr1_for_DS  = [False for _ in range(self.num_of_DSs)]
+            estimated_mr        = [self.initial_mr1 for _ in range(self.num_of_DSs)] 
+
+        self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
+        self.num_of_ads         = [0     for _ in range(self.num_of_DSs)]
+        self.finished_warmup_period  = [False for _ in range(self.num_of_DSs)]
+        self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
+        
+        for ds in range(self.num_of_DSs):
+            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | salsa2 | ')
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req = self.req_df.iloc[self.req_cnt]  
+            self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
+            num_of_pos_inds = sum (self.indications)
+            
+            for ds in self.DSs2accs:
+
+                if self.mr_type==0:
+                    if self.indications[ds]==False: # negative indication for this DS
+                        neg_ind_cnt[ds][num_of_pos_inds] += 1
+                        if self.resolution[ds]==False:
+                            tn_cnt[ds][num_of_pos_inds] += 1
+                    if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
+                        estimated_mr [ds][num_of_pos_inds] = self.EWMA_alpha_mr0 * tn_cnt[ds][num_of_pos_inds]/neg_ind_cnt[ds][num_of_pos_inds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds][num_of_pos_inds] 
+                        if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
+                            neg_ind_cnt[ds] = 0
+                            tn_cnt[ds]      = 0
+                            
+                else: #self.mr_type==1
+                    if self.indications[ds]: # positive indication for this DS
+                        pos_ind_cnt[ds] += 1
+                        if self.resolution[ds]==False:
+                            fp_cnt[ds] += 1
+
+                    if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr_measure_window[1]==0:
+                        estimated_mr [ds] = self.EWMA_alpha_mr1 * fp_cnt[ds]/pos_ind_cnt[ds] + (1-self.EWMA_alpha_mr1) * estimated_mr [ds] 
+                        if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
+                            if not(printed_mr1_for_DS[ds]):
+                                printed_mr1_for_DS[ds] = True
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
+                            pos_ind_cnt[ds] = 0
+                            fp_cnt[ds]      = 0
+
+            if self.DS2insert==None: # there was no insertion to a DS
+                continue
+            
+            # Now we know that the request resulted in a miss, and therefore was inserted into self.DS2insert
+            if self.ins_cnt[self.DS2insert] % self.min_uInterval == 0: # time to advertise
+                self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
+                self.num_of_ads[self.DS2insert]     += 1
+                self.check_warmup_ad_and_finish_report (self.DS2insert)
+
+            if all(self.finished_report_period):
+                if self.mr_type==1:
+                    for ds in range(self.num_of_DSs):
+                        if not(printed_mr1_for_DS[ds]):
+                            print (f'Warning: did not print any results for DS {ds}') 
+                return  
+
     def run_trace_estimate_mr_by_fnaa (self):
         """
         Estimate using FNAA estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
@@ -1146,6 +1226,8 @@ class DistCacheSimulator(object):
         if (self.mode == 'measure_mr_fullKnow'):
             self.run_trace_measure_mr_full_knowledge() 
         elif (self.mode == 'measure_mr_by_salsa'):
+            self.run_trace_estimate_mr_by_salsa() 
+        elif (self.mode == 'measure_mr_by_salsa_dep'):
             self.run_trace_estimate_mr_by_salsa() 
         elif (self.mode == 'measure_mr_by_fnaa'):
             self.run_trace_estimate_mr_by_fnaa() 

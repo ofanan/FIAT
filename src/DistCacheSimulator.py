@@ -826,7 +826,7 @@ class DistCacheSimulator(object):
         self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
         
         for ds in range(self.num_of_DSs):
-            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | salsa2 | ')
+            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | salsa_dep | ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
@@ -1228,7 +1228,7 @@ class DistCacheSimulator(object):
         elif (self.mode == 'measure_mr_by_salsa'):
             self.run_trace_estimate_mr_by_salsa() 
         elif (self.mode == 'measure_mr_by_salsa_dep'):
-            self.run_trace_estimate_mr_by_salsa() 
+            self.run_trace_estimate_mr_by_salsa_dep() 
         elif (self.mode == 'measure_mr_by_fnaa'):
             self.run_trace_estimate_mr_by_fnaa() 
         elif (self.mode == 'measure_mr1'):

@@ -323,6 +323,7 @@ class DistCacheSimulator(object):
             simulate the system, where the cahce-selection alg' is a trivial cache-selection alg', that always relies on the indicator.
             periodically measure the mr0, (aka "the negative exclusion probability" - namely, the prob' that an item isn't in the DS, given a negative indication).  
             """
+            self.assume_ind_DSs                 = (self.mode=='measure_mr_by_salsa_dep')   
             self.use_fixed_uInterval            = True
             self.do_not_advertise_upon_insert   = True
             self.hit_ratio_based_uInterval      = False

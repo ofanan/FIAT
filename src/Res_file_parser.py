@@ -87,6 +87,7 @@ class Res_file_parser (object):
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
                           'SALSA_DEP3'  : 'SALSA_DEP3',
+                          'salsa_dep3'  : 'SALSA_DEP3',
                            }
         
         # The colors used for each alg's plot, in the dist' case
@@ -94,7 +95,7 @@ class Res_file_parser (object):
                             'FNAA'      : '#0072B2', #'#0072B2', #'#56B4E9', #'navy',
                             'SALSA_DEP1'    : 'teal', #'teal', #magenta',
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
-                            'SALSA_DEP3'    : '#CC79A7', #'teal', #magenta',
+                            'SALSA_DEP3'    : 'teal', #'teal', #magenta',
                             'SALSA2'    : '#CC79A7', #'teal', #magenta',
                             'FULLKNOW'  : 'black',
                             }

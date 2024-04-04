@@ -813,14 +813,14 @@ class DistCacheSimulator(object):
         If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
         """
         if self.mr_type==0:
-            neg_ind_cnt         = np.zeros([self.num_of_DSs,self.num_of_DSs])
+            neg_ind_cnt         = self.initial_mr0 * np.ones([self.num_of_DSs,self.num_of_DSs])
             tn_cnt              = np.zeros([self.num_of_DSs,self.num_of_DSs])
             estimated_mr        = np.zeros([self.num_of_DSs,self.num_of_DSs]) 
         else:
-            pos_ind_cnt         = [0     for _ in range(self.num_of_DSs)]
-            fp_cnt              = [0     for _ in range(self.num_of_DSs)]
-            printed_mr1_for_DS  = [False for _ in range(self.num_of_DSs)]
-            estimated_mr        = [self.initial_mr1 for _ in range(self.num_of_DSs)] 
+            pos_ind_cnt         = [0]*self.num_of_DSs
+            fp_cnt              = [0]*self.num_of_DSs
+            printed_mr1_for_DS  = [False]*self.num_of_DSs
+            estimated_mr        = [self.initial_mr1]*self.num_of_DSs 
 
         self.ins_cnt            = [0     for _ in range(self.num_of_DSs)]
         self.num_of_ads         = [0     for _ in range(self.num_of_DSs)]
@@ -828,7 +828,7 @@ class DistCacheSimulator(object):
         self.finished_report_period  = [False for _ in range(self.num_of_DSs)]
         
         for ds in range(self.num_of_DSs):
-            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | salsa_dep | ')
+            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | salsa_dep3 | ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
             self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 

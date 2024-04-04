@@ -86,7 +86,7 @@ class Res_file_parser (object):
                           'fullKnow'    : 'fullKnow',
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
-                          'SALSA_DEP3'  : 'SALSA2',
+                          'SALSA_DEP3'  : 'SALSA_DEP3',
                            }
         
         # The colors used for each alg's plot, in the dist' case
@@ -844,8 +844,8 @@ def gen_mr_plots ():
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
 # gen_plot_bars_by_uIntFact ()
-# gen_mr_plots ()
-gen_plot_bars_by_uIntFact()
+gen_mr_plots ()
+# gen_plot_bars_by_uIntFact()
 # my_Res_file_parser = Res_file_parser ()
 # my_Res_file_parser.parse_files(input_file_names=[], file_type='.mr.res')
 # my_Res_file_parser.plot_mr (input_file_name=['Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative_0.mr.res_mr1'], mr_type=1)

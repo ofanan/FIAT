@@ -844,7 +844,7 @@ class DistCacheSimulator(object):
                     if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
                         estimated_mr [ds][num_of_pos_inds] = self.EWMA_alpha_mr0 * tn_cnt[ds][num_of_pos_inds]/neg_ind_cnt[ds][num_of_pos_inds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds][num_of_pos_inds] 
                         if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds]))
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][num_of_pos_inds]))
                             neg_ind_cnt[ds] = 0
                             tn_cnt[ds]      = 0
                             

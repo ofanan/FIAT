@@ -132,9 +132,9 @@ class DataStore (object):
             self.tn_cnt                 = int(0) # Number of False Positive events that happened in the current estimation window
             self.spec_accs_cnt          = int(0)
         else:
-            self.tn_cnt                 = [0]               *self.num_of_DSs 
-            self.spec_accs_cnt          = [0]               *self.num_of_DSs
-            self.mr0                    = [self.initial_mr0]*self.num_of_DSs
+            self.tn_cnt                 = [0]               *(self.num_of_DSs+1) 
+            self.spec_accs_cnt          = [0]               *(self.num_of_DSs+1)
+            self.mr0                    = [self.initial_mr0]*(self.num_of_DSs+1)
         if not (self.use_fixed_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
@@ -227,7 +227,7 @@ class DataStore (object):
                             self.ins_cnt_since_last_full_ad = 0
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
-            if any([(self.mr0[i]>1 or self.mr0[i]<=0) for i in range (self.num_of_DSs)]): 
+            if any([(item>1 or item<=0) for i in self.mr0]): 
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
             self.reg_accs_cnt += 1
@@ -405,7 +405,7 @@ class DataStore (object):
             self.total_ad_size_in_this_period   = 0
             
             # re-init mr0 after each period
-            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
+            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs+1)]
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
             
@@ -509,7 +509,7 @@ class DataStore (object):
 
         if self.ins_cnt_in_this_period >= self.re_init_mr0_param * self.min_uInterval: # passed the time to re-init mr0 params?
 
-            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
+            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs+1)]
             self.ins_cnt_in_this_period = 0 
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
@@ -517,7 +517,7 @@ class DataStore (object):
             self.fp_cnt, self.reg_accs_cnt = 0, 0
             self.mr1 = self.initial_mr1 
         if self.init_mr0_after_each_ad:
-            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
+            self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs+1)]
         
         if self.scale_ind_full_factor!=1: # consider scaling the indicator and the uInterval
             scale_ind_by = 1
@@ -534,7 +534,7 @@ class DataStore (object):
         self.num_of_advertisements  += 1
         self.num_of_full_ads        += 1
         self.overall_ad_size        += self.ind_size
-        self.tn_cnt, self.spec_accs_cnt = [0]*self.num_of_DSs, [0]*self.num_of_DSs
+        self.tn_cnt, self.spec_accs_cnt = [0]*(self.num_of_DSs+1), [0]*(self.num_of_DSs+1)
 
     
     def advertise_ind_full_mode (self, called_by_str):
@@ -668,7 +668,7 @@ class DataStore (object):
                     if self.mr0 < self.mr0_ad_th: 
                         return True
                 else: #salsa_dep: check if ANY of the mr0 estimators is below the advertisement threshold.
-                    if any ([(self.mr0[num_of_pos_inds] < self.mr0_ad_th) for num_of_pos_inds in range (self.num_of_DSs)]):
+                    if any ([item < self.mr0_ad_th for item in self.mr0]):
                         return True
         return False
      

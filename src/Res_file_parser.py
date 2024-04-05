@@ -816,8 +816,8 @@ class Res_file_parser (object):
             plt.xlim (18000, 31500)
             plt.ylabel (r'$\nu$')
         else:
-            plt.ylim (0, 0.08)
-            plt.xlim (18000, 31500)
+            # plt.ylim (0, 0.08)
+            # plt.xlim (18000, 31500)
             plt.ylabel (r'$\pi$')
         plt.legend()
         # plt.xlim (0, x_diff*(len(mr)-1))
@@ -839,7 +839,7 @@ def gen_plot_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
     for ds in range (1,2): 

@@ -84,10 +84,10 @@ class Res_file_parser (object):
                           'SALSA2'      : 'SALSA2',
                           'SALSA3'      : 'SALSA3',
                           'FULLKNOW'    : 'FULLKNOW',
-                          'FULLKNOW_DEP'    : 'FULLKNOW_DEP',
+                          'FULLKNOW_DEP': 'fullKnow',
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
-                          'SALSA_DEP3'  : 'SALSA_DEP3',
+                          'SALSA_DEP3'  : 'SALSA2',
                            }
         
         # The colors used for each alg's plot, in the dist' case
@@ -96,8 +96,8 @@ class Res_file_parser (object):
                             'SALSA_DEP1'    : 'teal', #'teal', #magenta',
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
                             'SALSA_DEP3'    : 'teal', #'teal', #magenta',
-                            'SALSA2'    : '#CC79A7', #'teal', #magenta',
-                            'FULLKNOW'  : 'yellow',
+                            'SALSA2'        : '#CC79A7', #'teal', #magenta',
+                            'FULLKNOW'      : 'yellow',
                             'FULLKNOW_DEP'  : 'black',
                             }
 
@@ -794,7 +794,7 @@ class Res_file_parser (object):
     
     def plot_mr (self, 
                  input_file_name,
-                 modes = ['fullKnow', 'fullKnow_dep', 'fnaa', 'salsa2', 'salsa_dep3'], 
+                 modes = ['fullKnow_dep', 'fnaa', 'salsa_dep3'], 
                  mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -813,11 +813,11 @@ class Res_file_parser (object):
                 plt.xlabel ('Insertion Count')
         if mr_type==0:
             # plt.ylim (0.5, 1.02)
-            # plt.xlim (18000, 31500)
+            plt.xlim (18000, 31500)
             plt.ylabel (r'$\nu$')
         else:
-            # plt.ylim (0, 0.08)
-            # plt.xlim (18000, 31500)
+            plt.ylim (0, 0.08)
+            plt.xlim (18000, 31500)
             plt.ylabel (r'$\pi$')
         plt.legend()
         # plt.xlim (0, x_diff*(len(mr)-1))

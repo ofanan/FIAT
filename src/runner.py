@@ -191,7 +191,7 @@ def run_mr_sim ():
         max_num_of_req = MyConfig.calc_num_of_req (trace)  
         requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
         for mode in ['measure_mr_by_fnaa', 'measure_mr_by_salsa_dep', 'measure_mr_by_fullKnow_dep']: 
-            for mr_type in range (0, 2): 
+            for mr_type in range (2): 
                 tic()
                 sm = sim.DistCacheSimulator(
                     mr_type                 = mr_type,

@@ -813,9 +813,9 @@ class DistCacheSimulator(object):
         If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
         """
         if self.mr_type==0:
-            neg_ind_cnt         = self.initial_mr0 * np.ones([self.num_of_DSs,self.num_of_DSs])
+            neg_ind_cnt         = np.zeros([self.num_of_DSs,self.num_of_DSs])
             tn_cnt              = np.zeros([self.num_of_DSs,self.num_of_DSs])
-            estimated_mr        = np.zeros([self.num_of_DSs,self.num_of_DSs]) 
+            estimated_mr        = self.initial_mr0 * np.ones([self.num_of_DSs,self.num_of_DSs])
         else:
             pos_ind_cnt         = [0]*self.num_of_DSs
             fp_cnt              = [0]*self.num_of_DSs
@@ -844,9 +844,9 @@ class DistCacheSimulator(object):
                     if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
                         estimated_mr [ds][num_of_pos_inds] = self.EWMA_alpha_mr0 * tn_cnt[ds][num_of_pos_inds]/neg_ind_cnt[ds][num_of_pos_inds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds][num_of_pos_inds] 
                         if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][num_of_pos_inds]))
-                            neg_ind_cnt[ds] = 0
-                            tn_cnt[ds]      = 0
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][0]))
+                            neg_ind_cnt[ds][num_of_pos_inds] = 0
+                            tn_cnt     [ds][num_of_pos_inds] = 0
                             
                 else: #self.mr_type==1
                     if self.indications[ds]: # positive indication for this DS
@@ -871,6 +871,8 @@ class DistCacheSimulator(object):
                 self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
                 self.num_of_ads[self.DS2insert]     += 1
                 self.check_warmup_ad_and_finish_report (self.DS2insert)
+                neg_ind_cnt         = np.zeros([self.num_of_DSs,self.num_of_DSs])
+                tn_cnt              = np.zeros([self.num_of_DSs,self.num_of_DSs])
 
             if all(self.finished_report_period):
                 if self.mr_type==1:

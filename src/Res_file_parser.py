@@ -87,7 +87,6 @@ class Res_file_parser (object):
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
                           'SALSA_DEP3'  : 'SALSA_DEP3',
-                          'salsa_dep3'  : 'SALSA_DEP3',
                            }
         
         # The colors used for each alg's plot, in the dist' case
@@ -803,7 +802,7 @@ class Res_file_parser (object):
         for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
             x_vec, mr_vec = dict['x_vec'], dict['y_vec']
             measure_mr_mode = dict['measure_mr_mode']
-            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode.upper()], label=self.strOfMode[measure_mr_mode])
+            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode.upper()], label=self.strOfMode.upper([measure_mr_mode]))
             plt.xlabel ('Insertion Count')
         if mr_type==0:
             plt.ylim (0.5, 1.02)
@@ -836,7 +835,7 @@ def gen_mr_plots ():
     input_file_names=['Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for ds in range (1, 2): 
+    for ds in range (1,2): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
@@ -846,7 +845,6 @@ def gen_mr_plots ():
 
 # gen_plot_bars_by_uIntFact ()
 gen_mr_plots ()
-# gen_plot_bars_by_uIntFact()
-# my_Res_file_parser = Res_file_parser ()
-# my_Res_file_parser.parse_files(input_file_names=[], file_type='.mr.res')
-# my_Res_file_parser.plot_mr (input_file_name=['Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative_0.mr.res_mr1'], mr_type=1)
+
+
+

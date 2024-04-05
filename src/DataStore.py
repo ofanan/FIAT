@@ -517,7 +517,6 @@ class DataStore (object):
             self.fp_cnt, self.reg_accs_cnt = 0, 0
             self.mr1 = self.initial_mr1 
         if self.init_mr0_after_each_ad:
-            # self.tn_cnt, self.spec_accs_cnt = 0,0
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs)]
         
         if self.scale_ind_full_factor!=1: # consider scaling the indicator and the uInterval

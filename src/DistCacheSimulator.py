@@ -719,6 +719,102 @@ class DistCacheSimulator(object):
                             print (f'Warning: did not print any results for DS {ds}') 
                 return  
     
+    def run_trace_measure_mr_full_knowledge_dep (self):
+        """
+        Measuer and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
+        mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
+        mr1, aka "the positive exclusion prob'", is the probability that an item isn't cached, given a positive indication for that item.
+        The alg' runs the chosen naive selection alg' - that is, either "all" - which accesses all the DSs with positive ind', or "cheapest", which accesses the cheapest DS with a pos' ind'.
+        The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
+        If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
+        """
+        self.ins_cnt                    = [0     for _ in range(self.num_of_DSs)]
+        last_printed_ins_cnt            = [0     for _ in range(self.num_of_DSs)]
+        self.num_of_ads                 = [0     for _ in range(self.num_of_DSs)]
+        last_advertised_ins_cnt         = [0     for _ in range(self.num_of_DSs)]
+        self.finished_warmup_period     = [False for _ in range(self.num_of_DSs)]
+        self.finished_report_period     = [False for _ in range(self.num_of_DSs)]
+        if self.mr_type==0:
+            neg_ind_cnt                 = np.zeros([self.num_of_DSs,self.num_of_DSs])
+            tn_cnt                      = np.zeros([self.num_of_DSs,self.num_of_DSs])
+        else:
+            pos_ind_cnt                 = [0     for _ in range(self.num_of_DSs)]
+            fp_cnt                      = [0     for _ in range(self.num_of_DSs)]
+            printed_mr1_for_DS          = [False for _ in range(self.num_of_DSs)]
+        for ds in range(self.num_of_DSs):
+            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | fullKnow_dep | ')
+        for self.req_cnt in range(self.trace_len): # for each request in the trace... 
+            self.cur_req    = self.req_df.iloc[self.req_cnt]
+            num_of_pos_inds = sum (self.indications)
+            self.handle_single_req_naive_alg() # perform data access for this req and update self.indications, self.resolution and self.DSs2accs 
+            
+            for ds in range(self.num_of_DSs):
+
+                # update counters based on the current indications and resolutions
+                if self.finished_warmup_period[ds]:
+                    if self.mr_type==0:
+                        if self.indications[ds]==False: # negative indication for this DS
+                            neg_ind_cnt[ds][num_of_pos_inds] += 1
+                            if self.resolution[ds]==False:
+                                tn_cnt[ds][num_of_pos_inds] += 1
+                    else: #self.mr_type==1
+                        if self.indications[ds]: # positive indication for this DS
+                            pos_ind_cnt[ds] += 1
+                            if self.resolution[ds]==False:
+                                fp_cnt[ds] += 1
+                
+                if self.print_detailed_output and self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr_measure_window[1]==0: #$$
+                    printf (self.measure_mr_res_file[ds], f'\nreq_cnt={self.req_cnt}, ins_cnt[{ds}]={self.ins_cnt[ds]}, pos_ind_cnt={pos_ind_cnt[ds]}, fp_cnt={fp_cnt[ds]}, num_of_ads={self.num_of_ads}, last_printed_ins_cnt={last_printed_ins_cnt[ds]}') 
+                
+                if self.finished_warmup_period[ds] and self.ins_cnt[ds]!=last_printed_ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+
+                    if self.mr_type==0:
+                        if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds][0]/neg_ind_cnt[ds][0]))
+                            last_printed_ins_cnt[ds] = self.ins_cnt[ds]
+                            neg_ind_cnt[ds] = 0
+                            tn_cnt[ds]      = 0
+                    else: #self.mr_type==1
+                        if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr_measure_window[1]==0:
+                            if not(printed_mr1_for_DS[ds]):
+                                printed_mr1_for_DS[ds] = True
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
+                            last_printed_ins_cnt[ds] = self.ins_cnt[ds]
+                            pos_ind_cnt[ds] = 0
+                            fp_cnt     [ds] = 0
+
+                if self.ins_cnt[ds] % self.min_uInterval == 0 and self.ins_cnt[ds]!=last_advertised_ins_cnt[ds]: # time to advertise
+                    self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    if self.print_detailed_output:
+                        if self.mr_type==0:
+                            printf (self.measure_mr_res_file[ds], f'\nadvertised. ins_cnt[{ds}]={self.ins_cnt[ds]}, neg_ind_cnt[{ds}]={neg_ind_cnt[ds]}') 
+                        else:
+                            printf (self.measure_mr_res_file[ds], f'\nadvertised. ins_cnt[{ds}]={self.ins_cnt[ds]}, pos_ind_cnt[{ds}]={pos_ind_cnt[ds]}') 
+                    if self.mr_type==0:
+                        if neg_ind_cnt[ds][num_of_pos_inds] >= 100: # report only if we have enough data for it...
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds][0]/neg_ind_cnt[ds][0]))
+                    else:
+                        if pos_ind_cnt[ds] >= 100: # report only if we have enough data for it...
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
+                    self.num_of_ads[ds] += 1
+                    self.check_warmup_ad_and_finish_report (ds)
+                    last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
+
+                    if self.mr_type==0:
+                        neg_ind_cnt[ds] = 0
+                        tn_cnt[ds]      = 0
+                    else:
+                        pos_ind_cnt[ds] = 0
+                        fp_cnt     [ds] = 0
+                
+
+            if all(self.finished_report_period):
+                if self.mr_type==1:
+                    for ds in range(self.num_of_DSs):
+                        if not(printed_mr1_for_DS[ds]):
+                            print (f'Warning: did not print any results for DS {ds}') 
+                return  
+    
     def run_trace_estimate_mr_by_salsa (self):
         """
         Estimate using SALSA estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
@@ -844,7 +940,7 @@ class DistCacheSimulator(object):
                     if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
                         estimated_mr [ds][num_of_pos_inds] = self.EWMA_alpha_mr0 * tn_cnt[ds][num_of_pos_inds]/neg_ind_cnt[ds][num_of_pos_inds] + (1-self.EWMA_alpha_mr0) * estimated_mr [ds][num_of_pos_inds] 
                         if self.finished_warmup_period[ds]: # Skip some warm-up period; later, write the results to file
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][0]))
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][0])) # print only the estimated mr for the case of no pos indications. 
                             neg_ind_cnt[ds][num_of_pos_inds] = 0
                             tn_cnt     [ds][num_of_pos_inds] = 0
                             
@@ -1229,6 +1325,8 @@ class DistCacheSimulator(object):
         
         if (self.mode == 'measure_mr_fullKnow'):
             self.run_trace_measure_mr_full_knowledge() 
+        elif (self.mode == 'measure_mr_fullKnow_dep'):
+            self.run_trace_measure_mr_full_knowledge_dep() 
         elif (self.mode == 'measure_mr_by_salsa'):
             self.run_trace_estimate_mr_by_salsa() 
         elif (self.mode == 'measure_mr_by_salsa_dep'):
@@ -1249,7 +1347,7 @@ class DistCacheSimulator(object):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
         else: 
-            MyConfig.error  ('Wrong mode: {}\n' .format (self.mode))
+            MyConfig.error  ('In DistCacheSimulator.run_simulator(). Wrong mode: {}\n' .format (self.mode))
 
         
     def estimate_mr1_by_history (self):

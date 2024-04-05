@@ -624,7 +624,7 @@ class DistCacheSimulator(object):
             if self.num_of_ads[ds] > self.num_of_warmup_ads[self.mr_type] + self.num_of_ads_to_measure: # Collected enough points
                 self.finished_report_period[ds] = True
 
-    def run_trace_measure_mr_full_knowledge (self):
+    def run_trace_measure_mr_by_fullKnow (self):
         """
         Measuer and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
         mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
@@ -719,14 +719,16 @@ class DistCacheSimulator(object):
                             print (f'Warning: did not print any results for DS {ds}') 
                 return  
     
-    def run_trace_measure_mr_full_knowledge_dep (self):
+    def run_trace_measure_mr_by_fullKnow_dep (self):
         """
-        Measuer and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.
+        Measure and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_type.
         mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
         mr1, aka "the positive exclusion prob'", is the probability that an item isn't cached, given a positive indication for that item.
         The alg' runs the chosen naive selection alg' - that is, either "all" - which accesses all the DSs with positive ind', or "cheapest", which accesses the cheapest DS with a pos' ind'.
         The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
         If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
+        Assuming an hypothetical full knowledge about the existence of requested data in each cache.
+        For mr0, collect distinct histories for different number of positive indications.
         """
         self.ins_cnt                    = [0     for _ in range(self.num_of_DSs)]
         last_printed_ins_cnt            = [0     for _ in range(self.num_of_DSs)]
@@ -801,8 +803,8 @@ class DistCacheSimulator(object):
                     last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
 
                     if self.mr_type==0:
-                        neg_ind_cnt[ds] = 0
-                        tn_cnt[ds]      = 0
+                        neg_ind_cnt[ds] = np.zeros(self.num_of_DSs)
+                        tn_cnt     [ds] = np.zeros(self.num_of_DSs)
                     else:
                         pos_ind_cnt[ds] = 0
                         fp_cnt     [ds] = 0
@@ -906,6 +908,7 @@ class DistCacheSimulator(object):
         Only the estimation uses a SALSA_DEP-like mechanism; in order to make a meaningful comparison with the other estimations/measurements of mr0, 
         the selection alg' is NOT salsa, but a naive DS selection alg'.   
         The choice which naive DS selection alg' to run is set by the parameter self.naive_selection_alg.
+        For mr0, collect distinct histories for different number of positive indications.
         If self.use_fna==True, whenever all indicators show a negative ind', the selection alg' picks a u.a.r. DS to access. Else, the function accesses only caches with positive indications.   
         """
         if self.mr_type==0:
@@ -967,8 +970,9 @@ class DistCacheSimulator(object):
                 self.DS_list[self.DS2insert].advertise_ind_full_mode (called_by_str='simulator')
                 self.num_of_ads[self.DS2insert]     += 1
                 self.check_warmup_ad_and_finish_report (self.DS2insert)
-                neg_ind_cnt         = np.zeros([self.num_of_DSs,self.num_of_DSs])
-                tn_cnt              = np.zeros([self.num_of_DSs,self.num_of_DSs])
+                if self.mr_type==0:
+                    neg_ind_cnt[self.DS2insert] = np.zeros(self.num_of_DSs)
+                    tn_cnt     [self.DS2insert] = np.zeros(self.num_of_DSs)
 
             if all(self.finished_report_period):
                 if self.mr_type==1:
@@ -1323,10 +1327,10 @@ class DistCacheSimulator(object):
         self.interval_between_mid_reports = interval_between_mid_reports if (interval_between_mid_reports != None) else self.trace_len # if the user didn't request mid_reports, have only a single report, at the end of the trace
         print (f'running {self.gen_settings_str (num_of_req=num_of_req)} with verbose={self.verbose}')
         
-        if (self.mode == 'measure_mr_fullKnow'):
-            self.run_trace_measure_mr_full_knowledge() 
-        elif (self.mode == 'measure_mr_fullKnow_dep'):
-            self.run_trace_measure_mr_full_knowledge_dep() 
+        if (self.mode == 'measure_mr_by_fullKnow'):
+            self.run_trace_measure_mr_by_fullKnow() 
+        elif (self.mode == 'measure_mr_by_fullKnow_dep'):
+            self.run_trace_measure_mr_by_fullKnow_dep() 
         elif (self.mode == 'measure_mr_by_salsa'):
             self.run_trace_estimate_mr_by_salsa() 
         elif (self.mode == 'measure_mr_by_salsa_dep'):

@@ -794,7 +794,7 @@ class Res_file_parser (object):
     
     def plot_mr (self, 
                  input_file_name,
-                 modes = ['fnaa', 'fullKnow', 'salsa2', 'salsa_dep3', 'fullknow_dep'], 
+                 modes = ['fullKnow', 'fullKnow_dep', 'fnaa', 'salsa2', 'salsa_dep3'], 
                  mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -804,16 +804,16 @@ class Res_file_parser (object):
         output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
-        for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
-            measure_mr_mode = dict['measure_mr_mode']
-            if measure_mr_mode not in modes:
-                continue 
-            x_vec, mr_vec = dict['x_vec'], dict['y_vec']
-            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode.upper()], label=self.strOfMode[measure_mr_mode.upper()])
-            plt.xlabel ('Insertion Count')
+        dicts_of_this_mr_type = [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type] 
+        for mode in modes:
+            dicts_of_this_mr_type_n_mode = [dict for dict in dicts_of_this_mr_type if dict['measure_mr_mode']==mode]
+            for dict in dicts_of_this_mr_type_n_mode: 
+                x_vec, mr_vec = dict['x_vec'], dict['y_vec']
+                plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()])
+                plt.xlabel ('Insertion Count')
         if mr_type==0:
-            plt.ylim (0.5, 1.02)
-            plt.xlim (18000, 31500)
+            # plt.ylim (0.5, 1.02)
+            # plt.xlim (18000, 31500)
             plt.ylabel (r'$\nu$')
         else:
             # plt.ylim (0, 0.08)
@@ -839,14 +839,14 @@ def gen_plot_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
     for ds in range (1,2): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(1, 2):
+            for mr_type in range(2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 

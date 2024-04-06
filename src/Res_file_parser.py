@@ -88,6 +88,8 @@ class Res_file_parser (object):
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
                           'SALSA_DEP3'  : 'SALSA2',
+                          'SALSA_DEP4'  : 'SALSA_DEP4',
+                          'SALSA_DEP5'  : 'SALSA_DEP5',
                            }
         
         # The colors used for each alg's plot, in the dist' case
@@ -97,6 +99,8 @@ class Res_file_parser (object):
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
                             'SALSA_DEP3'    : 'teal', #'teal', #magenta',
                             'SALSA2'        : '#CC79A7', #'teal', #magenta',
+                            'SALSA_DEP4'    : 'green', #'teal', #magenta',
+                            'SALSA_DEP5'    : 'yellow', #'teal', #magenta',
                             'FULLKNOW'      : 'yellow',
                             'FULLKNOW_DEP'  : 'black',
                             }
@@ -794,7 +798,7 @@ class Res_file_parser (object):
     
     def plot_mr (self, 
                  input_file_name,
-                 modes = ['fullKnow_dep', 'fnaa', 'salsa_dep3'], 
+                 modes = ['fullKnow_dep', 'fnaa', 'salsa_dep3', 'salsa_dep4', 'salsa_dep5'], 
                  mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -839,14 +843,14 @@ def gen_plot_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for ds in range (1,2): 
+    for ds in range (3): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(2):
+            for mr_type in range(1, 2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 

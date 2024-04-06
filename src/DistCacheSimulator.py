@@ -351,7 +351,7 @@ class DistCacheSimulator(object):
                         self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
 
         if (not(self.mode in ['opt', 'fnaa'])) and (not(self.mode.startswith('salsa'))) and (not(self.mode.startswith('measure_'))):
-            MyConfig.error (f'Sorry, the selected mode {self.mode} is not supported.')
+            MyConfig.error (f'In DistCacheSimulator.init(). Sorry, the selected mode {self.mode} is not supported.')
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs

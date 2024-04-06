@@ -719,7 +719,7 @@ class DistCacheSimulator(object):
                             print (f'Warning: did not print any results for DS {ds}') 
                 return  
     
-    def run_trace_measure_mr_by_fullKnow_dep (self):
+    def run_trace_measure_mr_by_fullKnow_dep4 (self):
         """
         Measure and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_type.
         mr0, aka "the negative exclusion prob'", is the probability that an item isn't cached, given a negative indication for that item.
@@ -740,11 +740,11 @@ class DistCacheSimulator(object):
             neg_ind_cnt                 = [[0]*(self.num_of_DSs+1) for i in range(self.num_of_DSs)]
             tn_cnt                      = [[0]*(self.num_of_DSs+1) for i in range(self.num_of_DSs)]
         else:
-            pos_ind_cnt                 = [0     for _ in range(self.num_of_DSs)]
-            fp_cnt                      = [0     for _ in range(self.num_of_DSs)]
-            printed_mr1_for_DS          = [False for _ in range(self.num_of_DSs)]
+            pos_ind_cnt                 = [[0]*(self.num_of_DSs+1) for i in range(self.num_of_DSs)]
+            fp_cnt                      = [[0]*(self.num_of_DSs+1) for i in range(self.num_of_DSs)]
+            printed_mr1_for_DS          = [False]*self.num_of_DSs
         for ds in range(self.num_of_DSs):
-            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | fullKnow_dep | ')
+            printf (self.measure_mr_res_file[ds], f'\n{self.mr_type} | fullKnow_dep4 | ')
         for self.req_cnt in range(self.trace_len): # for each request in the trace... 
             self.cur_req    = self.req_df.iloc[self.req_cnt]
             num_of_pos_inds = sum (self.indications)
@@ -761,9 +761,9 @@ class DistCacheSimulator(object):
                                 tn_cnt[ds][num_of_pos_inds] += 1
                     else: #self.mr_type==1
                         if self.indications[ds]: # positive indication for this DS
-                            pos_ind_cnt[ds] += 1
+                            pos_ind_cnt[ds][num_of_pos_inds] += 1
                             if self.resolution[ds]==False:
-                                fp_cnt[ds] += 1
+                                fp_cnt[ds][num_of_pos_inds] += 1
                 
                 if self.print_detailed_output and self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr_measure_window[1]==0: #$$
                     printf (self.measure_mr_res_file[ds], f'\nreq_cnt={self.req_cnt}, ins_cnt[{ds}]={self.ins_cnt[ds]}, pos_ind_cnt={pos_ind_cnt[ds]}, fp_cnt={fp_cnt[ds]}, num_of_ads={self.num_of_ads}, last_printed_ins_cnt={last_printed_ins_cnt[ds]}') 
@@ -777,13 +777,13 @@ class DistCacheSimulator(object):
                             neg_ind_cnt[ds][num_of_pos_inds] = 0
                             tn_cnt     [ds][num_of_pos_inds] = 0
                     else: #self.mr_type==1
-                        if pos_ind_cnt[ds]>0 and pos_ind_cnt[ds] % self.mr_measure_window[1]==0:
+                        if pos_ind_cnt[ds][num_of_pos_inds]>0 and pos_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[1]==0:
                             if not(printed_mr1_for_DS[ds]):
                                 printed_mr1_for_DS[ds] = True
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds][1]/pos_ind_cnt[ds][1]))
                             last_printed_ins_cnt[ds] = self.ins_cnt[ds]
-                            pos_ind_cnt[ds] = 0
-                            fp_cnt     [ds] = 0
+                            pos_ind_cnt[ds][num_of_pos_inds] = 0
+                            fp_cnt     [ds][num_of_pos_inds] = 0
 
                 if self.ins_cnt[ds] % self.min_uInterval == 0 and self.ins_cnt[ds]!=last_advertised_ins_cnt[ds]: # time to advertise
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
@@ -796,8 +796,8 @@ class DistCacheSimulator(object):
                         if neg_ind_cnt[ds][0] >= 100: # report only if we have enough data for it...
                             printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds][0]/neg_ind_cnt[ds][0]))
                     else:
-                        if pos_ind_cnt[ds] >= 100: # report only if we have enough data for it...
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds]/pos_ind_cnt[ds]))
+                        if pos_ind_cnt[ds][1] >= 100: # report only if we have enough data for it...
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds][1]/pos_ind_cnt[ds][1]))
                     self.num_of_ads[ds] += 1
                     self.check_warmup_ad_and_finish_report (ds)
                     last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
@@ -806,8 +806,8 @@ class DistCacheSimulator(object):
                         neg_ind_cnt[ds] = [0]*(self.num_of_DSs+1)
                         tn_cnt     [ds] = [0]*(self.num_of_DSs+1)
                     else:
-                        pos_ind_cnt[ds] = 0
-                        fp_cnt     [ds] = 0
+                        pos_ind_cnt[ds] = [0]*(self.num_of_DSs+1)
+                        fp_cnt     [ds] = [0]*(self.num_of_DSs+1)
                 
 
             if all(self.finished_report_period):
@@ -1329,8 +1329,8 @@ class DistCacheSimulator(object):
         
         if (self.mode == 'measure_mr_by_fullKnow'):
             self.run_trace_measure_mr_by_fullKnow() 
-        elif (self.mode == 'measure_mr_by_fullKnow_dep'):
-            self.run_trace_measure_mr_by_fullKnow_dep() 
+        elif (self.mode == 'measure_mr_by_fullKnow_dep4'):
+            self.run_trace_measure_mr_by_fullKnow_dep4() 
         elif (self.mode == 'measure_mr_by_salsa'):
             self.run_trace_estimate_mr_by_salsa() 
         elif (self.mode == 'measure_mr_by_salsa_dep5'):

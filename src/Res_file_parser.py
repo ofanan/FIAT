@@ -85,6 +85,8 @@ class Res_file_parser (object):
                           'SALSA3'      : 'SALSA3',
                           'FULLKNOW'    : 'FULLKNOW',
                           'FULLKNOW_DEP': 'fullKnow',
+                          'FULLKNOW_DEP4': 'fullKnow_dep4',
+                          'FULLKNOW_DEP5': 'fullKnow_dep5',
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
                           'SALSA_DEP3'  : 'SALSA2',
@@ -103,6 +105,8 @@ class Res_file_parser (object):
                             'SALSA_DEP5'    : 'yellow', #'teal', #magenta',
                             'FULLKNOW'      : 'yellow',
                             'FULLKNOW_DEP'  : 'black',
+                            'FULLKNOW_DEP4'  : 'red',
+                            'FULLKNOW_DEP5'  : 'blue',
                             }
 
         # The markers used for each alg', in the dist' case
@@ -127,7 +131,7 @@ class Res_file_parser (object):
                                   'FNOA' : '\\pgmfno',
                                   'FNOA' : '\\pgmfno'}
         
-        self.set_plt_params ()
+        self.set_plt_params ('Small') #$$$
 
 
     def parse_mr_res_line (self, line):
@@ -798,7 +802,7 @@ class Res_file_parser (object):
     
     def plot_mr (self, 
                  input_file_name,
-                 modes = ['fullKnow_dep', 'fnaa', 'salsa_dep3', 'salsa_dep4', 'salsa_dep5'], 
+                 modes = ['fullKnow_dep', 'fullKnow_dep4', 'fnaa', 'salsa_dep3', 'salsa_dep4', 'salsa_dep5'], 
                  mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).

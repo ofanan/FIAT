@@ -1257,7 +1257,7 @@ class DistCacheSimulator(object):
         self.num_of_pos_inds = sum(self.indications)
         for ds in range (self.num_of_DSs):
             if self.indications[ds]:
-                self.mr_of_DS[ds] = self.DS_list[ds].mr1 
+                self.mr_of_DS[ds] = self.DS_list[ds].mr1[self.num_of_pos_inds] 
             else: 
                 self.mr_of_DS[ds] = self.DS_list[ds].mr0[self.num_of_pos_inds]
         

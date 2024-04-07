@@ -123,18 +123,22 @@ class DataStore (object):
         self.initial_mr1                = initial_mr1
         self.assume_ind_DSs             = assume_ind_DSs
         self.use_EWMA                   = use_EWMA # If true, use Exp' Weighted Moving Avg. Else, use flat history along the whole trace
-        self.mr1                        = self.initial_mr1
-        self.fp_cnt                     = 0 # Number of False Positive events that happened in the current estimation window
         self.mr1_ewma_window_size       = mr1_ewma_window_size
         self.mr0_ewma_window_size       = mr1_ewma_window_size
         if self.assume_ind_DSs:
             self.mr0                    = self.initial_mr0
             self.tn_cnt                 = int(0) # Number of False Positive events that happened in the current estimation window
+            self.reg_accs_cnt           = int(0)
             self.spec_accs_cnt          = int(0)
+            self.mr1                    = self.initial_mr1
+            self.fp_cnt                 = 0 # Number of False Positive events that happened in the current estimation window
         else:
-            self.tn_cnt                 = [0]               *(self.num_of_DSs+1) 
-            self.spec_accs_cnt          = [0]               *(self.num_of_DSs+1)
             self.mr0                    = [self.initial_mr0]*(self.num_of_DSs+1)
+            self.mr1                    = [self.initial_mr1]*(self.num_of_DSs+1)
+            self.fp_cnt                 = [0]               *(self.num_of_DSs+1) # Number of False Positive events that happened in the current estimation window, for a given # of pos indications
+            self.tn_cnt                 = [0]               *(self.num_of_DSs+1) 
+            self.reg_accs_cnt           = [0]               *(self.num_of_DSs+1)
+            self.spec_accs_cnt          = [0]               *(self.num_of_DSs+1)
         if not (self.use_fixed_uInterval):
             self.hit_ratio_based_uInterval = hit_ratio_based_uInterval
             if (self.hit_ratio_based_uInterval):
@@ -143,7 +147,6 @@ class DataStore (object):
             else:
                 self.mr0_ad_th, self.mr1_ad_th = mr0_ad_th, mr1_ad_th 
                
-        self.reg_accs_cnt            = 0
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
         self.designed_fpr            = MyConfig.calc_designed_fpr (self.DS_size, self.ind_size, self.num_of_hashes)
@@ -230,22 +233,19 @@ class DataStore (object):
             if any([(item>1 or item<=0) for i in self.mr0]): 
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
-            self.reg_accs_cnt += 1
+            self.reg_accs_cnt[self.num_of_pos_inds] += 1
             if (not(hit)):
-                self.fp_cnt += 1
-            if self.use_EWMA: 
-                if (self.reg_accs_cnt % self.mr1_ewma_window_size == 0):
-                    self.update_mr1 ()
-                    if not(self.in_delta_mode) and (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
-                        if self.should_advertise_by_mr1 ():
-                            self.advertise_ind_full_mode (called_by_str='mr1')
-                            self.ins_cnt_since_last_full_ad = 0
-                            return hit
-            else: # use "flat" history
-                self.mr1 = float(self.fp_cnt) / float (self.reg_accs_cnt) 
-                # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
-                if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
-                    printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1))
+                self.fp_cnt[self.num_of_pos_inds] += 1
+            if (self.reg_accs_cnt[self.num_of_pos_inds] % self.mr1_ewma_window_size == 0):
+                self.mr1[self.num_of_pos_inds] = self.EWMA_alpha*float(self.fp_cnt[self.num_of_pos_inds]) / float (self.reg_accs_cnt[self.num_of_pos_inds]) + (1-self.EWMA_alpha)*self.mr1[self.num_of_pos_inds]
+                self.reg_accs_cnt[self.num_of_pos_inds], self.fp_cnt[self.num_of_pos_inds] = 0, 0 
+                if not(self.in_delta_mode) and (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
+                    if self.should_advertise_by_mr1 ():
+                        self.advertise_ind_full_mode (called_by_str='mr1')
+                        self.ins_cnt_since_last_full_ad = 0
+                        return hit
+            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+                printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, fp cnt={self.fp_cnt}, reg accs cnt={self.reg_accs_cnt}, mr1={self.mr1}\n')
                 
         return hit 
 
@@ -445,19 +445,6 @@ class DataStore (object):
                 self.advertise_switch_to_delta_update()
                 return
             
-        # $$$ Moved to after update_mr0 
-        # if (self.ins_cnt_since_last_full_ad>=self.min_uInterval):
-        #     if self.should_advertise_by_mr0 (): 
-        #         self.advertise_ind_full_mode (called_by_str='mr0')
-        #         self.ins_cnt_since_last_full_ad = 0
-        #         return
-        
-        # $$$ Moved to after update_mr1 
-            # if self.should_advertise_by_mr1 ():
-            #     self.advertise_ind_full_mode (called_by_str='mr1')
-            #     self.ins_cnt_since_last_full_ad = 0
-            #     return
-       
     def delta_update_is_cheaper (self):
         """
         Check whether advertising a delta requires less bits than advertising a full ind.
@@ -514,8 +501,9 @@ class DataStore (object):
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
         if self.init_mr1_after_each_ad:
-            self.fp_cnt, self.reg_accs_cnt = 0, 0
-            self.mr1 = self.initial_mr1 
+            self.fp_cnt       = [0]*(self.num_of_DSs+1)
+            self.reg_accs_cnt = [0]*(self.num_of_DSs+1)
+            self.mr1 = [self.initial_mr1]*(self.num_of_DSs+1) 
         if self.init_mr0_after_each_ad:
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs+1)]
         
@@ -700,8 +688,12 @@ class DataStore (object):
                      self.pr_of_pos_ind_estimation * self.mr1 > self.non_comp_accs_th):
                     return True
             else:           
-                if self.mr1 > self.mr1_ad_th: 
-                    return True
+                if self.assume_ind_DSs: 
+                    if self.mr1 > self.mr1_ad_th: 
+                        return True
+                else: #salsa_dep: check if ANY of the mr0 estimators is below the advertisement threshold.
+                    if any ([item > self.mr1_ad_th for item in self.mr1]):
+                        return True
         return False
         
     def print_cache(self, head = 5):

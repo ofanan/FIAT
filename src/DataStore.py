@@ -728,3 +728,4 @@ class DataStore (object):
         self.fpr    = pow ( B1_st / self.ind_size, self.num_of_hashes)
         self.ins_since_last_fpr_fnr_estimation  = 0
         
+        

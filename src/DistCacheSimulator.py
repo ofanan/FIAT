@@ -353,6 +353,9 @@ class DistCacheSimulator(object):
         if (not(self.mode in ['opt', 'fnaa'])) and (not(self.mode.startswith('salsa'))) and (not(self.mode.startswith('measure_'))):
             MyConfig.error (f'In DistCacheSimulator.init(). Sorry, the selected mode {self.mode} is not supported.')
 
+        if self.mode=='salsa_dep3':
+            MyConfig.error ('In DistCacheSimulator.init(). Sorry. mode salsa_dep3 is not supported anymore.')
+
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
             self.speculate_accs_cnt         = 0 # num of speculative accss, that is, accesses to a DS despite a miss indication
@@ -410,13 +413,19 @@ class DistCacheSimulator(object):
             self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
 
-        if self.mode in ['salsa3', 'salsa_dep3']:
+        if self.mode in ['salsa3']:
             self.scale_ind_delta_factor     = 1.1
             self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
 
-        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2', 'salsa_dep0', 'salsa_dep1', 'salsa_dep2', 'salsa_dep3'])):
+        if self.mode in ['salsa_dep4']:
+            self.scale_ind_delta_factor     = 1.1
+            self.scale_ind_full_factor      = 1.1
+            self.consider_delta_updates     = True
+            self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
+
+        if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2', 'salsa_dep0', 'salsa_dep1', 'salsa_dep2', 'salsa_dep4'])):
             MyConfig.error ('In DistCacheSimulator.init(). sorry. Mode {} is not supported' .format(self.mode) )                                             
             
         if (self.calc_mr_by_hist and self.use_perfect_hist):

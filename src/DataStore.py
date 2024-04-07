@@ -230,7 +230,7 @@ class DataStore (object):
                             self.ins_cnt_since_last_full_ad = 0
             if MyConfig.VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
-            if any([(item>1 or item<=0) for i in self.mr0]): 
+            if any([(item>1 or item<=0) for item in self.mr0]): 
                 MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
             self.reg_accs_cnt[self.num_of_pos_inds] += 1

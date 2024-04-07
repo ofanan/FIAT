@@ -21,7 +21,7 @@ def run_hetro_costs_sim ():
     DS_sizes    = [4]
     missps      = [30]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    verbose     = [MyConfig.VERBOSE_SHORT_LOG] #[MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+    verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     start_time = time.time() 
     for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     

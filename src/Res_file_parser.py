@@ -91,7 +91,8 @@ class Res_file_parser (object):
                           'FULLKNOW_DEP5': 'fullKnow_dep5',
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
-                          'SALSA_DEP3'  : 'SALSA2',
+                          'SALSA_DEP3'  : 'SALSA_DEP3',
+                          'SALSA_DEP4'  : 'SALSA_DEP4',
                           'SALSA_DEP4_0'  : 'SALSA_DEP4_0',
                           'SALSA_DEP4_1'  : 'SALSA_DEP4_1',
                           'SALSA_DEP4_2'  : 'SALSA_DEP4_2',
@@ -104,6 +105,7 @@ class Res_file_parser (object):
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
                             'SALSA_DEP3'    : 'teal', #'teal', #magenta',
                             'SALSA2'        : '#CC79A7', #'teal', #magenta',
+                            'SALSA_DEP4'    : 'green', #'teal', #magenta',
                             'SALSA_DEP4_1'    : 'green', #'teal', #magenta',
                             'SALSA_DEP4_2'    : 'yellow', #'teal', #magenta',
                             'FULLKNOW'      : 'yellow',
@@ -685,7 +687,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45'], 
-                   modes            = ['FNAA', 'SALSA_DEP1', 'SALSA_DEP2', 'SALSA_DEP3'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA', 'SALSA_DEP3', 'SALSA_DEP4'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -862,4 +864,4 @@ def gen_mr_plots ():
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
 # gen_plot_bars_by_uIntFact ()
-gen_mr_plots ()
+# gen_mr_plots ()

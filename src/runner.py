@@ -187,11 +187,11 @@ def run_mr_sim ():
     """
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Twitter45', 'Scarab']: #, 'Scarab', 'Wiki', 'F1', 'Twitter45']: #  ], 'IBM7', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
+    for trace in ['Scarab']: #, 'Scarab', 'Wiki', 'F1', 'Twitter45']: #  ], 'IBM7', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
         max_num_of_req = MyConfig.calc_num_of_req (trace)  
         requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-        for mode in ['measure_mr_by_fullKnow_dep4']: #'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4', 'measure_mr_by_fullKnow_dep']: 
-            for mr_type in range (1,2): 
+        for mode in ['measure_mr_by_fnaa', 'measure_mr_by_fullKnow_dep4', 'measure_mr_by_salsa_dep4']: #, 'measure_mr_by_fullKnow_dep4']: #'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4', 'measure_mr_by_fullKnow_dep']: 
+            for mr_type in range (1): 
                 tic()
                 sm = sim.DistCacheSimulator(
                     mr_type                 = mr_type,

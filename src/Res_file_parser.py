@@ -86,12 +86,15 @@ class Res_file_parser (object):
                           'FULLKNOW'    : 'FULLKNOW',
                           'FULLKNOW_DEP': 'fullKnow',
                           'FULLKNOW_DEP4': 'fullKnow_dep4',
+                          'FULLKNOW_DEP4_1': 'fullKnow_dep4_1',
+                          'FULLKNOW_DEP4_2': 'fullKnow_dep4_2',
                           'FULLKNOW_DEP5': 'fullKnow_dep5',
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
                           'SALSA_DEP3'  : 'SALSA2',
-                          'SALSA_DEP4'  : 'SALSA_DEP4',
-                          'SALSA_DEP5'  : 'SALSA_DEP5',
+                          'SALSA_DEP4_0'  : 'SALSA_DEP4_0',
+                          'SALSA_DEP4_1'  : 'SALSA_DEP4_1',
+                          'SALSA_DEP4_2'  : 'SALSA_DEP4_2',
                            }
         
         # The colors used for each alg's plot, in the dist' case
@@ -101,12 +104,12 @@ class Res_file_parser (object):
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
                             'SALSA_DEP3'    : 'teal', #'teal', #magenta',
                             'SALSA2'        : '#CC79A7', #'teal', #magenta',
-                            'SALSA_DEP4'    : 'green', #'teal', #magenta',
-                            'SALSA_DEP5'    : 'yellow', #'teal', #magenta',
+                            'SALSA_DEP4_1'    : 'green', #'teal', #magenta',
+                            'SALSA_DEP4_2'    : 'yellow', #'teal', #magenta',
                             'FULLKNOW'      : 'yellow',
                             'FULLKNOW_DEP'  : 'black',
-                            'FULLKNOW_DEP4'  : 'red',
-                            'FULLKNOW_DEP5'  : 'blue',
+                            'FULLKNOW_DEP4_1'  : 'red',
+                            'FULLKNOW_DEP4_2'  : 'blue',
                             }
 
         # The markers used for each alg', in the dist' case
@@ -802,7 +805,7 @@ class Res_file_parser (object):
     
     def plot_mr (self, 
                  input_file_name,
-                 modes = ['fullKnow_dep', 'fullKnow_dep4', 'fnaa', 'salsa_dep3', 'salsa_dep4', 'salsa_dep5'], 
+                 modes = ['fullKnow_dep4_1', 'fnaa', 'salsa_dep4_1'], 
                  mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -821,11 +824,11 @@ class Res_file_parser (object):
                 plt.xlabel ('Insertion Count')
         if mr_type==0:
             # plt.ylim (0.5, 1.02)
-            plt.xlim (18000, 31500)
+            plt.xlim (33500, 48000)
             plt.ylabel (r'$\nu$')
         else:
             # plt.ylim (0, 0.08)
-            # plt.xlim (18000, 31500)
+            plt.xlim (33500, 48000)
             plt.ylabel (r'$\pi$')
         plt.legend()
         # plt.xlim (0, x_diff*(len(mr)-1))
@@ -847,14 +850,14 @@ def gen_plot_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for ds in range (3): 
+    for ds in range (2, 3): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(1, 2):
+            for mr_type in range(2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 

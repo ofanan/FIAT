@@ -846,7 +846,7 @@ class Res_file_parser (object):
             f = lambda m,c: plt.plot([],[],marker=m, color=c, ls="none")[0]
             handles = [f("s", colors[i]) for i in range(3)]
             labels = [self.strOfMode[modes[0].upper()], self.strOfMode[modes[1].upper()], self.strOfMode[modes[2].upper()]]
-            legend = plt.legend(handles, labels, loc=3, framealpha=1, frameon=False, ncol=3)
+            legend = plt.legend(handles, labels, loc=3, framealpha=1, frameon=True, ncol=3)
             
             def export_legend(legend, filename="legend.png"):
                 fig  = legend.figure

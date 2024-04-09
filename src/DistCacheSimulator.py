@@ -730,7 +730,7 @@ class DistCacheSimulator(object):
     
     def run_trace_measure_mr_by_fullKnow_dep4 (
             self,
-            NUM_OF_POS_IND_2PRINT = 1,
+            NUM_OF_POS_IND_2PRINT = 0,
             ):
         """
         Measure and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_type.
@@ -905,7 +905,7 @@ class DistCacheSimulator(object):
 
     def run_trace_estimate_mr_by_salsa_dep4 (
             self,
-            NUM_OF_POS_IND_2PRINT = 1,
+            NUM_OF_POS_IND_2PRINT = 0,
             ):
         """
         Estimate using SALSA_DEP estimation scheme and print to an output mr.res file either mr0, or mr1, as indicated in self.mr_tye.

@@ -47,9 +47,9 @@ MARKER_SIZE             = 16
 MARKER_SIZE_SMALL       = 1
 LINE_WIDTH              = 3 
 LINE_WIDTH_SMALL        = 1 
-FONT_SIZE               = 20
+FONT_SIZE               = 13
 FONT_SIZE_SMALL         = 5
-LEGEND_FONT_SIZE        = 20
+LEGEND_FONT_SIZE        = 13
 LEGEND_FONT_SIZE_SMALL  = 5 
 ROTATION_ANGLE          = 90
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
@@ -86,32 +86,46 @@ class Res_file_parser (object):
                           'FULLKNOW'    : 'FULLKNOW',
                           'FULLKNOW_DEP': 'fullKnow',
                           'FULLKNOW_DEP4': 'fullKnow_dep4',
+                          'FULLKNOW_DEP4_0': 'fullKnow',
                           'FULLKNOW_DEP4_1': 'fullKnow_dep4_1',
                           'FULLKNOW_DEP4_2': 'fullKnow_dep4_2',
                           'FULLKNOW_DEP5': 'fullKnow_dep5',
                           'SALSA_DEP1'  : 'SALSA1',
                           'SALSA_DEP2'  : 'SALSA1.5',
-                          'SALSA_DEP3'  : 'SALSA_DEP3',
-                          'SALSA_DEP4'  : 'SALSA_DEP4',
-                          'SALSA_DEP4_0'  : 'SALSA_DEP4_0',
-                          'SALSA_DEP4_1'  : 'SALSA_DEP4_1',
-                          'SALSA_DEP4_2'  : 'SALSA_DEP4_2',
+                          'SALSA_DEP3'  : 'SALSA2',
+                          'SALSA_DEP4'  : 'SALSA2',
+                          'SALSA_DEP4_0'  : 'SALSA2',
+                          'SALSA_DEP4_1'  : 'SALSA2',
+                          'SALSA_DEP4_2'  : 'SALSA2',
                            }
+        
+
+        
+# # Color-blind friendly pallette
+# ORANGE      = '#E69F00'
+# SKY_BLUE    = '#56B4E9'
+# GREEN       = '#009E73'
+# YELLOW      = '#F0E442'
+# BLUE        = '#0072B2'
+# VERMILION   = '#D55E00'
+# PURPLE      = '#CC79A7'
         
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
-                            'FNAA'      : '#0072B2', #'#0072B2', #'#56B4E9', #'navy',
+                            'FNAA'      : SKY_BLUE, #'#0072B2', #'#56B4E9', #'navy',
                             'SALSA_DEP1'    : 'teal', #'teal', #magenta',
                             'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
                             'SALSA_DEP3'    : 'teal', #'teal', #magenta',
-                            'SALSA2'        : '#CC79A7', #'teal', #magenta',
+                            'SALSA2'        : PURPLE, #'teal', #magenta',
                             'SALSA_DEP4'    : 'green', #'teal', #magenta',
-                            'SALSA_DEP4_1'    : 'green', #'teal', #magenta',
+                            'SALSA_DEP4_0'    : GREEN, #'teal', #magenta',
+                            'SALSA_DEP4_1'    : GREEN, #'teal', #magenta',
                             'SALSA_DEP4_2'    : 'yellow', #'teal', #magenta',
-                            'FULLKNOW'      : 'yellow',
+                            'FULLKNOW'      : 'black',
                             'FULLKNOW_DEP'  : 'black',
-                            'FULLKNOW_DEP4_1'  : 'red',
-                            'FULLKNOW_DEP4_2'  : 'blue',
+                            'FULLKNOW_DEP4_0'  : 'black',
+                            'FULLKNOW_DEP4_1'  : 'black',
+                            'FULLKNOW_DEP4_2'  : 'black',
                             }
 
         # The markers used for each alg', in the dist' case
@@ -763,7 +777,7 @@ class Res_file_parser (object):
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.tick_params(bottom = False)
-                    plt.legend (frameon=False)
+                    plt.legend (frameon=False, bbox_to_anchor=(-0.05, 1.0), loc='upper left')
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
                 if plot_bwCost:
@@ -774,7 +788,7 @@ class Res_file_parser (object):
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.tick_params(bottom = False)
-                    plt.legend (frameon=False)
+                    plt.legend (frameon=False, bbox_to_anchor=(-0.05, 1.0), loc='upper left')
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
                 if plot_serviceCost and plot_bwCost:
@@ -807,7 +821,7 @@ class Res_file_parser (object):
     
     def plot_mr (self, 
                  input_file_name,
-                 modes = ['fullKnow_dep4_1', 'fnaa', 'salsa_dep4_1'], 
+                 modes = ['fullKnow_dep4_0', 'fnaa', 'salsa_dep4_0'], 
                  mr_type=0):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -817,22 +831,23 @@ class Res_file_parser (object):
         output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
+        self.set_plt_params ()
         dicts_of_this_mr_type = [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type] 
         for mode in modes:
             dicts_of_this_mr_type_n_mode = [dict for dict in dicts_of_this_mr_type if dict['measure_mr_mode']==mode]
             for dict in dicts_of_this_mr_type_n_mode: 
                 x_vec, mr_vec = dict['x_vec'], dict['y_vec']
                 plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()])
-                plt.xlabel ('Insertion Count')
+                plt.xlabel ('Insertion Count', fontsize = FONT_SIZE)
         if mr_type==0:
             # plt.ylim (0.5, 1.02)
             plt.xlim (33500, 48000)
-            plt.ylabel (r'$\nu$')
+            plt.ylabel (r'$\nu$', fontsize = FONT_SIZE)
         else:
             # plt.ylim (0, 0.08)
             plt.xlim (33500, 48000)
-            plt.ylabel (r'$\pi$')
-        plt.legend()
+            plt.ylabel (r'$\pi$', fontsize = FONT_SIZE)
+        plt.legend(frameon=False)
         # plt.xlim (0, x_diff*(len(mr)-1))
         plt.savefig (f'../res/{input_file_name}_mr{mr_type}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
@@ -845,9 +860,9 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep1_PC.res', 'salsa_dep2_PC.res', 'salsa_dep3_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4, 16, 64]: #, 16, 64 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, normalize_by_Opt=True, uIntFact=2.0, period_param=10)
+    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep3_PC.res', 'salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    for DS_size in [4]: #, 16, 64]: #, 16, 64 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True, period_param=10) #, uIntFact=2.0
         
 def gen_mr_plots ():
 
@@ -859,9 +874,10 @@ def gen_mr_plots ():
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(2):
+            for mr_type in range(1):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
 # gen_plot_bars_by_uIntFact ()
-# gen_mr_plots ()
+# gen_plot_bars ()
+gen_mr_plots ()

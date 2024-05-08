@@ -102,6 +102,7 @@ def run_num_of_DSs_sim ():
                     min_uInterval           = DS_size/10,
                     re_init_after_each_ad   = False,
                     min_feasible_uInterval  = min_feasible_uInterval,
+                    k_loc                   = int(num_of_DSs/3)
                     uInterval_factor        = 2 if mode.startswith('salsa') else 1,
                     verbose                 = verbose
                 ) 

@@ -9,9 +9,10 @@ from pathlib  import Path
 import MyConfig
 import numpy as np
 from printf import printf
+import mod_pylru
 import DistCacheSimulator as sim
 from   tictoc import tic, toc
-import mod_pylru
+from MyConfig import error 
 
 def run_hetro_costs_sim ():
     """
@@ -75,16 +76,15 @@ def run_num_of_DSs_sim ():
     Run experiments with varying num of DSs and homogeneous DSs costs..
     """
     min_feasible_uInterval = 10
-    DS_sizes    = [4]
     missps      = [300]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    DS_size     = 16000
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
-    min_feasible_uInterval = 10
     for num_of_DSs in [3, 6, 9]:
-        DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=T)
+        DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
         for trace in ['Wiki']:        
             for mode in ['opt']:
-                max_num_of_req = MyConfig.calc_num_of_req (trace)  
+                max_num_of_req = 5000 #MyConfig.calc_num_of_req (trace)  
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
                 tic()
                 sm = sim.DistCacheSimulator(
@@ -97,12 +97,12 @@ def run_num_of_DSs_sim ():
                     mode                    = mode,
                     req_df                  = requests,
                     client_DS_cost          = DS_cost,
-                    missp                   = missp,
+                    missp                   = 30,
                     DS_size                 = DS_size,
                     min_uInterval           = DS_size/10,
                     re_init_after_each_ad   = False,
-                    min_feasible_uInterval  = min_feasible_uInterval,
-                    k_loc                   = int(num_of_DSs/3)
+                    min_feasible_uInterval  = 10,
+                    k_loc                   = int(num_of_DSs/3),
                     uInterval_factor        = 2 if mode.startswith('salsa') else 1,
                     verbose                 = verbose
                 ) 
@@ -218,10 +218,10 @@ def run_mr_sim ():
    
 if __name__ == '__main__':
     try:
+        run_num_of_DSs_sim ()
         # run_mr_sim ()
-        # run_num_of_DSs_sim ()
         # run_full_ind_oriented_sim ()
-        run_hetro_costs_sim ()
+        # run_hetro_costs_sim ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')
 

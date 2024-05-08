@@ -82,15 +82,15 @@ def run_num_of_DSs_sim ():
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     for num_of_DSs in [3, 6, 9]:
         DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
-        for trace in ['Wiki']:        
-            for mode in ['opt']:
-                max_num_of_req = 5000 #MyConfig.calc_num_of_req (trace)  
+        for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+            for mode in ['fnaa']:
+                max_num_of_req = MyConfig.calc_num_of_req (trace)  
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
                 tic()
                 sm = sim.DistCacheSimulator(
                     delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
                     full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
-                    res_file_name           = f'{mode}_{MyConfig.getMachineStr()}',
+                    res_file_name           = f'homo_{mode}_{MyConfig.getMachineStr()}',
                     EWMA_alpha_mr0          = 0.5, 
                     EWMA_alpha_mr1          = 0.25, 
                     trace_name              = trace,

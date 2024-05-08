@@ -76,14 +76,13 @@ def run_num_of_DSs_sim ():
     Run experiments with varying num of DSs and homogeneous DSs costs..
     """
     min_feasible_uInterval = 10
-    missps      = [300]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     DS_size     = 16000
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     for num_of_DSs in [3, 6, 9]:
         DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
         for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
-            for mode in ['fnaa']:
+            for mode in ['salsa_dep4']:
                 max_num_of_req = MyConfig.calc_num_of_req (trace)  
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
                 tic()

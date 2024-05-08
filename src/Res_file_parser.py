@@ -45,9 +45,9 @@ MARKER_SIZE             = 16
 MARKER_SIZE_SMALL       = 1
 LINE_WIDTH              = 3 
 LINE_WIDTH_SMALL        = 1 
-FONT_SIZE               = 13
+FONT_SIZE               = 20
 FONT_SIZE_SMALL         = 5
-LEGEND_FONT_SIZE        = 13
+LEGEND_FONT_SIZE        = FONT_SIZE
 LEGEND_FONT_SIZE_SMALL  = 5 
 ROTATION_ANGLE          = 90
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
@@ -699,7 +699,7 @@ class Res_file_parser (object):
                    bpe              = 14,
                    num_of_DSs       = 3,
                    traces           = ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45'], 
-                   modes            = ['FNAA', 'SALSA_DEP3', 'SALSA_DEP4'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   modes            = ['FNAA', 'SALSA_DEP4'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
@@ -884,14 +884,14 @@ class Res_file_parser (object):
 def gen_plot_bars_by_uIntFact ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'salsa_dep3_PC.res'])
-    for DS_size in [4]: #[16, 64]: 
-        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[30, 300], DS_size=DS_size, uIntFactVals=[2, 4, 8], normalize_by_Opt=False)
+    for DS_size in [4, 16, 64]: #[16, 64]: 
+        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[10], DS_size=DS_size, uIntFactVals=[2, 4, 8], normalize_by_Opt=False)
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
     my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep3_PC.res', 'salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4]: #, 16, 64]: #, 16, 64 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[30], DS_size=DS_size, normalize_by_Opt=True, period_param=10) #, uIntFact=2.0
+    for DS_size in [4, 16, 64]: #, 16, 64 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10, 30, 300], DS_size=DS_size, normalize_by_Opt=True, period_param=10) #, uIntFact=2.0
         
 def gen_mr_plots ():
 
@@ -909,5 +909,5 @@ def gen_mr_plots ():
                                                modes = ['fullKnow_dep4_0', 'fnaa', 'salsa_dep4_0'])
 
 # gen_plot_bars_by_uIntFact ()
-# gen_plot_bars ()
-gen_mr_plots ()
+gen_plot_bars ()
+# gen_mr_plots ()

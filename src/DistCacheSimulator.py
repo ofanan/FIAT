@@ -177,17 +177,17 @@ class DistCacheSimulator(object):
                  EWMA_alpha_mr1 = 0.85,
                  res_file_name  = '_', 
                  trace_name     = '_', 
-                 mode           = None, 
+                 mode           = None, # The cache selection and indicator-advertisement alg', e.g., 'opt', 'fnaa', 'fno'.  
                  req_df         = None, 
-                 client_DS_cost = [1], 
-                 missp          = 100, 
-                 k_loc          = 1, 
-                 DS_size        = 10000, 
-                 bpe            = 14, 
+                 client_DS_cost = [1], # client_DS_cost:     2D array of costs. entry (i,j) is the cost from client i to DS j 
+                 missp          = 100, # miss penalty 
+                 k_loc          = 1,   # number of DSs a missed key is inserted to 
+                 DS_size        = 10000, # cache size (max num of items that can be stored in the cache).  
+                 bpe            = 14, #Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n) 
                  rand_seed      = 42, 
-                 max_fpr        = 0.01, 
-                 max_fnr        = 0.01, 
-                 verbose        = [MyConfig.VERBOSE_RES], 
+                 max_fpr        = 0.01, # Allows sending an update by some maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above max_fpr, the DS sends an update.
+                 max_fnr        = 0.01,  
+                 verbose        = [MyConfig.VERBOSE_RES], # Amount of info written to output files. When 1 - write at the end of each sim' the cost, number of misses etc. 
                  use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item       = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  use_fixed_uInterval         = True, 
@@ -201,28 +201,14 @@ class DistCacheSimulator(object):
                  use_EWMA           = True, # when true, use Exp Window Moving Avg for estimating the mr (exclusion probabilities)
                  delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
                  full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
-                 re_init_after_each_ad   = False, 
+                 re_init_after_each_ad   = False, # When True, the cache resets mr0 and mr1 to theirs initial values after each advertisement. 
                  min_feasible_uInterval  = 10,
                  mr_type                 = 0, # Relevant only when the mode's name starts with 'measure_mr'. indicates whether to measure mr0, or mr1.
                  begin_log_mr_at_req_cnt = float ('inf') # the first request cnt at which a "detailed log mr" verbose mode will be applied.  
                  ):
         """
         Return a DistCacheSimulator object with the following attributes:
-            mode:               e.g. 'opt', 'fnaa', 'fno'
-            client_DS_cost:     2D array of costs. entry (i,j) is the cost from client i to DS j
-            missp:               miss penalty
-            k_loc:              number of DSs a missed key is inserted to
-            DS_size:            size of DS 
-            bpe:                Bits Per Element: number of cntrs in the CBF per a cached element (commonly referred to as m/n)
-            use_redundancy_coef: When true, this allows decreasing the probability of speculative access (namely, and access upon a negative indication).
-            max_fpr, max_fnr:   Allows for sending an update by some maximum allowed (estimated) fpr, fnr. 
-                                When the estimated fnr is above max_fnr, or the estimated fpr is above max_fpr, the DS sends an update.
-                                Currently unused.  
-            verbose :           Amount of info written to output files. When 1 - write at the end of each sim' the cost, number of misses etc.
-            bw:                 BW budged. Used to calculate the update interval when the uInterval isn't explicitly define in the input.
-            uInterval:          update Interval, namely, number of insertions to each cache before this cache advertises a fresh indicator.
-            use_given_client_per_item: if True, place each missed item in the location(s) defined for it in the trace. Else, select the location of a missed item based on hash. 
-            use_EWMA            use Exp Weighted Moving Avg to estimate the current mr0, mr1.            
+                        
         """
         self.re_init_after_each_ad = re_init_after_each_ad
         self.EWMA_alpha         = 0.25  # exp' window's moving average's alpha parameter

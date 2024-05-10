@@ -20,10 +20,6 @@ def parse_Twitter_trace (trace_file_name,
     input_file_name             = 'snia/twitter/' + trace_file_name
     full_path_input_file_name   = traces_path + 'snia/twitter/' +  trace_file_name
      
-    # input_file = open (full_path_input_file_name,  "r")
-    # lines               = (line.rstrip() for line in input_file) # "lines" contains all lines in input file
-    # lines               = (line for line in lines if line)       # Discard blank lines
-        
     keys    = []
     req_cnt = 0
     

@@ -5,15 +5,11 @@ Output: a csv file, where:
         - the 2nd col. is the id of the clients of this req,
         - the rest of the cols. are the locations ("k_loc") to which a central controller would enter this req. upon a miss. 
 """
-
-import numpy as np
-import pandas as pd
-import datetime as dt
-import matplotlib as plt
+import numpy as np, pandas as pd, datetime as dt
 import mmh3, sys, hashlib
+from numpy import infty
 import MyConfig 
 from MyConfig import getTracesPath 
-from numpy import infty
 
 def parse_wiki_trace (trace_file_name      = 'wiki1.1190448987.txt',      
                       max_num_of_req       = MyConfig.INF_INT, # maximum number of requests to be parsed, starting from the beginning of the trace

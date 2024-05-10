@@ -319,6 +319,18 @@ def getMachineStr ():
         return 'HPC' # indicates that this sim runs on my PC
     return 'PC' # indicates that this sim runs on an HPC       
 
+def indexOrNone(l : list, 
+                elem):
+    """
+    if elem is found in a list, returns the first index in which it's found.
+    else, return None
+    """
+    try:
+        idx = l.index(elem)
+        return idx
+    except ValueError:
+        return None
+    
 # def main ():
 #     num_of_req = INF_INT
 #     for num_of_req in [300000]:

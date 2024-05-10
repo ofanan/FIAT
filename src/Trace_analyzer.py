@@ -81,5 +81,5 @@ def analyze_trace_locality (
     printf (outputFile, f'stdev = {np.sqrt (sum (stdev_contribution_vec))}\n')   
 
 for trace in ['Wiki']:
-    analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace], max_len=100)
+    analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
 # analyze_trace_locality (trace='Wiki', trace_len=13800000, num_uniques=934000, max_len=2)

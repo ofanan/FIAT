@@ -75,16 +75,11 @@ def analyze_trace_locality (
         last_appearance_of[key] = row_num
         
     inter_appearance_vec = inter_appearance_vec[:idx_in_inter_appearance_vec]        
-    outputFile = open (f'{getTracesPath()}traces_stat.txt', 'w')
-    # printf (outputFile, f'// inter_appearance_hist=\n')
-    # printar (outputFile, inter_appearance_hist)
-    # mean_interappearance = sum ([i*inter_appearance_hist[i] for i in range(len(inter_appearance_hist))]) / sum(inter_appearance_hist)
+    outputFile = open (f'{getTracesPath()}traces_stat.txt', 'a+')
+    printf (outputFile, f'// inter_appearance_vec=\n')
+    printar (outputFile, inter_appearance_vec)
     printf (outputFile, f'// trace={trace} mean inter-appearance={np.mean(inter_appearance_vec)}, stdev={np.std(inter_appearance_vec)}\n')
-    # stdev_contribution_vec = [inter_appearance_hist[i]*(i-mean_interappearance)**2 for i in range(len(inter_appearance_hist))]
-    # printf (outputFile, f'// stdev_contribution_vec=\n')
-    # printar (outputFile, stdev_contribution_vec)
-    # printf (outputFile, f'stdev = {np.sqrt (sum (stdev_contribution_vec))}\n')   
 
-# for trace in ['Wiki']:
-#     analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
-analyze_trace_locality (trace='Wiki_short', trace_len=15, num_uniques=4, max_len=15)
+for trace in ['Wiki']:
+    analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
+# analyze_trace_locality (trace='Wiki_short', trace_len=15, num_uniques=4, max_len=15)

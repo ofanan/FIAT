@@ -59,32 +59,26 @@ trace_csv_file_name = {
 
 trace_len = {
    'Wiki'       : 13800000,
-   'Wiki_short' : 1,
-   'Gradle'     : 1,
-   'Scarab'     : 1,
-   'F1'         : 1,
-   'F2'         : 1,
-   'WS1'        : 1,
-   'P3'         : 1,
-   'Twitter17'  : 1,
-   'Twitter45'  : 1,
-   'IBM1'       : 1,
-   'IBM7'       : 1,
+   'Gradle'     : 2091900,
+   'Scarab'     : 8159900,
+   'F1'         : 5569000,
+   'F2'         : 13883900,
+   'Twitter17'  : 14000000,
+   'Twitter45'  : 2000000,
+   'IBM1'       : 948900,
+   'IBM7'       : 4100000,
 }
 
 num_uniques_in_trace = {
    'Wiki'       : 934000,
-   'Wiki_short' : 1,
-   'Gradle'     : 1,
-   'Scarab'     : 1,
-   'F1'         : 1,
-   'F2'         : 1,
-   'WS1'        : 1,
-   'P3'         : 1,
-   'Twitter17'  : 1,
-   'Twitter45'  : 1,
-   'IBM1'       : 1,
-   'IBM7'       : 1,
+   'Gradle'     : 155900,
+   'Scarab'     : 844900,
+   'F1'         : 828900,
+   'F2'         : 832900,
+   'Twitter17'  : 464900,
+   'Twitter45'  : 1500900,
+   'IBM1'       : 457900,
+   'IBM7'       : 438900,
 }
 def print_list (list):
     for item in list:

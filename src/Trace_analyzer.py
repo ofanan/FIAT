@@ -49,14 +49,14 @@ def analyze_trace_locality (
     if trace_len==None or num_uniques==None:
         error (f'In Trace_analyzer.analyze_trace_locality(). Sorry, currently num_uniques and numUniques cannot be None')
     
-    
-    # inter_appearance_hist   = np.zeros (trace_len,   dtype='int32')
-    inter_appearance_vec   = np.zeros (trace_len,   dtype='int32')
-    last_appearance_of      = np.zeros (num_uniques, dtype='int32')
+    inter_appearance_vec = np.zeros (trace_len,   dtype='int32')
+    last_appearance_of   = np.zeros (num_uniques, dtype='int32')
+    num_of_appearance_of = np.zeros (num_uniques, dtype='int32')
     input_file = open (getTracesPath() + MyConfig.trace_csv_file_name[trace], 'r')        
     csv_reader = csv.reader (input_file)    
     row_num = 0
     idx_in_inter_appearance_vec = 0
+    # num_of_singular_items = 0 # number of items that appear only once in the trace
     for row in csv_reader:
         row_num += 1
         if row_num==1: # Assume that first row contains the word 'key', rather than a numerical key
@@ -64,22 +64,23 @@ def analyze_trace_locality (
         if row_num > max_len:
             break
         if row_num>trace_len:
-            error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is larger than the given trace_len={trace_len}')            
+            error (f'in Trace_analyzer.analyze_trace_locality(). trace={trace}, row_num={row_num}, key={key} is larger than the given trace_len={trace_len}')            
         key = int(row[0])
         if key>=len(last_appearance_of):
-            error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is too larger for the given num_of_uniques={num_uniques}')
+            error (f'in Trace_analyzer.analyze_trace_locality(). trace={trace}, row_num={row_num}, key={key} is too larger for the given num_of_uniques={num_uniques}')
         if last_appearance_of[key]>0: # This key has already appeared before #is the first appearance of this key
             inter_appearance_vec[idx_in_inter_appearance_vec] = row_num-last_appearance_of[key]
             idx_in_inter_appearance_vec += 1 
-            # inter_appearance_hist[row_num-last_appearance_of[key]] += 1
+        num_of_appearance_of[key] += 1
         last_appearance_of[key] = row_num
         
     inter_appearance_vec = inter_appearance_vec[:idx_in_inter_appearance_vec]        
     outputFile = open (f'{getTracesPath()}traces_stat.txt', 'a+')
-    printf (outputFile, f'// inter_appearance_vec=\n')
-    printar (outputFile, inter_appearance_vec)
-    printf (outputFile, f'// trace={trace} mean inter-appearance={np.mean(inter_appearance_vec)}, stdev={np.std(inter_appearance_vec)}\n')
+    if trace=='Wiki_short':
+        printf (outputFile, f'// inter_appearance_vec=\n')
+        printar (outputFile, inter_appearance_vec)
+    printf (outputFile, f'// trace={trace} mean inter-appearance={np.mean(inter_appearance_vec)}, stdev={np.std(inter_appearance_vec)}, num of singulars={len([item for item in num_of_appearance_of if item==1])}\n')
 
-for trace in ['Wiki']:
+for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
-# analyze_trace_locality (trace='Wiki_short', trace_len=15, num_uniques=4, max_len=15)
+# analyze_trace_locality (trace='Wiki_short', trace_len=trace_len, num_uniques=10, max_len=trace_len)

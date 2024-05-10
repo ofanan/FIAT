@@ -79,8 +79,6 @@ def analyze_trace_locality (
     if trace=='Wiki_short':
         printf (outputFile, f'// inter_appearance_vec=\n')
         printar (outputFile, inter_appearance_vec)
-    printf (outputFile, f'// trace={trace} mean inter-appearance={np.mean(inter_appearance_vec)}, stdev={np.std(inter_appearance_vec)}, num of singulars={len([item for item in num_of_appearance_of if item==1])}\n')
-
+    printf (outputFile, '{}\t& {:.0f} \t&{:.0f} \t&{:.0f}\n' .format (trace, np.mean(inter_appearance_vec), np.std(inter_appearance_vec), len([item for item in num_of_appearance_of if item==1])))
 for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
-# analyze_trace_locality (trace='Wiki_short', trace_len=trace_len, num_uniques=10, max_len=trace_len)

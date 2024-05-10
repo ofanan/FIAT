@@ -50,11 +50,13 @@ def analyze_trace_locality (
         error (f'In Trace_analyzer.analyze_trace_locality(). Sorry, currently num_uniques and numUniques cannot be None')
     
     
-    inter_appearance_hist   = np.zeros (trace_len,   dtype='int32')
+    # inter_appearance_hist   = np.zeros (trace_len,   dtype='int32')
+    inter_appearance_vec   = np.zeros (trace_len,   dtype='int32')
     last_appearance_of      = np.zeros (num_uniques, dtype='int32')
     input_file = open (getTracesPath() + MyConfig.trace_csv_file_name[trace], 'r')        
     csv_reader = csv.reader (input_file)    
     row_num = 0
+    idx_in_inter_appearance_vec = 0
     for row in csv_reader:
         row_num += 1
         if row_num==1: # Assume that first row contains the word 'key', rather than a numerical key
@@ -67,19 +69,22 @@ def analyze_trace_locality (
         if key>=len(last_appearance_of):
             error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is too larger for the given num_of_uniques={num_uniques}')
         if last_appearance_of[key]>0: # This key has already appeared before #is the first appearance of this key
-            inter_appearance_hist[row_num-last_appearance_of[key]] += 1
+            inter_appearance_vec[idx_in_inter_appearance_vec] = row_num-last_appearance_of[key]
+            idx_in_inter_appearance_vec += 1 
+            # inter_appearance_hist[row_num-last_appearance_of[key]] += 1
         last_appearance_of[key] = row_num
         
+    inter_appearance_vec = inter_appearance_vec[:idx_in_inter_appearance_vec]        
     outputFile = open (f'{getTracesPath()}traces_stat.txt', 'w')
-    printf (outputFile, f'// inter_appearance_hist=\n')
-    printar (outputFile, inter_appearance_hist)
-    mean_interappearance = sum ([i*inter_appearance_hist[i] for i in range(len(inter_appearance_hist))]) / sum(inter_appearance_hist)
-    printf (outputFile, f'// trace={trace} mean inter-appearance={mean_interappearance}, ')
-    stdev_contribution_vec = [inter_appearance_hist[i]*(i-mean_interappearance)**2 for i in range(len(inter_appearance_hist))]
+    # printf (outputFile, f'// inter_appearance_hist=\n')
+    # printar (outputFile, inter_appearance_hist)
+    # mean_interappearance = sum ([i*inter_appearance_hist[i] for i in range(len(inter_appearance_hist))]) / sum(inter_appearance_hist)
+    printf (outputFile, f'// trace={trace} mean inter-appearance={np.mean(inter_appearance_vec)}, stdev={np.std(inter_appearance_vec)}\n')
+    # stdev_contribution_vec = [inter_appearance_hist[i]*(i-mean_interappearance)**2 for i in range(len(inter_appearance_hist))]
     # printf (outputFile, f'// stdev_contribution_vec=\n')
     # printar (outputFile, stdev_contribution_vec)
-    printf (outputFile, f'stdev = {np.sqrt (sum (stdev_contribution_vec))}\n')   
+    # printf (outputFile, f'stdev = {np.sqrt (sum (stdev_contribution_vec))}\n')   
 
-for trace in ['Wiki']:
-    analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
-# analyze_trace_locality (trace='Wiki', trace_len=13800000, num_uniques=934000, max_len=2)
+# for trace in ['Wiki']:
+#     analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace])
+analyze_trace_locality (trace='Wiki_short', trace_len=15, num_uniques=4, max_len=15)

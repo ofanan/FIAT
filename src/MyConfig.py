@@ -42,20 +42,50 @@ trace_txt_file_name = {'Wiki'   : 'wiki/wiki1.1190448987.txt',
                        'Gradle' : 'gradle/gradle.build-cache.txt',
                        'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
 
-trace_csv_file_name = {'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
-                       'Gradle'     : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
-                       'Scarab'     : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
-                       'F1'         : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
-                       'F2'         : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
-                       'WS1'        : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
-                       'P3'         : 'arc/P3.3912Kreq.csv',
-                       'Twitter17'  : 'snia/twitter/Twitter17.cluster17_14MReq_464Kuniqes.csv',
-                       'Twitter45'  : 'snia/twitter/Twitter45.cluster45.txt.csv',
-                       'IBM1'       : 'snia/IBM/IBM1.ObjectStoreTrace001Part0.txt.csv',
-                       'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
-                       }
+trace_csv_file_name = {
+   'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
+   'Wiki_short' : 'wiki/wiki_short.csv',
+   'Gradle'     : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
+   'Scarab'     : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
+   'F1'         : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
+   'F2'         : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
+   'WS1'        : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
+   'P3'         : 'arc/P3.3912Kreq.csv',
+   'Twitter17'  : 'snia/twitter/Twitter17.cluster17_14MReq_464Kuniqes.csv',
+   'Twitter45'  : 'snia/twitter/Twitter45.cluster45.txt.csv',
+   'IBM1'       : 'snia/IBM/IBM1.ObjectStoreTrace001Part0.txt.csv',
+   'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
+}
 
+trace_len = {
+   'Wiki'       : 13800000,
+   'Wiki_short' : 1,
+   'Gradle'     : 1,
+   'Scarab'     : 1,
+   'F1'         : 1,
+   'F2'         : 1,
+   'WS1'        : 1,
+   'P3'         : 1,
+   'Twitter17'  : 1,
+   'Twitter45'  : 1,
+   'IBM1'       : 1,
+   'IBM7'       : 1,
+}
 
+num_uniques_in_trace = {
+   'Wiki'       : 934000,
+   'Wiki_short' : 1,
+   'Gradle'     : 1,
+   'Scarab'     : 1,
+   'F1'         : 1,
+   'F2'         : 1,
+   'WS1'        : 1,
+   'P3'         : 1,
+   'Twitter17'  : 1,
+   'Twitter45'  : 1,
+   'IBM1'       : 1,
+   'IBM7'       : 1,
+}
 def print_list (list):
     for item in list:
         print (f'{item}')

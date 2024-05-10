@@ -8,46 +8,6 @@ from printf import printf, printar
 from tictoc import tic, toc
 from MyConfig import getTracesPath, gen_requests, optimal_BF_size_per_DS_size, indexOrNone, error
 
-def analyze_trace_locality (
-    trace       : str = '',
-    max_len     : float = float ('inf'),
-    num_uniques : int = None, # num of distinct keys in the trace 
-    trace_len   : int = None
-    ):
-    """
-    Analyze the temporal locality of a trace.
-    Results include a print of the avg. and of the stdev of the time between subsequent occurrences of the same key. 
-    """
-    if trace_len==None or num_uniques==None:
-        error (f'In Trace_analyzer.analyze_trace_locality(). Sorry, currently num_uniques and numUniques cannot be None')
-    
-    
-    inter_appearance_hist   = np.zeros (trace_len)
-    last_appearance_of      = np.zeros (num_uniques)
-    input_file = open (getTracesPath() + MyConfig.trace_csv_file_name[trace], 'r')        
-    csv_reader = csv.reader (input_file)    
-    row_num = 0
-    for row in csv_reader:
-        row_num += 1
-        if row_num==1: # Assume that first row contains the word 'key', rather than a numerical key
-            continue        
-        if row_num > max_len:
-            break
-        if row_num>trace_len:
-            error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is larger than the given trace_len={trace_len}')            
-        key = int(row[0])
-        if key>len(last_appearance_of):
-            error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is larger than the given num_of_uniques={num_uniqes}')
-        if last_appearance_of[key]>0: # This key has already appeared before #is the first appearance of this key
-            inter_appearance_hist[row_num-last_appearance_of[key]] += 1
-        last_appearance_of[key] = row_num
-        
-    outputFile = open (f'{getTracesPath()}traces_info.txt', 'a+')
-    printf (outputFile, f'// trace={trace}\n')
-    printf (outputFile, f'// last_appearance_of=\n')
-    printar (outputFile, last_appearance_of)
-    printf (outputFile, f'// inter_appearance_hist=\n')
-    
 def hit_rate_of_trace (trace_file_name):
     """
     Checks the hit rate in a given cache trace.
@@ -76,5 +36,50 @@ def hit_rate_of_trace (trace_file_name):
     print ('hit cnt = {}, miss cnt = {}\n' .format (hit_cnt, miss_cnt))
     print ('hit rate = {:.2}\n' .format (hit_cnt / (hit_cnt + miss_cnt)))
                     
+def analyze_trace_locality (
+    trace       : str = '',
+    max_len     : float = float ('inf'),
+    num_uniques : int = None, # num of distinct keys in the trace 
+    trace_len   : int = None
+    ):
+    """
+    Analyze the temporal locality of a trace.
+    Results include a print of the avg. and of the stdev of the time between subsequent occurrences of the same key. 
+    """
+    if trace_len==None or num_uniques==None:
+        error (f'In Trace_analyzer.analyze_trace_locality(). Sorry, currently num_uniques and numUniques cannot be None')
+    
+    
+    inter_appearance_hist   = np.zeros (trace_len,   dtype='int32')
+    last_appearance_of      = np.zeros (num_uniques, dtype='int32')
+    input_file = open (getTracesPath() + MyConfig.trace_csv_file_name[trace], 'r')        
+    csv_reader = csv.reader (input_file)    
+    row_num = 0
+    for row in csv_reader:
+        row_num += 1
+        if row_num==1: # Assume that first row contains the word 'key', rather than a numerical key
+            continue        
+        if row_num > max_len:
+            break
+        if row_num>trace_len:
+            error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is larger than the given trace_len={trace_len}')            
+        key = int(row[0])
+        if key>=len(last_appearance_of):
+            error (f'in Trace_analyzer.analyze_trace_locality(). row_num={row_num}, key={key} is too larger for the given num_of_uniques={num_uniques}')
+        if last_appearance_of[key]>0: # This key has already appeared before #is the first appearance of this key
+            inter_appearance_hist[row_num-last_appearance_of[key]] += 1
+        last_appearance_of[key] = row_num
+        
+    outputFile = open (f'{getTracesPath()}traces_stat.txt', 'w')
+    printf (outputFile, f'// inter_appearance_hist=\n')
+    printar (outputFile, inter_appearance_hist)
+    mean_interappearance = sum ([i*inter_appearance_hist[i] for i in range(len(inter_appearance_hist))]) / sum(inter_appearance_hist)
+    printf (outputFile, f'// trace={trace} mean inter-appearance={mean_interappearance}, ')
+    stdev_contribution_vec = [inter_appearance_hist[i]*(i-mean_interappearance)**2 for i in range(len(inter_appearance_hist))]
+    # printf (outputFile, f'// stdev_contribution_vec=\n')
+    # printar (outputFile, stdev_contribution_vec)
+    printf (outputFile, f'stdev = {np.sqrt (sum (stdev_contribution_vec))}\n')   
 
-analyze_trace_locality (trace='Wiki', trace_len=13800000, num_uniques=934000, max_len=2)
+for trace in ['Wiki']:
+    analyze_trace_locality (trace=trace, trace_len=MyConfig.trace_len[trace], num_uniques=MyConfig.num_uniques_in_trace[trace], max_len=100)
+# analyze_trace_locality (trace='Wiki', trace_len=13800000, num_uniques=934000, max_len=2)

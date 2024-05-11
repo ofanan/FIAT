@@ -798,7 +798,7 @@ class Res_file_parser (object):
                 sub_plot_str = '_bCost'
             else:
                 sub_plot_str = ''
-            plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}_pparam{period_param}.pdf', bbox_inches='tight', dpi=100)
+            plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}_pparam{period_param}_{num_of_DSs}DSs.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
     def bar_xlabel_positions (self, num_groups, num_bars_per_group):
@@ -822,7 +822,7 @@ class Res_file_parser (object):
                  modes              = ['fullKnow_dep4_0', 'fnaa', 'salsa_dep4_0'], # Modes to plot  
                  mr_type            = 0, # 0 for mr0, 1 for mr1. 
                  plotAlsoLegend     = False, # When True, plot also the legend (in addition to plotting the graphs)
-                 plotOnlyLegend     = True, # When True, plot only the legend, without the graphs
+                 plotOnlyLegend     = False, # When True, plot only the legend, without the graphs
                  ):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -831,32 +831,16 @@ class Res_file_parser (object):
         """
         self.set_plt_params ()
         if plotOnlyLegend:
-            # fig         = pylab.figure()
-            # figlegend   = pylab.figure(figsize=(3,2))
-            # ax          = fig.add_subplot(111)
-            # # line1       = ax.plot(range(1), 1)
-            # # line2       = ax.plot(range(1), 1)
-            # # line3       = ax.plot(range(1), 1)
-            # # lines = [line1, line2, line3]
-            # lines       = ax.plot(range(1), 1, range(1), 1, range(1), 1)
-            # figlegend.legend(lines, (self.strOfMode[modes[0].upper()], self.strOfMode[modes[1].upper()], self.strOfMode[modes[2].upper()]), 'center', ncol=3)
-            # figlegend.savefig (f'../res/mr_lgnd.pdf', bbox_inches='tight', dpi=100)
-            
             colors = [self.colorOfMode[modes[0].upper()], self.colorOfMode[modes[1].upper()], self.colorOfMode[modes[2].upper()]]
             f = lambda m,c: plt.plot([],[],marker=m, color=c, ls="none")[0]
             handles = [f("s", colors[i]) for i in range(3)]
             labels = [self.strOfMode[modes[0].upper()], self.strOfMode[modes[1].upper()], self.strOfMode[modes[2].upper()]]
             legend = plt.legend(handles, labels, loc=3, framealpha=1, frameon=True, ncol=3)
             
-            def export_legend(legend, filename="legend.png"):
-                fig  = legend.figure
-                fig.canvas.draw()
-                bbox  = legend.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-                fig.savefig('../res/mr_lgnd.pdf', dpi="figure", bbox_inches=bbox)
-                # fig.savefig ('../res/mr_lgnd.pdf', bbox_inches='tight', dpi=100)
-            
-            export_legend(legend)
-            # plt.show()
+            fig  = legend.figure
+            fig.canvas.draw()
+            bbox  = legend.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            fig.savefig('../res/mr_lgnd.pdf', dpi="figure", bbox_inches=bbox)
             return
 
         dicts_of_this_mr_type = [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type] 
@@ -889,25 +873,37 @@ def gen_plot_bars_by_uIntFact ():
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep3_PC.res', 'salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
     for DS_size in [4, 16, 64]: #, 16, 64 
         my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10, 30, 300], DS_size=DS_size, normalize_by_Opt=True, period_param=10) #, uIntFact=2.0
+        
+def gen_plot_homo_bars ():
+    my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_files(['homo_opt_PC.res', 'homo_fnaa_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['homo_fnaa_HPC.res', 'homo_salsa_dep4_HPC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    for num_of_DSs in [3, 6, 9]:
+        my_Res_file_parser.plot_bars (
+            plot_bwCost     = True, 
+            missp_vals      = [30], 
+            DS_size         = 16, 
+            num_of_DSs      = num_of_DSs,
+            period_param    = 10) 
         
 def gen_mr_plots ():
 
     
-    input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['IBM1_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for ds in range (1): 
+    for ds in range (2): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(1):
+            for mr_type in range(2, 3):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type,
                                                modes = ['fullKnow_dep4_0', 'fnaa', 'salsa_dep4_0'])
 
 # gen_plot_bars_by_uIntFact ()
-gen_plot_bars ()
-# gen_mr_plots ()
+# gen_plot_homo_bars ()
+gen_mr_plots ()

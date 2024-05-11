@@ -61,12 +61,12 @@ trace_len = {
    'Wiki'       : 13800000,
    'Gradle'     : 2091900,
    'Scarab'     : 8159900,
-   'F1'         : 5590000,
+   'F1'         : 10000000,
    'F2'         : 13883900,
-   'Twitter17'  : 14000000,
-   'Twitter45'  : 2000000,
-   'IBM1'       : 948900,
-   'IBM7'       : 4100000,
+   'Twitter17'  : 16000000,
+   'Twitter45'  : 2100000,
+   'IBM1'       : 949900,
+   'IBM7'       : 4200000,
 }
 
 num_uniques_in_trace = {
@@ -75,10 +75,10 @@ num_uniques_in_trace = {
    'Scarab'     : 844900,
    'F1'         : 1200000,
    'F2'         : 832900,
-   'Twitter17'  : 464900,
-   'Twitter45'  : 1500900,
-   'IBM1'       : 457900,
-   'IBM7'       : 438900,
+   'Twitter17'  : 474900,
+   'Twitter45'  : 1530900,
+   'IBM1'       : 459900,
+   'IBM7'       : 439900,
 }
 def print_list (list):
     for item in list:

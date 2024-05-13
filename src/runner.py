@@ -24,6 +24,7 @@ def run_hetro_costs_sim ():
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     # start_time = time.time() 
+    print ('running hetro_costs_sim')
     for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
@@ -79,6 +80,7 @@ def run_num_of_DSs_sim ():
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     DS_size     = 16000
     verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+    print ('running num_of_DSs_sim')
     for num_of_DSs in [9]:
         DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
         for trace in ['F1', 'F2', ]:     
@@ -194,7 +196,7 @@ def run_mr_sim ():
     for trace in ['IBM1', 'IBM7']: #, 'Scarab', 'Wiki', 'F1', 'Twitter45']: #  ], 'IBM7', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
         max_num_of_req = MyConfig.calc_num_of_req (trace)  
         requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-        for mode in ['measure_mr_by_fullKnow_dep4', 'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4']: #'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4', 'measure_mr_by_fullKnow_dep']: 
+        for mode in ['measure_mr_by_fnaa', 'measure_mr_by_fullKnow_dep4', 'measure_mr_by_salsa_dep4']: #, 'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4']: #'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4', 'measure_mr_by_fullKnow_dep']: 
             for mr_type in range (2): 
                 tic()
                 sm = sim.DistCacheSimulator(
@@ -218,8 +220,8 @@ def run_mr_sim ():
    
 if __name__ == '__main__':
     try:
-        run_num_of_DSs_sim ()
-        # run_mr_sim ()
+        # run_num_of_DSs_sim ()
+        run_mr_sim ()
         # run_full_ind_oriented_sim ()
         # run_hetro_costs_sim ()
     except KeyboardInterrupt:

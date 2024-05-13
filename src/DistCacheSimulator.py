@@ -327,8 +327,14 @@ class DistCacheSimulator(object):
             self.q_measure_window               = self.mr_measure_window[0]
             self.naive_selection_alg            = 'all_plus_speculative'
             self.use_fna                        = True
+            self.num_of_warmup_req              = 30000
+            self.num_of_req_to_measure          = 100000
+            # if self.mode=='measure_mr_by_fullKnow_dep4':
+            #     self.num_of_ads_to_measure          = 20
+            #     self.num_of_warmup_ads              = [2, 2] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
+            # else:
+            self.num_of_ads_to_measure          = 20
             self.num_of_warmup_ads              = [2*(self.DS_size/self.min_uInterval), 2*(self.DS_size/self.min_uInterval)] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
-            self.num_of_ads_to_measure          = 6
             self.num_of_insertions_between_fpr_fnr_updates = self.mr_measure_window[0] 
 
             self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
@@ -610,14 +616,21 @@ class DistCacheSimulator(object):
         Assigns self.finished_warmup_period[ds]=True iff the warmup advertisement period is done.
         Assigns self.finished_report_period[ds]=True iff the period in which report should be written to the .mr.res file is done.
         """
-        if self.num_of_ads[ds] == self.num_of_warmup_ads[self.mr_type]: # Skip some warm-up period; later, write the results to file
+        if self.req_cnt > self.num_of_warmup_req:
             self.finished_warmup_period[ds] = True        
-            if self.print_detailed_output: 
-                printf (self.measure_mr_res_file[ds], f'\nfinished warmup of ds{ds}')
                             
         if self.finished_warmup_period[ds]: 
-            if self.num_of_ads[ds] > self.num_of_warmup_ads[self.mr_type] + self.num_of_ads_to_measure: # Collected enough points
+            if self.req_cnt > self.num_of_warmup_req + self.num_of_req_to_measure: # Collected enough points
                 self.finished_report_period[ds] = True
+
+        # if self.num_of_ads[ds] == self.num_of_warmup_ads[self.mr_type]: # Skip some warm-up period; later, write the results to file
+        #     self.finished_warmup_period[ds] = True        
+        #     if self.print_detailed_output: 
+        #         printf (self.measure_mr_res_file[ds], f'\nfinished warmup of ds{ds}')
+        #
+        # if self.finished_warmup_period[ds]: 
+        #     if self.num_of_ads[ds] > self.num_of_warmup_ads[self.mr_type] + self.num_of_ads_to_measure: # Collected enough points
+        #         self.finished_report_period[ds] = True
 
     def run_trace_measure_mr_by_fullKnow (self):
         """
@@ -770,14 +783,14 @@ class DistCacheSimulator(object):
                     if self.mr_type==0:
                         if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
                             if num_of_pos_inds==num_of_pos_ind_2print:
-                                printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], tn_cnt[ds][num_of_pos_ind_2print]/neg_ind_cnt[ds][num_of_pos_ind_2print]))
+                                printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, tn_cnt[ds][num_of_pos_ind_2print]/neg_ind_cnt[ds][num_of_pos_ind_2print]))
                                 last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                             neg_ind_cnt[ds][num_of_pos_inds] = 0
                             tn_cnt     [ds][num_of_pos_inds] = 0
                     else: #self.mr_type==1
                         if pos_ind_cnt[ds][num_of_pos_inds]>0 and pos_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[1]==0:
                             if num_of_pos_inds==num_of_pos_ind_2print:
-                                printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], fp_cnt[ds][num_of_pos_ind_2print]/pos_ind_cnt[ds][num_of_pos_ind_2print]))
+                                printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, fp_cnt[ds][num_of_pos_ind_2print]/pos_ind_cnt[ds][num_of_pos_ind_2print]))
                                 last_printed_ins_cnt[ds] = self.ins_cnt[ds]
                                 if not(printed_mr1_for_DS[ds]):
                                     printed_mr1_for_DS[ds] = True
@@ -934,7 +947,7 @@ class DistCacheSimulator(object):
                         neg_ind_cnt[ds][num_of_pos_inds] = 0
                         tn_cnt     [ds][num_of_pos_inds] = 0
                         if num_of_pos_inds==num_of_pos_ind_2print:
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][num_of_pos_ind_2print])) # print only the estimated mr for the case of no pos indications. 
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, estimated_mr[ds][num_of_pos_ind_2print])) # print only the estimated mr for the case of no pos indications. 
                         
                 else: #self.mr_type==1
                     if self.indications[ds]: # positive indication for this DS
@@ -949,7 +962,7 @@ class DistCacheSimulator(object):
                         pos_ind_cnt[ds][num_of_pos_inds] = 0
                         fp_cnt     [ds][num_of_pos_inds] = 0
                         if num_of_pos_inds==num_of_pos_ind_2print:
-                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr[ds][num_of_pos_ind_2print]))
+                            printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, estimated_mr[ds][num_of_pos_ind_2print]))
 
             if self.DS2insert==None: # there was no insertion to a DS
                 continue
@@ -1067,11 +1080,11 @@ class DistCacheSimulator(object):
                 #     printf (self.measure_mr_res_file[ds], f' {self.ins_cnt[ds]},')
                 if self.mr_type==0:
                     if self.ins_cnt[ds]%self.mr_measure_window[0]==0 and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
-                        printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr0[ds] if self.mr_type==0 else estimated_mr0[ds]))
+                        printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, estimated_mr0[ds] if self.mr_type==0 else estimated_mr0[ds]))
                         last_reported_ins_cnt[ds] = self.ins_cnt[ds]                    
                 else:
                     if self.ins_cnt[ds]%self.mr_measure_window[0]==0 and last_reported_ins_cnt[ds]!=self.ins_cnt[ds]:
-                        printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.ins_cnt[ds], estimated_mr1[ds] if self.mr_type==0 else estimated_mr1[ds]))
+                        printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, estimated_mr1[ds] if self.mr_type==0 else estimated_mr1[ds]))
                         last_reported_ins_cnt[ds] = self.ins_cnt[ds]
 
             if all(self.finished_report_period): 

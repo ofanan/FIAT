@@ -848,15 +848,15 @@ class Res_file_parser (object):
             dicts_of_this_mr_type_n_mode = [dict for dict in dicts_of_this_mr_type if dict['measure_mr_mode']==mode]
             for dict in dicts_of_this_mr_type_n_mode: 
                 x_vec, mr_vec = dict['x_vec'], dict['y_vec']
-                plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()], marker='.') #$$$
+                plt.plot (dict['x_vec'], dict['y_vec'], linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()]) #$$$
                 plt.xlabel ('Insertion Count', fontsize = FONT_SIZE)
         if mr_type==0:
             # plt.ylim (0.5, 1.02)
-            plt.xlim (34500, 48000)
+            # plt.xlim (34500, 48000)
             plt.ylabel (r'$\nu$', fontsize = FONT_SIZE)
         else:
             # plt.ylim (0, 0.08)
-            plt.xlim (34500, 48000)
+            plt.xlim (30000, 60000)
             plt.ylabel (r'$\pi$', fontsize = FONT_SIZE)
         if plotAlsoLegend:
             plt.legend(frameon=False, loc='lower right')
@@ -891,7 +891,7 @@ def gen_plot_homo_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['IBM1_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
+    input_file_names=['IBM7_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
     for ds in range (2, 3): 
@@ -901,8 +901,9 @@ def gen_mr_plots ():
             for mr_type in range(2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type,
-                                               modes = [f'fullKnow_dep4_{mr_type}', 'fnaa', 'salsa_dep4_{mr_type}'])
+                                                # modes = [f'fullKnow_dep4_{mr_type}', 'fnaa'])
+                                                modes = [f'fullKnow_dep4_{mr_type}', 'fnaa', f'salsa_dep4_{mr_type}'])
 
 # gen_plot_bars_by_uIntFact ()
-gen_plot_homo_bars ()
-# gen_mr_plots ()
+# gen_plot_homo_bars ()
+gen_mr_plots ()

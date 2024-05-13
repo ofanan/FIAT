@@ -879,8 +879,7 @@ def gen_plot_bars ():
         
 def gen_plot_homo_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['homo_opt_PC.res', 'homo_fnaa_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
-    my_Res_file_parser.parse_files(['homo_fnaa_HPC.res', 'homo_salsa_dep4_HPC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    my_Res_file_parser.parse_files(['homo_opt_PC.res', 'homo_fnaa_PC.res', 'homo_salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
     for num_of_DSs in [3, 6, 9]:
         my_Res_file_parser.plot_bars (
             plot_bwCost     = True, 
@@ -905,5 +904,5 @@ def gen_mr_plots ():
                                                modes = [f'fullKnow_dep4_{mr_type}', 'fnaa', 'salsa_dep4_{mr_type}'])
 
 # gen_plot_bars_by_uIntFact ()
-# gen_plot_homo_bars ()
-gen_mr_plots ()
+gen_plot_homo_bars ()
+# gen_mr_plots ()

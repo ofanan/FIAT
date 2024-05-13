@@ -316,7 +316,7 @@ class DistCacheSimulator(object):
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
-            self.print_detailed_output          = False
+            self.print_detailed_output          = True
             self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
@@ -328,7 +328,7 @@ class DistCacheSimulator(object):
             self.naive_selection_alg            = 'all_plus_speculative'
             self.use_fna                        = True
             self.num_of_warmup_req              = 30000
-            self.num_of_req_to_measure          = 100000
+            self.num_of_req_to_measure          = 200000
             # if self.mode=='measure_mr_by_fullKnow_dep4':
             #     self.num_of_ads_to_measure          = 20
             #     self.num_of_warmup_ads              = [2, 2] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
@@ -337,10 +337,15 @@ class DistCacheSimulator(object):
             self.num_of_warmup_ads              = [2*(self.DS_size/self.min_uInterval), 2*(self.DS_size/self.min_uInterval)] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
             self.num_of_insertions_between_fpr_fnr_updates = self.mr_measure_window[0] 
 
-            self.measure_mr_res_file            = [None for ds in range(self.num_of_DSs)]
+            self.measure_mr_res_file            = [None]*self.num_of_DSs
             for ds in range (self.num_of_DSs):
-                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_bpe{:.0f}_measure_mr_{}_{}{}.mr' .format (
-                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, 'detailed_' if self.print_detailed_output else '', ds))
+                self.measure_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_bpe{:.0f}_measure_mr_{}_{}.mr' .format (
+                        self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, ds))
+            if self.print_detailed_output:
+                self.detailed_mr_res_file            = [None]*self.num_of_DSs
+                for ds in range (self.num_of_DSs):
+                    self.detailed_mr_res_file[ds] = self.init_mr_res_file ('../res/{}_C{:.0f}K_U{:.0f}_bpe{:.0f}_measure_mr_{}_detailed_{}.mr' .format (
+                            self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, ds))                   
 
         if (not(self.mode in ['opt', 'fnaa'])) and (not(self.mode.startswith('salsa'))) and (not(self.mode.startswith('measure_'))):
             MyConfig.error (f'In DistCacheSimulator.init(). Sorry, the selected mode {self.mode} is not supported.')
@@ -778,7 +783,10 @@ class DistCacheSimulator(object):
                             if self.resolution[ds]==False:
                                 fp_cnt[ds][num_of_pos_inds] += 1
                 
-                if self.finished_warmup_period[ds] and self.ins_cnt[ds]!=last_printed_ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
+                if self.print_detailed_output and self.mr_type==1:
+                    printf (self.detailed_mr_res_file[ds], f'\nreq_cnt={self.req_cnt}, ins_cnt[{ds}]={self.ins_cnt[ds]}, indications={self.indications} pos_ind_cnt={pos_ind_cnt[ds]}, fp_cnt={fp_cnt[ds]}, num_of_ads={self.num_of_ads}, last_printed_ins_cnt={last_printed_ins_cnt[ds]}') 
+
+                if self.finished_warmup_period[ds]: #$$$$ and self.ins_cnt[ds]!=last_printed_ins_cnt[ds]: # Skip some warm-up period; later, write the results to file
 
                     if self.mr_type==0:
                         if neg_ind_cnt[ds][num_of_pos_inds]>0 and neg_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[0]==0:
@@ -788,17 +796,20 @@ class DistCacheSimulator(object):
                             neg_ind_cnt[ds][num_of_pos_inds] = 0
                             tn_cnt     [ds][num_of_pos_inds] = 0
                     else: #self.mr_type==1
+                        if self.print_detailed_output:
+                            printf (self.detailed_mr_res_file[ds], f'\nreq_cnt={self.req_cnt}, pos_ind_cnt={pos_ind_cnt[ds]}')                                
                         if pos_ind_cnt[ds][num_of_pos_inds]>0 and pos_ind_cnt[ds][num_of_pos_inds] % self.mr_measure_window[1]==0:
                             if num_of_pos_inds==num_of_pos_ind_2print:
                                 printf (self.measure_mr_res_file[ds], '({:.0f},{:.5f}),' .format (self.req_cnt, fp_cnt[ds][num_of_pos_ind_2print]/pos_ind_cnt[ds][num_of_pos_ind_2print]))
                                 last_printed_ins_cnt[ds] = self.ins_cnt[ds]
-                                if not(printed_mr1_for_DS[ds]):
-                                    printed_mr1_for_DS[ds] = True
+                                printed_mr1_for_DS[ds] = True
                             pos_ind_cnt[ds][num_of_pos_inds] = 0
                             fp_cnt     [ds][num_of_pos_inds] = 0
 
-                if self.ins_cnt[ds] % self.min_uInterval == 0 and self.ins_cnt[ds]!=last_advertised_ins_cnt[ds]: # time to advertise
+                if self.ins_cnt[ds] % self.min_uInterval == 0 and self.ins_cnt[ds]!=last_advertised_ins_cnt[ds]: # time to advertise                    
                     self.DS_list[ds].advertise_ind_full_mode (called_by_str='simulator')
+                    if self.print_detailed_output and self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.mr_measure_window[1]==0: #$$
+                        printf (self.detailed_mr_res_file[ds], f'\nreqCnt={self.req_cnt}. advertising') 
                     self.num_of_ads[ds] += 1
                     self.check_warmup_ad_and_finish_report (ds)
                     last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
@@ -1021,7 +1032,7 @@ class DistCacheSimulator(object):
 
             pos_ind_cnt = [pos_ind_cnt[ds] + (1 if self.indications[ds] else 0) for ds in range(self.num_of_DSs)] 
             if self.print_detailed_output:
-                printf (self.measure_mr_res_file[ds], 'pos_ind_cnt={}, ' .format (pos_ind_cnt))
+                printf (self.detailed_mr_res_file[ds], 'pos_ind_cnt={}, ' .format (pos_ind_cnt))
             if self.req_cnt > 0:
                 if self.req_cnt < self.q_measure_window:
                     estimated_pr_of_pos_ind  = [pos_ind_cnt[ds]/self.req_cnt for ds in range(self.num_of_DSs)]
@@ -1034,13 +1045,13 @@ class DistCacheSimulator(object):
 
             for ds in range(self.num_of_DSs):
                 if self.print_detailed_output:
-                    printf (self.measure_mr_res_file[ds], 'q={:.3f}, h={:.2f}, fpr={:.3f}, fnr={:.3f}\n' .format (estimated_pr_of_pos_ind[ds], estimated_hit_ratio[ds], estimated_fpr[ds], estimated_fnr[ds]))
+                    printf (self.detailed_mr_res_file[ds], 'q={:.3f}, h={:.2f}, fpr={:.3f}, fnr={:.3f}\n' .format (estimated_pr_of_pos_ind[ds], estimated_hit_ratio[ds], estimated_fpr[ds], estimated_fnr[ds]))
                     
                 # Check whether need to advertise and/or finish the warmup period and do so, if needed      
                 if self.ins_cnt[ds]>0 and self.ins_cnt[ds] % self.min_uInterval == 0 and last_advertised_ins_cnt[ds]!=self.ins_cnt[ds]: # time to advertise                    
                     self.DS_list[ds].stale_indicator = self.DS_list[ds].genNewSBF ()
                     if self.print_detailed_output:
-                        printf (self.measure_mr_res_file[ds], 'advertised\n')                    
+                        printf (self.detailed_mr_res_file[ds], 'advertised\n')                    
                     self.num_of_ads[ds] += 1
                     last_advertised_ins_cnt[ds] = self.ins_cnt[ds]
                     self.check_warmup_ad_and_finish_report (ds)

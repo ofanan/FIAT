@@ -848,7 +848,7 @@ class Res_file_parser (object):
             dicts_of_this_mr_type_n_mode = [dict for dict in dicts_of_this_mr_type if dict['measure_mr_mode']==mode]
             for dict in dicts_of_this_mr_type_n_mode: 
                 x_vec, mr_vec = dict['x_vec'], dict['y_vec']
-                plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()])
+                plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()], marker='.') #$$$
                 plt.xlabel ('Insertion Count', fontsize = FONT_SIZE)
         if mr_type==0:
             # plt.ylim (0.5, 1.02)
@@ -895,14 +895,14 @@ def gen_mr_plots ():
     input_file_names=['IBM1_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
     # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
     #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for ds in range (2): 
+    for ds in range (2, 3): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(2, 3):
+            for mr_type in range(2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type,
-                                               modes = ['fullKnow_dep4_0', 'fnaa', 'salsa_dep4_0'])
+                                               modes = [f'fullKnow_dep4_{mr_type}', 'fnaa', 'salsa_dep4_{mr_type}'])
 
 # gen_plot_bars_by_uIntFact ()
 # gen_plot_homo_bars ()

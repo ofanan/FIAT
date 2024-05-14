@@ -316,7 +316,7 @@ class DistCacheSimulator(object):
             self.hit_ratio_based_uInterval      = False
             self.collect_mr_stat                = False
             self.use_CountingBloomFilter        = False
-            self.print_detailed_output          = True
+            self.print_detailed_output          = False
             self.q_window_alpha                 = 0.25
             self.num_of_DSs                     = 3            
             self.indications                    = np.array (range (self.num_of_DSs), dtype = 'bool')
@@ -328,7 +328,7 @@ class DistCacheSimulator(object):
             self.naive_selection_alg            = 'all_plus_speculative'
             self.use_fna                        = True
             self.num_of_warmup_req              = 30000
-            self.num_of_req_to_measure          = 200000
+            self.num_of_req_to_measure          = 120000
             # if self.mode=='measure_mr_by_fullKnow_dep4':
             #     self.num_of_ads_to_measure          = 20
             #     self.num_of_warmup_ads              = [2, 2] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
@@ -588,7 +588,7 @@ class DistCacheSimulator(object):
         self.indications     = [self.cur_req.key in self.DS_list[ds].stale_indicator for ds in range (self.num_of_DSs)]
         self.resolution      = [self.cur_req.key in self.DS_list[ds]                 for ds in range (self.num_of_DSs)]
         if self.pos_indications==[]: # no positive indications
-            self.DSs2accs = [random.randint (0, self.num_of_DSs-1)] if self.use_fna else [];
+            self.DSs2accs = [self.req_cnt%self.num_of_DSs-1] if self.use_fna else [];
         else: # at least one positive indication
             if self.naive_selection_alg=='cheapest':
                 self.DSs2accs = [self.pos_indications[0]] # assuming here that the Dss are sorted in an increasing order of accs cost

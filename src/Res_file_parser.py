@@ -108,6 +108,16 @@ class Res_file_parser (object):
 # VERMILION   = '#D55E00'
 # PURPLE      = '#CC79A7'
         
+        self.lineStyleOfMode = {
+            'FULLKNOW_DEP4'    : 'solid',
+            'FULLKNOW_DEP4_0'  : 'solid',
+            'FULLKNOW_DEP4_1'  : 'solid',
+            'FNAA'             : 'dashed',
+            'SALSA_DEP4'       : 'dotted',
+            'SALSA_DEP4_0'     : 'dotted',
+            'SALSA_DEP4_1'     : 'dotted'
+        }
+        
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
                             'FNAA'      : SKY_BLUE, #'#0072B2', #'#56B4E9', #'navy',
@@ -823,6 +833,8 @@ class Res_file_parser (object):
                  mr_type            = 0, # 0 for mr0, 1 for mr1. 
                  plotAlsoLegend     = False, # When True, plot also the legend (in addition to plotting the graphs)
                  plotOnlyLegend     = False, # When True, plot only the legend, without the graphs
+                 xlim_min           = 40000, # Lowest x value to plot 
+                 xlim_max           = 150000, # Highest x value to plot 
                  ):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
@@ -848,15 +860,21 @@ class Res_file_parser (object):
             dicts_of_this_mr_type_n_mode = [dict for dict in dicts_of_this_mr_type if dict['measure_mr_mode']==mode]
             for dict in dicts_of_this_mr_type_n_mode: 
                 x_vec, mr_vec = dict['x_vec'], dict['y_vec']
-                plt.plot (dict['x_vec'], dict['y_vec'], linewidth=LINE_WIDTH, color = self.colorOfMode[mode.upper()], label=self.strOfMode[mode.upper()]) #$$$
-                plt.xlabel ('Insertion Count', fontsize = FONT_SIZE)
+                plt.plot (
+                    dict['x_vec'], # x values of the coordinates to plot
+                    dict['y_vec'], # y values of the coordinates to plot
+                    linestyle   = lineStyleOfMode[mode], 
+                    linewidth   = LINE_WIDTH, 
+                    color       = self.colorOfMode[mode.upper()], 
+                    label       = self.strOfMode[mode.upper()]) 
+                plt.xlabel ('Request Number', fontsize = FONT_SIZE)
         if mr_type==0:
-            # plt.ylim (0.5, 1.02)
-            # plt.xlim (34500, 48000)
+            plt.ylim (0.85, 1.02)
+            plt.xlim (xlim_min, xlim_max)
             plt.ylabel (r'$\nu$', fontsize = FONT_SIZE)
         else:
-            # plt.ylim (0, 0.08)
-            plt.xlim (30000, 60000)
+            plt.ylim (-0.01, 0.08)
+            plt.xlim (xlim_min, xlim_max)
             plt.ylabel (r'$\pi$', fontsize = FONT_SIZE)
         if plotAlsoLegend:
             plt.legend(frameon=False, loc='lower right')
@@ -891,18 +909,23 @@ def gen_plot_homo_bars ():
 def gen_mr_plots ():
 
     
-    input_file_names=['IBM7_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #, 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative', Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 'Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'
-    # input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
-    #                   'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
+    input_file_names=['IBM7_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] 
+    # input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] 
+    #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #,  
+    # 'Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 
     for ds in range (2, 3): 
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(2):
+            for mr_type in range(1, 2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
-                my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type,
-                                                # modes = [f'fullKnow_dep4_{mr_type}', 'fnaa'])
-                                                modes = [f'fullKnow_dep4_{mr_type}', 'fnaa', f'salsa_dep4_{mr_type}'])
+                my_Res_file_parser.plot_mr(
+                    input_file_name = input_file_name_w_extension,  
+                    mr_type         = mr_type,
+                    modes           = [f'fullKnow_dep4_{mr_type}', 'fnaa', f'salsa_dep4_{mr_type}'], # modes = [f'fullKnow_dep4_{mr_type}', 'fnaa'])
+                    xlim_min        = 80000, 
+                    xlim_max        = 120000  
+                )
 
 # gen_plot_bars_by_uIntFact ()
 # gen_plot_homo_bars ()

@@ -83,7 +83,7 @@ def run_num_of_DSs_sim ():
     print ('running num_of_DSs_sim')
     for num_of_DSs in [9]:
         DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
-        for trace in ['F1', 'F2', ]:     
+        for trace in ['Wiki', 'Scarab']:     
         # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
             for mode in ['salsa_dep4']:
                 max_num_of_req = MyConfig.calc_num_of_req (trace)  
@@ -220,8 +220,8 @@ def run_mr_sim ():
    
 if __name__ == '__main__':
     try:
-        # run_num_of_DSs_sim ()
-        run_mr_sim ()
+        run_num_of_DSs_sim ()
+        # run_mr_sim ()
         # run_full_ind_oriented_sim ()
         # run_hetro_costs_sim ()
     except KeyboardInterrupt:

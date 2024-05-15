@@ -53,6 +53,17 @@ ROTATION_ANGLE          = 90
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
 WSAPCE_BETWEEN_SUBPLOTS = 0.28
 
+lineStyleOfMode = {
+    'fullKnow_dep'     : 'solid',
+    'fullKnow_dep4_0'  : 'solid',
+    'fullKnow_dep4_1'  : 'solid',
+    'fnaa'             : 'dashed',
+    'salsa_dep4'       : (0, (3,1,1,1)), #'dotted',
+    'salsa_dep4_0'     : (0, (3,1,1,1)), #'dotted',
+    'salsa_dep4_1'     : (0, (3,1,1,1)), #'dotted',
+}
+        
+
 class Res_file_parser (object):  
 
     set_plt_params = lambda self, size='large' : matplotlib.rcParams.update({'font.size': FONT_SIZE, 
@@ -107,16 +118,6 @@ class Res_file_parser (object):
 # BLUE        = '#0072B2'
 # VERMILION   = '#D55E00'
 # PURPLE      = '#CC79A7'
-        
-        self.lineStyleOfMode = {
-            'FULLKNOW_DEP4'    : 'solid',
-            'FULLKNOW_DEP4_0'  : 'solid',
-            'FULLKNOW_DEP4_1'  : 'solid',
-            'FNAA'             : 'dashed',
-            'SALSA_DEP4'       : 'dotted',
-            'SALSA_DEP4_0'     : 'dotted',
-            'SALSA_DEP4_1'     : 'dotted'
-        }
         
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
@@ -869,11 +870,11 @@ class Res_file_parser (object):
                     label       = self.strOfMode[mode.upper()]) 
                 plt.xlabel ('Request Number', fontsize = FONT_SIZE)
         if mr_type==0:
-            plt.ylim (0.85, 1.02)
+            plt.ylim (0.5, 1.02)
             plt.xlim (xlim_min, xlim_max)
             plt.ylabel (r'$\nu$', fontsize = FONT_SIZE)
         else:
-            plt.ylim (-0.01, 0.08)
+            plt.ylim (0, 0.08)
             plt.xlim (xlim_min, xlim_max)
             plt.ylabel (r'$\pi$', fontsize = FONT_SIZE)
         if plotAlsoLegend:
@@ -917,7 +918,7 @@ def gen_mr_plots ():
         for input_file_name in input_file_names:
             my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
-            for mr_type in range(1, 2):
+            for mr_type in range(2):
                 my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
                 my_Res_file_parser.plot_mr(
                     input_file_name = input_file_name_w_extension,  
@@ -928,5 +929,5 @@ def gen_mr_plots ():
                 )
 
 # gen_plot_bars_by_uIntFact ()
-# gen_plot_homo_bars ()
-gen_mr_plots ()
+gen_plot_homo_bars ()
+# gen_mr_plots ()

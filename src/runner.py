@@ -83,9 +83,9 @@ def run_num_of_DSs_sim ():
     print ('running num_of_DSs_sim')
     for num_of_DSs in [6]:
         DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
-        for trace in ['IBM7', 'Twitter17', 'Twitter45']:     
+        for trace in ['Twitter17', 'Twitter45']:     
         # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
-            for mode in ['salsa_dep4']:
+            for mode in ['fnaa']:
                 max_num_of_req = MyConfig.calc_num_of_req (trace)  
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
                 tic()

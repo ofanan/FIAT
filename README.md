@@ -9,7 +9,7 @@ For details about the problem and the algorithms used, please refer to the follo
  
 [2] I. Cohen, Gil Einziger, and G. Scalosub, [False Negative Awareness in Indicator-based Caching Systems](https://www.researchgate.net/publication/361178366_False_Negative_Awareness_in_Indicator-Based_Caching_Systems), IEEE Transactions on Networking, 2022, pp. 46-56.
 
-[3] I. Cohen, Bandwidth Efficient Cache Selection and Content Advertisement](https://www.researchgate.net/publication/380908127_Bandwidth_Efficient_Cache_Selection_and_Content_Advertisement), pre-print, 2024.
+[3] I. Cohen, [Bandwidth Efficient Cache Selection and Content Advertisement](https://www.researchgate.net/publication/380908127_Bandwidth_Efficient_Cache_Selection_and_Content_Advertisement), pre-print, 2024.
 
 The source files are described below. More detailed documentation is found within the source files.
 

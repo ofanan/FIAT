@@ -45,10 +45,10 @@ A Simple and a Counting Bloom filter. To study more about Bloom filters, conside
 ##### Wiki_parser.py, IBM_parser.py, Twitter_parser.py
 Parse traces and output a .csv file, which includes a row with hashes of the keys in the trace. 
 
-###### gen_graph.py
+##### gen_graph.py
 generates the OVH network which exemplifies a commercial CDN (Content Delivery Network), and saves it on a .csv file.
 
-###### gen_cost_hist.py
+##### gen_cost_hist.py
 Generates a histogram showing the cache access costs for the OVH network
 
 ##### MyConfig.py

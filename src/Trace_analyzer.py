@@ -10,7 +10,9 @@ from MyConfig import getTracesPath, gen_requests, optimal_BF_size_per_DS_size, i
 
 def hit_rate_of_trace (trace_file_name):
     """
-    Checks the hit rate in a given cache trace.
+    Checks the hit rate of a given a cache trace, assuming an optimal cache selection alg'. 
+    The desired number of DSs (caches) and the cache size are coded within the func'. 
+    Prints results to stdout.
     """
     traces_path         = getTracesPath()
     max_num_of_req = 50000
@@ -44,7 +46,10 @@ def analyze_trace_locality (
     ):
     """
     Analyze the temporal locality of a trace.
-    Results include a print of the avg. and of the stdev of the time between subsequent occurrences of the same key. 
+    Results include: 
+    - The avg. and of the stdev of the time between subsequent occurrences of the same key;     The stat counts only keys that appear at least twice along the trace.
+    - The ratio of singular items, namely, items that appear only once along the trace.
+    The results are printed to the file traces_path/traces_stat.txt.
     """
     if trace_len==None or num_uniques==None:
         error (f'In Trace_analyzer.analyze_trace_locality(). Sorry, currently num_uniques and numUniques cannot be None')

@@ -1,6 +1,14 @@
 """
 Run a simulation, looping over all requested values of parameters 
 (miss penalty, cache sizes, number of caches etc.).
+The cache-selection and content-advertisement alg' is defined by the mode.
+The main modes are:
+- opt.
+- fnaa: the HecSFna alg', defined in [1].
+- salsa_dep4: SALSA2 alg', defined in [2].
+- Earlier, degenerated versions of SALSA2 (e.g., salsa2, salsa_dep2).
+[1] I. Cohen, Gil Einziger, and G. Scalosub, [False Negative Awareness in Indicator-based Caching Systems, IEEE Transactions on Networking, 2022, pp. 46-56.
+[2] I. Cohen, Bandwidth Efficient Cache Selection and Content Advertisement, pre-print, 2024.
 """
 import os, pickle, sys, time
 from datetime import datetime
@@ -16,7 +24,7 @@ from MyConfig import error
 
 def run_hetro_costs_sim ():
     """
-    Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
+    Run experiments with several DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
     DS_sizes    = [4]
@@ -133,7 +141,7 @@ def calc_DS_hetro_costs (num_of_DSs, num_of_clients):
 
 def calc_DS_cost (num_of_DSs=3, use_homo_DS_cost = False):
     """
-    Returns a DS_cost matrix - either homo' or hetro', by the user's request  
+    Returns a DS_cost matrix - either homo' or hetro', by the caller's request
     """
     num_of_clients      = 1 # we currently consider only a single client, looking for data in several caches.
     if (use_homo_DS_cost):

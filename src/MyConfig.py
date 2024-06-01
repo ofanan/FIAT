@@ -26,6 +26,7 @@ VERBOSE_CNT_FN_BY_STALENESS     = 10
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 VERBOSE_SHORT_LOG               = 12  # Write to a log file only major events.
 
+# The recommended number of requests for each trace and cache size. 
 num_of_req = {'Wiki'      : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
               'Scarab'    : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 :  4000000},
               'F1'        : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 :  2500000},
@@ -57,6 +58,7 @@ trace_csv_file_name = {
    'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
 }
 
+# Overall lengths of the traces.
 trace_len = {
    'Wiki'       : 13800000,
    'Gradle'     : 2091900,
@@ -69,6 +71,7 @@ trace_len = {
    'IBM7'       : 4200000,
 }
 
+# Num of unique requests in each trace. 
 num_uniques_in_trace = {
    'Wiki'       : 934000,
    'Gradle'     : 155900,
@@ -80,6 +83,7 @@ num_uniques_in_trace = {
    'IBM1'       : 459900,
    'IBM7'       : 439900,
 }
+
 def print_list (list):
     for item in list:
         print (f'{item}')
@@ -115,7 +119,6 @@ def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, rea
     """
     Reduces the memory print of the trace by using the smallest type that still supports the values in the trace
     Note: this configuration can support up to 2^8 locations, and traces of length up to 2^32
-
     """
     new_trace_df        = trace_df
     new_trace_df['key'] = trace_df['key'].astype('uint32')   

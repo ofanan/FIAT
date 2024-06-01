@@ -36,7 +36,7 @@ class DistCacheSimulator(object):
 
     def gen_settings_str (self, num_of_req=None):
         """
-        Returns a formatted string based on the values of the given parameters' (e.g., num of caches, trace_name, update intervals etc.). 
+        Returns a formatted string based on the values of the current simulation's settings (e.g., num of caches, trace_name, update intervals etc.). 
         """
         num_of_req = num_of_req if (num_of_req!=None) else self.num_of_req
         
@@ -131,6 +131,7 @@ class DistCacheSimulator(object):
         Open the res file for writing results of 'measure_mr' sim, as follows:
         If a res file with the relevant name already exists - open it for appending.
         Else, open a new res file, and write to it comment header lines, explaining the file's format  
+        mr is the exclusion probability. In particular, mr0, and mr1 are the negative, and positive, exclusion probabilities.
         """
         full_path_res_file_name = '../res/{}.res' .format(res_file_name)
         if Path(full_path_res_file_name).is_file(): # does this res file already exist?
@@ -148,8 +149,7 @@ class DistCacheSimulator(object):
         Open the res file for writing, as follows:
         If a res file with the relevant name already exists - open it for appending.
         Else, open a new res file, and write to it comment header lines, explaining the file's format  
-        """
-        
+        """        
         full_path_res_file_name = '../res/{}.res' .format(res_file_name)
         
         if Path(full_path_res_file_name).is_file(): # does this res file already exist?
@@ -207,7 +207,7 @@ class DistCacheSimulator(object):
                  begin_log_mr_at_req_cnt = float ('inf') # the first request cnt at which a "detailed log mr" verbose mode will be applied.  
                  ):
         """
-        Return a DistCacheSimulator object with the following attributes:
+        Returns a DistCacheSimulator object.
                         
         """
         self.re_init_after_each_ad = re_init_after_each_ad
@@ -329,10 +329,6 @@ class DistCacheSimulator(object):
             self.use_fna                        = True
             self.num_of_warmup_req              = 30000
             self.num_of_req_to_measure          = 120000
-            # if self.mode=='measure_mr_by_fullKnow_dep4':
-            #     self.num_of_ads_to_measure          = 20
-            #     self.num_of_warmup_ads              = [2, 2] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
-            # else:
             self.num_of_ads_to_measure          = 20
             self.num_of_warmup_ads              = [2*(self.DS_size/self.min_uInterval), 2*(self.DS_size/self.min_uInterval)] # num of warmup advertisement before starting to print the mr. index 0 is for mr0, index 1 is for mr1. 
             self.num_of_insertions_between_fpr_fnr_updates = self.mr_measure_window[0] 
@@ -386,37 +382,31 @@ class DistCacheSimulator(object):
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
 
-        if self.mode in ['salsa0', 'salsa_dep0']:
+        if self.mode in ['salsa0', 'salsa_dep0']: # Version 0 of SALSA uses nor indicator scaling neither delta updates.
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
             self.consider_delta_updates     = False
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
                         
-        if self.mode in ['salsa1']:
-            self.scale_ind_delta_factor     = 1
-            self.scale_ind_full_factor      = 1.1
-            self.consider_delta_updates     = False
-            self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
-                        
-        if self.mode in ['salsa1', 'salsa_dep1']:
+        if self.mode in ['salsa1', 'salsa_dep1']: # Version 1 of SALSA uses delta updates, but not indicator scaling.
             self.scale_ind_delta_factor     = 1
             self.scale_ind_full_factor      = 1
             self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
                         
-        if self.mode in ['salsa2', 'salsa_dep2']:
-            self.scale_ind_delta_factor     = 1
+        if self.mode in ['salsa2', 'salsa_dep2']: # Version 2 of SALSA uses delta updates; and indicator scaling in full-ind. mode only.
+            self.scale_ind_delta_factor     = 1 
             self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
 
-        if self.mode in ['salsa3']:
+        if self.mode in ['salsa3']: # Version 3 of SALSA uses delta updates and indicator scaling in both full-ind and delta mode.
             self.scale_ind_delta_factor     = 1.1
             self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = True
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
 
-        if self.mode in ['salsa_dep4']:
+        if self.mode in ['salsa_dep4']: # Version 4 of SALSA uses delta updates and indicator scaling in both full-ind and delta mode.
             self.scale_ind_delta_factor     = 1.1
             self.scale_ind_full_factor      = 1.1
             self.consider_delta_updates     = True
@@ -441,7 +431,7 @@ class DistCacheSimulator(object):
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
 
-        self.gen_DSs() #DS_list is the list of DSs
+        self.gen_DSs() # Genearte a list of DSs (DataStores).
         if MyConfig.VERBOSE_DEBUG in self.verbose:
             self.debug_file = open (f'../res/{self.gen_settings_str(num_of_req=0)}_debug.txt', "w")
 
@@ -542,7 +532,6 @@ class DistCacheSimulator(object):
             printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
             printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
         printf (res_file, '\n')
-        
         
         
     def run_trace_measure_fp_fn (self):

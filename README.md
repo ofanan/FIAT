@@ -9,16 +9,16 @@ For details about the problem and the algorithms used, please refer to the follo
  
 [2] I. Cohen, Gil Einziger, and G. Scalosub, [False Negative Awareness in Indicator-based Caching Systems](https://www.researchgate.net/publication/361178366_False_Negative_Awareness_in_Indicator-Based_Caching_Systems), IEEE Transactions on Networking, 2022, pp. 46-56.
 
-[3] I. Cohen, [Self-Adjusting Cache Advertisement and Selection](https://www.researchgate.net/profile/Itamar-Cohen-2/publication/370398278_Self-Adjusting_Cache_Advertisement_and_Selection/links/645b3d4a6090c43d0f5e7c7c/Self-Adjusting-Cache-Advertisement-and-Selection.pdf), ACM International Conference on Systems and Storage. 2023.
+[3] I. Cohen, Bandwidth Efficient Cache Selection and Content Advertisement](https://www.researchgate.net/publication/380908127_Bandwidth_Efficient_Cache_Selection_and_Content_Advertisement), pre-print, 2024.
 
 The source files are described below. More detailed documentation is found within the source files.
 
 # Directories
 All source files are written in Python, and found in ./src.
-
 The result files are written to ./res.
+The traces should be found in the directory ../traces/.
 
-# source files
+# Main source files
 
 ##### runner.py #
 Runs a simulation, looping over all requested values of parameters (miss penalty, cache sizes, number of caches etc.).
@@ -34,7 +34,7 @@ The class for a DataStore (cache). The cache stores items using the LRU policy.
 It also implements the cache-side algorithm for estimating FPR (false-positive ratio) and FNR (false-negative ratio) and the exclusion probabilities. 
 The cache itself is implemented in the file mod_pylru.py.
 
-###### mod_pylru.py
+#### mod_pylru.py
 Implementation of an LRU cache. Source code is taken from:
 Copyright (C) Jay Hutchinson
 https://github.com/jlhutch/pylru
@@ -81,3 +81,9 @@ Checks the hit rate in a given cache trace.
 
 ##### MyConfig.py
 Accessory file containing global parameters and accessory functions.
+
+##### Trace_analyzer.py
+Analyze a given trace. The analysis include:
+- mean/avg. time between subsequent appearance of the same item.
+- Number of items that appear only once along the trace.
+- Expected hit ratio of an optimal cache selection alg' given the caching capacity.

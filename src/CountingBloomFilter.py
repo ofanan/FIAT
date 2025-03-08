@@ -7,6 +7,7 @@ Bloom filter survey: https://www.eecs.harvard.edu/~michaelm/postscripts/im2005b.
 """
 import mmh3, copy, numpy as np
 import SimpleBloomFilter
+from MyConfig import *
 
 class CountingBloomFilter(object):
     
@@ -54,7 +55,7 @@ class CountingBloomFilter(object):
         updates all the hashes corresponding to the key: decreases each by 1 (no less than 0)
         """
         for seed in range(self.num_of_hashes):
-            entry = mmh3.hash(np2bytes_like(key)(key, seed) % self.size
+            entry = mmh3.hash(np2bytes_like(key), seed) % self.size
             if self.array[entry] > 0:
                 self.array[entry] -= 1
                 # if (self.array[entry] == 0):

@@ -19,8 +19,8 @@ import MyConfig
 from printf import printf
 import mod_pylru
 import DistCacheSimulator as sim
-from   tictoc import tic, toc
-from MyConfig import error 
+from ttictoc import tic,toc
+from MyConfig import * 
 
 def run_hetro_costs_sim ():
     """
@@ -70,7 +70,7 @@ def run_hetro_costs_sim ():
                         verbose                 = verbose
                         ) 
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
-                    toc()
+                    print (f'Finished an iteration of run_hetro_costs_sim. mode={mode},missp={missp},DS_size={DS_size} {genElapsedTimeStr (toc())}')
         
     # run_times_log_file_name = 'run_times.log'
     # if Path(run_times_log_file_name).is_file() and MyConfig.VERBOSE_RES in verbose: # does this res file already exist?
@@ -92,7 +92,8 @@ def run_num_of_DSs_sim ():
     for num_of_DSs in [9]:
         DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
         for trace in ['Wiki', 'Scarab']:     
-        # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+        # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:
+            missp = 30     
             for mode in ['salsa_dep4']:
                 max_num_of_req = MyConfig.calc_num_of_req (trace)  
                 requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
@@ -107,7 +108,7 @@ def run_num_of_DSs_sim ():
                     mode                    = mode,
                     req_df                  = requests,
                     client_DS_cost          = DS_cost,
-                    missp                   = 30,
+                    missp                   = missp,
                     DS_size                 = DS_size,
                     min_uInterval           = DS_size/10,
                     re_init_after_each_ad   = False,
@@ -117,9 +118,8 @@ def run_num_of_DSs_sim ():
                     verbose                 = verbose
                 ) 
                 sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
-                toc()
+                print (f'Finished an iteration of run_num_of_DSs_sim. mode={mode},missp={missp},DS_size={DS_size}. {genElapsedTimeStr (toc())}')
     
-
 
 def calc_DS_homo_costs (num_of_DSs, num_of_clients):
     """
@@ -177,6 +177,8 @@ def run_full_ind_oriented_sim ():
     trace = 'Twitter45'
     requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
     tic()
+    missp = 100
+    DS_size = 4000
     sm = sim.DistCacheSimulator(
         res_file_name           = f'salsa2__{MyConfig.getMachineStr()}',
         EWMA_alpha_mr0          = 0.5, 
@@ -185,14 +187,14 @@ def run_full_ind_oriented_sim ():
         mode                    = 'salsa2',
         req_df                  = requests,
         client_DS_cost          = DS_cost,
-        missp                   = 100,
-        DS_size                 = 4000,
+        missp                   = missp,
+        DS_size                 = DS_size,
         min_uInterval           = 3000,
         uInterval_factor        = 2,
         bpe                     = 10,
         verbose                 = [MyConfig.VERBOSE_LOG_MR]) #MyConfig.VERBOSE_DETAILED_LOG_MR
     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
-    toc()
+    print (f'Finished an iteration of run_full_ind_oriented_sim. mode={mode},missp={missp},DS_size={DS_size}. {genElapsedTimeStr (toc())}')
 
 
 def run_mr_sim ():
@@ -207,6 +209,8 @@ def run_mr_sim ():
         for mode in ['measure_mr_by_fullKnow_dep4', 'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4']: #, 'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4']: #'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4', 'measure_mr_by_fullKnow_dep']: 
             for mr_type in range (2): 
                 tic()
+                missp = 12
+                DS_size = 16000
                 sm = sim.DistCacheSimulator(
                     mr_type                 = mr_type,
                     res_file_name           = '',
@@ -216,14 +220,14 @@ def run_mr_sim ():
                     mode                    = mode,
                     req_df                  = requests,
                     client_DS_cost          = DS_cost,
-                    missp                   = 12,
-                    DS_size                 = 16000,
+                    missp                   = missp,
+                    DS_size                 = DS_size,
                     min_uInterval           = 3200,
                     bpe                     = 12,
                     uInterval_factor        = 32 if mode.startswith('salsa') else 1,
                     verbose                 = [])
                 sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
-                toc()
+                print (f'Finished an iteration of run_mr_sim. mode={mode},missp={missp},DS_size={DS_size}. {genElapsedTimeStr (toc())}')
 
    
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ A simple Bloom filter
 """
 
 import mmh3, numpy as np
+from MyConfig import *
 
 class SimpleBloomFilter(object):
     

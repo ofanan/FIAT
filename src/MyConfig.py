@@ -24,6 +24,7 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 VERBOSE_SHORT_LOG               = 12  # Write to a log file only major events.
+VERBOSE_CNT_SCLING              = 20  # Count the # of [up/down]-scaling along the simulation.
 
 # The recommended number of requests for each trace and cache size. 
 num_of_req = {'Wiki'      : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
@@ -83,6 +84,23 @@ num_uniques_in_trace = {
    'IBM7'       : 439900,
 }
 
+def genElapsedTimeStr (elapsedTime : float,
+                       printInitStr = True, # when true, print the words 'elapsed time: '
+                       ) -> str:
+    """
+    Returns a string that describes the elapsed time in hours, minutes, and seconds
+    """
+    initStr = 'elapsed time: ' if printInitStr else ''  
+    if elapsedTime >= 3600:
+        hours, rem = divmod(elapsedTime, 3600)
+        minutes, seconds = divmod(rem, 60)
+        return f'{initStr}{int(hours)}h {int(minutes)}m {seconds:.2f}s'
+    elif elapsedTime >= 60:
+        minutes, seconds = divmod(elapsedTime, 60)
+        return f'{initStr}{int(minutes)}m {seconds:.0f}s'
+    else:
+        return f'{initStr}{elapsedTime:.4f} seconds'
+    
 
 def np2bytes_like (
         key : np.uint32

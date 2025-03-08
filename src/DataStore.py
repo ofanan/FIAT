@@ -10,7 +10,7 @@ import numpy as np
 import mod_pylru, itertools, copy
 import CountingBloomFilter as CBF
 import SimpleBloomFilter   as SBF
-import MyConfig 
+from MyConfig import * 
 from printf import printf
 
 class DataStore (object):
@@ -34,7 +34,7 @@ class DataStore (object):
          num_of_insertions_between_fpr_fnr_updates = np.uint8 (50), # num of insertions between subsequent operations of estimating the fpr, fnr.
                                                                 # Each time a new indicator is published, the updated indicator contains a fresh estimation, and a counter is reset. 
                                                                 # Then, each time the counter reaches num_of_insertions_between_fpr_fnr_updates. a new fpr and fnr estimation is published, and the counter is reset.
-         verbose                    = [],# what output will be written. See macros in MyConfig.py 
+         verbose                    = [],# what output will be written. See macros in py 
          min_uInterval              = 100, # min num of insertions of new items into the cache before advertising again
          uInterval_factor           = 1, 
          send_fpr_fnr_updates       = True, # When True, "send" (actually, merely collect) analysis of fpr, fnr, based on the # of bits set/reset in the stale and updated indicators.   
@@ -79,8 +79,10 @@ class DataStore (object):
         self.min_spec_accs_cnt_for_stat = 100
         self.cache                  = mod_pylru.lrucache(self.DS_size) # LRU cache. for documentation, see: https://pypi.org/project/pylru/
         self.settings_str           = settings_str
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
-            self.q_output_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w") 
+        if VERBOSE_LOG_Q in self.verbose:
+            self.q_output_file = open ('../res/q{}_{}.txt' .format(self.ID, self.settings_str), "w")
+        if VERBOSE_CNT_SCALING in self.verbose:
+            self.scaling_cntr = int(0)         
         self.collect_mr_stat        = collect_mr_stat
         self.use_indicator          = use_indicator # used e.g. for Opt, that merely checks whether the requested item is indeed cached
         if not(self.use_indicator): # if no indicator is used, no need for all the further fields
@@ -107,13 +109,13 @@ class DataStore (object):
         self.bpe                     = bpe
         self.ind_size                = self.bpe * self.DS_size
         self.lg_ind_size             = np.log2 (self.ind_size) 
-        self.num_of_hashes           = MyConfig.get_optimal_num_of_hashes (self.bpe)
+        self.num_of_hashes           = get_optimal_num_of_hashes (self.bpe)
         self.use_CountingBloomFilter = use_CountingBloomFilter
         if use_CountingBloomFilter: 
             self.updated_indicator   = CBF.CountingBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
             self.stale_indicator     = self.updated_indicator.gen_SimpleBloomFilter ()
             if self.scale_ind_delta_factor!=1 or self.scale_ind_full_factor!=1:
-                MyConfig.error ('Sorry. Scaling an indicator is not supported for CountingBloomFilter')
+                error ('Sorry. Scaling an indicator is not supported for CountingBloomFilter')
         else:
             self.stale_indicator        = SBF.SimpleBloomFilter (size = self.ind_size, num_of_hashes = self.num_of_hashes)
         self.EWMA_alpha                 = EWMA_alpha # "alpha" parameter of the Exponential Weighted Moving Avg estimation of mr0 and mr1
@@ -149,7 +151,7 @@ class DataStore (object):
                
         self.max_fnr                 = max_fnr
         self.max_fpr                 = max_fpr
-        self.designed_fpr            = MyConfig.calc_designed_fpr (self.DS_size, self.ind_size, self.num_of_hashes)
+        self.designed_fpr            = calc_designed_fpr (self.DS_size, self.ind_size, self.num_of_hashes)
         self.initial_mr1             = self.designed_fpr
         self.send_fpr_fnr_updates    = send_fpr_fnr_updates # when true, need to periodically compare the stale BF to the updated BF, and estimate the fpr, fnr accordingly
         self.analyse_ind_deltas      = analyse_ind_deltas
@@ -165,10 +167,10 @@ class DataStore (object):
         self.num_of_ads_in_full_mode_period = 0
         self.re_init_mr0_param       = self.full_mode_period_param 
         self.bw_budget               = self.ind_size / self.min_uInterval # [bits / insertion]
-        if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose:
+        if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose:
             printf (self.mr_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
         self.ins_cnt_since_last_full_ad = 0 # cnt of insertions since the last advertisement of fresh indicator
-        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+        if VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, 'bw budget={:.2f}\n' .format (self.bw_budget)) 
  
         self.use_only_updated_ind    = True if (self.uInterval_factor * self.min_uInterval == 1) else False
@@ -228,10 +230,10 @@ class DataStore (object):
                         if self.should_advertise_by_mr0 (): 
                             self.advertise_ind_full_mode (called_by_str='mr0')
                             self.ins_cnt_since_last_full_ad = 0
-            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            if VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
             if any([(item>1 or item<=0) for item in self.mr0]): 
-                MyConfig.error (f'Note: mr0={self.mr0} at DS{self.ID}') 
+                error (f'Note: mr0={self.mr0} at DS{self.ID}') 
         else: # regular accs
             self.reg_accs_cnt[self.num_of_pos_inds] += 1
             if (not(hit)):
@@ -244,7 +246,7 @@ class DataStore (object):
                         self.advertise_ind_full_mode (called_by_str='mr1')
                         self.ins_cnt_since_last_full_ad = 0
                         return hit
-            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            if VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'access_dep: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, fp cnt={self.fp_cnt}, reg accs cnt={self.reg_accs_cnt}, mr1={self.mr1}\n')
                 
         return hit 
@@ -266,7 +268,7 @@ class DataStore (object):
             return hit 
         
         if not(self.assume_ind_DSs):
-            MyConfig.error ('Datastrore.access() instead of Datastrore.access_salsa_dep() was called while running salsa dep.')
+            error ('Datastrore.access() instead of Datastrore.access_salsa_dep() was called while running salsa dep.')
 
         # Now we know that we have to collect and print some stat
         if is_speculative_accs:
@@ -279,7 +281,7 @@ class DataStore (object):
             else: # use "flat" history
                 self.mr0 = float(self.tn_cnt) / float (self.spec_accs_cnt)
                 # in case of flat history, tn_event_cnt and spec_accs_cnt are incremented forever; we never reset them
-                if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
+                if VERBOSE_DETAILED_LOG_MR in self.verbose: 
                     printf (self.mr_output_file, f'access: ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}\n')
         else: # regular accs
             self.reg_accs_cnt += 1
@@ -291,7 +293,7 @@ class DataStore (object):
             else: # use "flat" history
                 self.mr1 = float(self.fp_cnt) / float (self.reg_accs_cnt) 
                 # in case of flat history, fp_event_cnt and reg_accs_cnt are incremented forever; we never reset them
-                if (MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose): 
+                if (VERBOSE_DETAILED_LOG_MR in self.verbose): 
                     printf (self.mr_output_file, 'fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.fp_cnt, self.reg_accs_cnt, self.mr1))
         return hit 
 
@@ -350,8 +352,9 @@ class DataStore (object):
         self.bpe           *= factor
         self.min_uInterval  = int (self.min_uInterval * factor)
         self.ind_size       = int (self.ind_size       * factor) 
-        self.num_of_hashes  = MyConfig.get_optimal_num_of_hashes (self.bpe)
-
+        self.num_of_hashes  = get_optimal_num_of_hashes (self.bpe)
+        if VERBOSE_CNT_SCALING in self.verbose:
+            self.scaling_cntr += 1         
     
     def get_indication (self, key):
         """
@@ -392,11 +395,11 @@ class DataStore (object):
                 self.stale_indicator            = self.genNewSBF ()
             self.num_of_advertisements         += 1
             cur_bw_of_delta_ads_per_ins = (self.total_ad_size_in_this_period + self.ind_size) / self.ins_cnt_since_last_full_ad
-            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+            if VERBOSE_LOG_MR in self.verbose: 
                 printf (self.mr_output_file, f'finished a delta period - advertising a full ind. ins_cnt_in_this_period={self.ins_cnt_since_last_full_ad}, mr0={self.mr0}, spec_cnt={self.spec_accs_cnt}, total_ad_size_in_this_period={self.total_ad_size_in_this_period}, ind_size={self.ind_size}, ins_cnt_since_last_full_ad={self.ins_cnt_since_last_full_ad}, bw during this period={cur_bw_of_delta_ads_per_ins}, bw_budget={self.bw_budget}\n') 
             
             if cur_bw_of_delta_ads_per_ins > self.bw_budget:
-                if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
+                if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose: 
                     printf (self.mr_output_file, f'Switching to full mode\n') 
                 self.in_delta_mode = False
 
@@ -406,7 +409,7 @@ class DataStore (object):
             
             # re-init mr0 after each period
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs+1)]
-            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            if VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
             
             return # finished advertising an indicator
@@ -419,7 +422,7 @@ class DataStore (object):
             self.overall_ad_size               += ad_size                              
             self.stale_indicator                = self.updated_sbf
             self.num_of_advertisements         += 1
-            if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+            if VERBOSE_LOG_MR in self.verbose: 
                 if len(self.mr0)==1:
                     printf (self.mr_output_file, 'advertising delta. ind size={}, ad_size={}, ins_cnt_in_this_period={}, bw_in_cur_interval={:.1f}, mr0={:.3f}, spec_cnt={}\n' .format 
                             (self.ind_size, ad_size, self.ins_cnt_since_last_full_ad, self.total_ad_size_in_this_period / self.ins_cnt_since_last_full_ad, self.mr0, self.spec_accs_cnt))
@@ -455,7 +458,7 @@ class DataStore (object):
         """
         self.gen_updated_sbf()
         self.delta_ad_size = int (np.log2 (self.ind_size) * np.sum ([np.bitwise_xor (self.updated_sbf.array, self.stale_indicator.array)]))
-        if MyConfig.VERBOSE_LOG_MR in self.verbose:
+        if VERBOSE_LOG_MR in self.verbose:
             printf (self.mr_output_file, 'delta_ad_size={}, ind size={}\n' .format (self.delta_ad_size, self.ind_size)) 
         
         return (self.delta_ad_size / self.ind_size) < 1 - 1/self.delta_mode_period_param
@@ -467,9 +470,9 @@ class DataStore (object):
         - Assign self.stale_indicator <-- self.updated_sbf (update Simple Bloom Filter)  
         - If requested by self.verbose, print to log files.
         """
-        if MyConfig.VERBOSE_LOG_Q in self.verbose:
+        if VERBOSE_LOG_Q in self.verbose:
             printf (self.q_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
-        if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
+        if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose: 
             printf (self.mr_output_file, f'switching to delta mode. ins cnt since last full ad={self.ins_cnt_since_last_full_ad}. advertising ad_size={self.delta_ad_size}\n')
         self.in_delta_mode                 = True
         self.ins_cnt_since_last_full_ad    = 0
@@ -491,14 +494,14 @@ class DataStore (object):
         - Update counters.
         
         """
-        if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+        if VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
 
         if self.ins_cnt_in_this_period >= self.re_init_mr0_param * self.min_uInterval: # passed the time to re-init mr0 params?
 
             self.mr0 = [min (self.mr0[num_of_pos_inds], self.initial_mr0) for num_of_pos_inds in range(self.num_of_DSs+1)]
             self.ins_cnt_in_this_period = 0 
-            if MyConfig.VERBOSE_LOG_MR in self.verbose:
+            if VERBOSE_LOG_MR in self.verbose:
                 printf (self.mr_output_file, f'RE-INIT MR0. mr0={self.mr0}\n')
         if self.init_mr1_after_each_ad:
             self.fp_cnt       = [0]*(self.num_of_DSs+1)
@@ -515,7 +518,7 @@ class DataStore (object):
                 scale_ind_by = min(self.scale_ind_full_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
-                if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose:
+                if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose:
                     printf (self.mr_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
 
         self.stale_indicator         = self.genNewSBF () # Assume here that we don't use CountingBloomFilter
@@ -540,9 +543,9 @@ class DataStore (object):
         if not (self.assume_ind_DSs): # salsa_dep
             return self.advertise_ind_full_mode_salsa_dep(called_by_str)
 
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+        if (VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
-        if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+        if VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, 'advertising full. ins_cnt={}. called by {}\n' .format (self.ins_cnt_since_last_full_ad, called_by_str))                     
 
         if self.use_CountingBloomFilter: # update the stale indicator also for the case of not (consider_delta_updates)
@@ -558,7 +561,7 @@ class DataStore (object):
                 self.tn_cnt, self.spec_accs_cnt = 0,0
                 self.ins_cnt_in_this_period = 0 
                 self.mr0 = min (self.mr0, self.initial_mr0)
-                if MyConfig.VERBOSE_LOG_MR in self.verbose:
+                if VERBOSE_LOG_MR in self.verbose:
                     printf (self.mr_output_file, 'RE-INIT MR0. mr0={:.3f}\n' .format (self.mr0))
             if self.init_mr1_after_each_ad and not(self.in_delta_mode):
                 self.fp_cnt, self.reg_accs_cnt = 0, 0
@@ -575,7 +578,7 @@ class DataStore (object):
                 scale_ind_by = min(self.scale_ind_full_factor, self.max_bpe/self.bpe)
             if scale_ind_by!=1: # need to scale the ind'
                 self.scale_ind_full_mode(factor=scale_ind_by)
-                if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
+                if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose: 
                     printf (self.mr_output_file, 'After scaling ind: bpe={:.1f}, min_uInterval={:.0f}, max_uInterval={:.0f}\n' .format (self.bpe, self.min_uInterval, self.min_uInterval*self.uInterval_factor))
 
         if not (self.use_CountingBloomFilter):
@@ -598,7 +601,7 @@ class DataStore (object):
             self.min_uInterval      = int (self.ind_size / self.bw_budget) 
             self.in_delta_mode      = False
 
-            if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
+            if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose: 
                 printf (self.mr_output_file, 'Switching back to full mode. indSize={:.0f}, estimated_bw_of_cadnidate[0]={:.0f}\n' .format 
                         (self.ind_size, estimated_bw_of_cadnidate[0]))
             return         
@@ -609,10 +612,12 @@ class DataStore (object):
         if new_ind_size!=self.ind_size: 
             self.ind_size               = new_ind_size
             self.bpe                    = int (self.ind_size / self.DS_size)
-            self.num_of_hashes          = MyConfig.get_optimal_num_of_hashes (self.bpe)
-            if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose: 
+            self.num_of_hashes          = get_optimal_num_of_hashes (self.bpe)
+            if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose: 
                 printf (self.mr_output_file, 'After scaling in delta mode: bpe={:.1f}, \n' .format (self.bpe))
-                   
+        if VERBOSE_CNT_SCALING in self.verbose:
+            self.scaling_cntr += 1         
+
     def report_mr (self): 
         """
         report the status of the various counters and estimators. Used for logging and debugging.
@@ -627,14 +632,14 @@ class DataStore (object):
         """
         self.mr0 = self.EWMA_alpha_mr0 * float(self.tn_cnt) / float (self.mr0_ewma_window_size) + (1 - self.EWMA_alpha_mr0) * self.mr0
         
-        if MyConfig.VERBOSE_DEBUG in self.verbose and self.mr0>0.999:
+        if VERBOSE_DEBUG in self.verbose and self.mr0>0.999:
             print (f'Note: mr0={self.mr0} at DS{self.ID}') 
             
         # self.updated_mr0 = True 
-        if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+        if VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, f'in update mr0: req_cnt={self.req_cnt}, ins cnt since last full ad={self.ins_cnt_since_last_full_ad}, tn cnt={self.tn_cnt}, spec accs cnt={self.spec_accs_cnt}, mr0={self.mr0}, tn_by_pos_ind_cnt={self.tn_cnt}, spec_accs_by_pos_ind_cnt={self.spec_accs_cnt}\n') 
             
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+        if (VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr0: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0), self.mr1, self.pr_of_pos_ind_estimation*self.mr1, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad)) 
         self.tn_cnt = int(0)
@@ -666,13 +671,13 @@ class DataStore (object):
         """
         self.mr1 = self.EWMA_alpha_mr1 * (self.fp_cnt / self.mr1_ewma_window_size) + (1 - self.EWMA_alpha_mr1) * self.mr1 
         # self.updated_mr1 = True 
-        if MyConfig.VERBOSE_LOG_MR in self.verbose: 
+        if VERBOSE_LOG_MR in self.verbose: 
             printf (self.mr_output_file, 'in update mr1: req_cnt={}, fp cnt={}, reg accs cnt={}, mr1={:.4f}\n' .format (self.req_cnt, self.fp_cnt, self.reg_accs_cnt, self.mr1))
-        if (MyConfig.VERBOSE_LOG_Q in self.verbose):
+        if (VERBOSE_LOG_Q in self.verbose):
             printf (self.q_output_file, 'in update mr1: q={:.2f}, mr0={:.2f}, mult0={:.2f}, mr1={:.4f}, mult1={:.4f}, spec_accs_cnt={}, reg_accs_cnt={}, ins_cnt={}\n' 
                     .format (self.pr_of_pos_ind_estimation, self.mr0, (1-self.pr_of_pos_ind_estimation)*(1-self.mr0), self.mr1, self.pr_of_pos_ind_estimation*self.mr1, self.spec_accs_cnt, self.reg_accs_cnt, self.ins_cnt_since_last_full_ad))
         if self.mr1<0 or self.mr1>=1: 
-            MyConfig.error ('DS {} got mr0={self.mr0}, mr1={self.mr1}') 
+            error ('DS {} got mr0={self.mr0}, mr1={self.mr1}') 
         self.fp_cnt = int(0)
         
     def should_advertise_by_mr1 (self):

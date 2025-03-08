@@ -24,7 +24,7 @@ VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
 VERBOSE_SHORT_LOG               = 12  # Write to a log file only major events.
-VERBOSE_CNT_SCLING              = 20  # Count the # of [up/down]-scaling along the simulation.
+VERBOSE_CNT_SCALING             = 20  # Count the # of [up/down]-scaling along the simulation.
 
 # The recommended number of requests for each trace and cache size. 
 num_of_req = {'Wiki'      : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},

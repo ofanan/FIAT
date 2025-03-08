@@ -30,7 +30,7 @@ def run_hetro_costs_sim ():
     DS_sizes    = [4]
     missps      = [300]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+    verbose     = [VERBOSE_RES, VERBOSE_CNT_SCALING] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     # start_time = time.time() 
     print ('running hetro_costs_sim')
     for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
@@ -49,12 +49,15 @@ def run_hetro_costs_sim ():
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa_dep4']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
                 for missp in missps: 
+                    res_file_name           = f'{mode}_{MyConfig.getMachineStr()}'
+                    if VERBOSE_CNT_SCALING in verbose:
+                        res_file_name += '_cntScale'
                     tic()
                     sm = sim.DistCacheSimulator(
                         # bpe                     = 10, #$$$
                         delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
                         full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
-                        res_file_name           = f'{mode}_{MyConfig.getMachineStr()}',
+                        res_file_name           = res_file_name,
                         EWMA_alpha_mr0          = 0.5, 
                         EWMA_alpha_mr1          = 0.25, 
                         trace_name              = trace,

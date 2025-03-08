@@ -1,8 +1,9 @@
 import sys, pickle, random
 import pandas as pd, numpy as np
 from   pathlib import Path
-import DataStore, Client, candidate, node, MyConfig 
+import DataStore, Client, candidate, node 
 from   printf import printf
+from MyConfig import *
 # from numpy.core._rational_tests import denominator
 
 class DistCacheSimulator(object):
@@ -186,7 +187,7 @@ class DistCacheSimulator(object):
                  rand_seed      = 42, 
                  max_fpr        = 0.01, # Allows sending an update by some maximum allowed (estimated) fpr, fnr. When the estimated fnr is above max_fnr, or the estimated fpr is above max_fpr, the DS sends an update.
                  max_fnr        = 0.01,  
-                 verbose        = [MyConfig.VERBOSE_RES], # Amount of info written to output files. When 1 - write at the end of each sim' the cost, number of misses etc. 
+                 verbose        = [VERBOSE_RES], # Amount of info written to output files. When 1 - write at the end of each sim' the cost, number of misses etc. 
                  use_given_client_per_item   = False, # When true, associate each request with the client determined in the input trace ("req_df")                 
                  use_given_DS_per_item       = False, # When true, insert each missed request with the datastore(s) determined in the input trace ("req_df")
                  use_fixed_uInterval         = True, 
@@ -221,10 +222,10 @@ class DistCacheSimulator(object):
         self.use_perfect_hist   = use_perfect_hist       
         self.mode               = mode
         
-        if MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES in self.verbose:
+        if VERBOSE_RES in self.verbose or VERBOSE_FULL_RES in self.verbose:
             if not(self.mode.startswith('measure_mr')): # 'measure_mr' opens its own .mr.res files. 
                 self.res_file = self.init_res_file (res_file_name)
-        if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+        if (VERBOSE_FULL_RES in self.verbose):
             self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
         
         self.mr_type            = mr_type
@@ -241,10 +242,10 @@ class DistCacheSimulator(object):
         self.num_of_DSs         = client_DS_cost.shape[1]
         self.k_loc              = k_loc
         if (self.DS_insert_mode != 1):
-            MyConfig.error ('sorry, currently only fix insert mode (1) is supported')
+            error ('sorry, currently only fix insert mode (1) is supported')
 
         if (self.k_loc > self.num_of_DSs):
-            MyConfig.error ('k_loc must be at most num_of_DSs')
+            error ('k_loc must be at most num_of_DSs')
 
         self.client_DS_cost     = client_DS_cost # client_DS_cost(i,j) will hold the access cost for client i accessing DS j
         self.max_fnr            = max_fnr
@@ -281,7 +282,7 @@ class DistCacheSimulator(object):
         self.use_CountingBloomFilter=  False # Currently, none of the modes uses CountingBloomFilter. Instead, they use Simple Bloom Filters.
         if self.use_global_uInerval:
             self.do_not_advertise_upon_insert = True # Disallow each cache-initiated advertisement; instead, self will decide when to advertise, based on self counters.
-            self.min_uInterval = MyConfig.bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, self.bw)
+            self.min_uInterval = bw_to_uInterval (self.DS_size, self.bpe, self.num_of_DSs, self.bw)
             self.advertise_cycle_of_DS = np.array ([ds_id * self.min_uInterval / self.num_of_DSs for ds_id in range (self.num_of_DSs)])
         else:
             self.do_not_advertise_upon_insert = False # default value. Usually we'd like the cache to consider advertising upon an insert of a new item
@@ -295,14 +296,14 @@ class DistCacheSimulator(object):
         self.use_given_DS_per_item = use_given_DS_per_item
 
         self.avg_DS_accessed_per_req = float(0)
-        if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
+        if (VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
             lg_uInterval = np.log2 (self.min_uInterval).astype (int)
             self.PI_hits_by_staleness = np.zeros (lg_uInterval , dtype = 'uint32') #self.PI_hits_by_staleness[i] will hold the number of times in which a requested item is indeed found in any of the caches when the staleness of the respective indicator is at most 2^(i+1)
             self.FN_by_staleness      = np.zeros (lg_uInterval,  dtype = 'uint32') #self.FN_by_staleness[i]      will hold the number of FN events that occur when the staleness of that indicator is at most 2^(i+1)        else:
 
         self.delta_mode_period_param = delta_mode_period_param
         self.full_mode_period_param  = full_mode_period_param
-        self.initial_mr1                    = MyConfig.calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, MyConfig.get_optimal_num_of_hashes (self.bpe))
+        self.initial_mr1                    = calc_designed_fpr (self.DS_size, self.bpe*self.DS_size, get_optimal_num_of_hashes (self.bpe))
         self.begin_log_mr_at_req_cnt        = begin_log_mr_at_req_cnt
         if self.mode.startswith('measure_mr'):
             """
@@ -343,10 +344,10 @@ class DistCacheSimulator(object):
                             self.trace_name, self.DS_size/1000, self.min_uInterval, self.bpe, self.naive_selection_alg, ds))                   
 
         if (not(self.mode in ['opt', 'fnaa'])) and (not(self.mode.startswith('salsa'))) and (not(self.mode.startswith('measure_'))):
-            MyConfig.error (f'In DistCacheSimulator.init(). Sorry, the selected mode {self.mode} is not supported.')
+            error (f'In DistCacheSimulator.init(). Sorry, the selected mode {self.mode} is not supported.')
 
         if self.mode=='salsa_dep3':
-            MyConfig.error ('In DistCacheSimulator.init(). Sorry. mode salsa_dep3 is not supported anymore.')
+            error ('In DistCacheSimulator.init(). Sorry. mode salsa_dep3 is not supported anymore.')
 
         if self.mode in ['opt', 'fnaa'] or self.mode.startswith('salsa'):
             self.speculate_accs_cost        = 0 # Total accs cost paid for speculative accs
@@ -412,7 +413,7 @@ class DistCacheSimulator(object):
             self.ewma_window_size           = max (200, int(self.min_uInterval/5)) # window for parameters' estimation 
 
         if self.mode.startswith('salsa') and (not (self.mode in ['salsa0', 'salsa1', 'salsa2', 'salsa_dep0', 'salsa_dep1', 'salsa_dep2', 'salsa_dep4'])):
-            MyConfig.error ('In DistCacheSimulator.init(). sorry. Mode {} is not supported' .format(self.mode) )                                             
+            error ('In DistCacheSimulator.init(). sorry. Mode {} is not supported' .format(self.mode) )                                             
             
         if (self.calc_mr_by_hist and self.use_perfect_hist):
             self.neg_ind_cnt    = np.zeros (self.num_of_DSs)
@@ -423,15 +424,15 @@ class DistCacheSimulator(object):
         
         self.init_client_list ()
         self.mr_output_file = [None]*self.num_of_DSs # will be filled by real files only if requested to log mr.
-        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose: 
-            self.verbose.append (MyConfig.VERBOSE_LOG_MR) # Detailed mr log should include also "basic" mr log.
-        if MyConfig.VERBOSE_LOG_MR in self.verbose or MyConfig.VERBOSE_SHORT_LOG in self.verbose:
+        if VERBOSE_DETAILED_LOG_MR in self.verbose: 
+            self.verbose.append (VERBOSE_LOG_MR) # Detailed mr log should include also "basic" mr log.
+        if VERBOSE_LOG_MR in self.verbose or VERBOSE_SHORT_LOG in self.verbose:
             self.init_mr_output_files()
             self.zeros_ar            = np.zeros (self.num_of_DSs, dtype='uint16') 
             self.ones_ar             = np.ones  (self.num_of_DSs, dtype='uint16') 
 
         self.gen_DSs() # Genearte a list of DSs (DataStores).
-        if MyConfig.VERBOSE_DEBUG in self.verbose:
+        if VERBOSE_DEBUG in self.verbose:
             self.debug_file = open (f'../res/{self.gen_settings_str(num_of_req=0)}_debug.txt', "w")
 
 
@@ -442,7 +443,7 @@ class DistCacheSimulator(object):
         """
         settings_str = self.gen_settings_str (num_of_req=self.trace_len)
         for ds in range (self.num_of_DSs):
-            self.mr_output_file[ds] = open ('../res/{}_ds{}{}.mr' .format (settings_str, ds, '_dbg' if MyConfig.VERBOSE_DEBUG in self.verbose else ''), 'w')
+            self.mr_output_file[ds] = open ('../res/{}_ds{}{}.mr' .format (settings_str, ds, '_dbg' if VERBOSE_DEBUG in self.verbose else ''), 'w')
 
     def DS_costs_are_homo (self):
         """
@@ -478,12 +479,12 @@ class DistCacheSimulator(object):
         Accumulates and organizes the stat collected during the sim' run.
         This func' is usually called once at the end of each run of the python_simulator.
         """
-        if not (MyConfig.VERBOSE_RES in self.verbose or MyConfig.VERBOSE_FULL_RES in self.verbose):
+        if not (VERBOSE_RES in self.verbose or VERBOSE_FULL_RES in self.verbose or VERBOSE_CNT_SCALING in self.verbose):
             return
         
         res_file = res_file if (res_file!=None) else self.res_file
 
-        if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
+        if VERBOSE_CNT_FN_BY_STALENESS in self.verbose:
             printf (res_file, 'FN cnt by staleness      = {}\n' .format (self.FN_by_staleness))
             printf (res_file, 'PI hits cnt by staleness = {}\n' .format (self.PI_hits_by_staleness))
             for bin in range (len(self.FN_by_staleness)):
@@ -526,11 +527,18 @@ class DistCacheSimulator(object):
         if self.hit_ratio_based_uInterval:
             printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
         if (self.hit_ratio < 0 or self.hit_ratio > 1):
-            MyConfig.error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
+            error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
         if self.mode.startswith('salsa2'):
             printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
             printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
         printf (res_file, '\n')
+        if VERBOSE_CNT_SCALING in verbose:
+            num_of_indicator_rescaling = [DS.scaling_cntr for DS in self.DS_list]
+            # num_of_indicator_rescaling_per_DS = num_of_indicator_rescaling / self.num_of_DSs 
+            printf (res_file, f'\n//num_of_indicator_rescaling={num_of_indicator_rescaling_per_DS}')
+            num_of_indicator_rescaling_per_ad = sum(num_of_indicator_rescaling_per_DS) / (sum([DS.num_of_full_ads for DS in self.DS_list]) + sum([DS.num_of_sync_ads for DS in self.DS_list]))
+            printf (res_file, f'\n//num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
+            printf (res_file, f'\nsettings_str | num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
         
         
     def run_trace_measure_fp_fn (self):
@@ -587,7 +595,7 @@ class DistCacheSimulator(object):
                 if len(self.DSs2accs)!=self.num_of_DSs: # not all DSs gave pos indication
                     self.DSs2accs.append (random.choice([ds for ds in range(self.num_of_DSs) if not (ds in self.pos_indications)]))
             else:
-                MyConfig.error ('handle_single_req_naive_alg was called with an unknown selection algorithm {selection_alg}')
+                error ('handle_single_req_naive_alg was called with an unknown selection algorithm {selection_alg}')
         
         hit = False # default value
         for ds2accs in self.DSs2accs:
@@ -1109,12 +1117,12 @@ class DistCacheSimulator(object):
                 # We assume here that the cost of every DS < missp
                 # update variables
                 self.client_list[self.client_id].total_access_cost += self.client_DS_cost[self.client_id][access_DS_id]
-                if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose):
+                if (VERBOSE_DETAILED_LOG in self.verbose):
                     self.client_list[self.client_id].add_DS_accessed(self.req_cnt, [access_DS_id])
                 # perform access. we know it will be successful
                 self.DS_list[access_DS_id].access(self.cur_req.key)
                 self.client_list[self.client_id].hit_cnt += 1
-            if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+            if (VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
 
     def consider_advertise (self):
@@ -1143,7 +1151,7 @@ class DistCacheSimulator(object):
             # self.pos_ind_list will hold the list of DSs with positive indications
             self.pos_ind_list = np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.updated_indicator) ]) if self.use_only_updated_ind else \
                                 np.array ([int(DS.ID) for DS in self.DS_list if (self.cur_req.key in DS.stale_indicator) ])
-            if (MyConfig.VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
+            if (VERBOSE_CNT_FN_BY_STALENESS in self.verbose):
                 self.cnt_fn_by_staleness ()
             if (len(self.pos_ind_list) == 0): # No positive indications --> FNO alg' has a miss
                 self.handle_miss ()
@@ -1157,7 +1165,7 @@ class DistCacheSimulator(object):
                     indications[i] = True  
                 self.mr_of_DS = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (indications, fno_mode = True)
             self.access_pgm_fno_hetro ()
-            if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+            if (VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
 
     def cnt_fn_by_staleness (self):
@@ -1197,14 +1205,14 @@ class DistCacheSimulator(object):
         for self.req_cnt in range(self.trace_len): # for each request in the trace...
             if self.req_cnt==self.begin_log_mr_at_req_cnt:
                 settings.error ('in DistCacheSimulator.begin_log_mr_at_req_cnt') #$$$$$
-                self.verbose.append (MyConfig.VERBOSE_DETAILED_LOG_MR)
-                self.verbose.append (MyConfig.VERBOSE_LOG_MR)
+                self.verbose.append (VERBOSE_DETAILED_LOG_MR)
+                self.verbose.append (VERBOSE_LOG_MR)
                 self.init_mr_output_files ()
                 for ds in range (self.num_of_DSs):
                     self.DS_list[ds].mr_output_file = self.mr_output_file[ds]
 
             if self.req_cnt==self.begin_log_mr_at_req_cnt + 20:
-                MyConfig.error (f'DistCacheSimulator is aborting sim at req cnt {self.req_cnt}')
+                error (f'DistCacheSimulator is aborting sim at req cnt {self.req_cnt}')
             if self.use_global_uInerval:
                 self.consider_advertise () # If updates are sent "globally", namely, by all $s simultaneously, maybe we should send update now 
             self.cur_req = self.req_df.iloc[self.req_cnt]  
@@ -1227,7 +1235,7 @@ class DistCacheSimulator(object):
             else: # Use analysis to estimate mr0, mr1  (FNAA)
                 self.mr_of_DS   = self.client_list [self.client_id].estimate_mr1_mr0_by_analysis (self.indications)
                 self.access_pgm_fna_hetro ()
-            if (MyConfig.VERBOSE_FULL_RES in self.verbose):
+            if (VERBOSE_FULL_RES in self.verbose):
                 self.mid_report ()
 
     def calc_mr_of_DSs_salsa (self): 
@@ -1235,7 +1243,7 @@ class DistCacheSimulator(object):
         calc mr (aka "Exclusion probability": namely, the prob' that the data isn't in a DS, given the indication for this DS).
         This func' is used by salsa algorithms only.
         """
-        if MyConfig.VERBOSE_DEBUG in self.verbose:            
+        if VERBOSE_DEBUG in self.verbose:            
             printf (self.debug_file, '\nreq_cnt={} ' .format(self.req_cnt))
             for ds in range(self.num_of_DSs):
                 printf (self.debug_file, '{:.4f} ' .format (self.DS_list[ds].mr1 if self.indications[ds] else self.DS_list[ds].mr0 ))
@@ -1293,14 +1301,14 @@ class DistCacheSimulator(object):
                     
                     self.mr1[ds] = self.EWMA_alpha * float(self.fp_cnt[ds]) / float(self.ewma_window_size) + (1 - self.EWMA_alpha) * self.mr1[ds]
                     
-                    if (MyConfig.VERBOSE_LOG_MR in self.verbose):
+                    if (VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr1={}, emwa_mr1={}\n' 
                                 .format (self.fp_cnt[ds] / self.ewma_window_size, self.mr1[ds]))
                     self.fp_cnt[ds] = 0
                     self.pos_ind_cnt [ds] = 0
                 if self.neg_ind_cnt[ds] == self.ewma_window_size:
                     self.mr0[ds] = self.EWMA_alpha * self.tn_cnt[ds] / self.ewma_window_size + (1 - self.EWMA_alpha) * self.mr0[ds]
-                    if (MyConfig.VERBOSE_LOG_MR in self.verbose):
+                    if (VERBOSE_LOG_MR in self.verbose):
                         printf (self.mr_output_file[ds], 'last_mr0={:.4f}, emwa_mr0={:.4f}\n' 
                                 .format (self.tn_cnt[ds] / self.ewma_window_size, self.mr0[ds]))
                     self.tn_cnt[ds] = 0
@@ -1354,7 +1362,7 @@ class DistCacheSimulator(object):
             self.run_trace_pgm_fna_hetro ()
             self.gather_statistics()
         else: 
-            MyConfig.error  ('In DistCacheSimulator.run_simulator(). Wrong mode: {}\n' .format (self.mode))
+            error  ('In DistCacheSimulator.run_simulator(). Wrong mode: {}\n' .format (self.mode))
 
         
     def estimate_mr1_by_history (self):
@@ -1378,13 +1386,13 @@ class DistCacheSimulator(object):
         The func' increments the relevant counter, and inserts the key to self.k_loc DSs.
         """
         self.client_list[self.client_id].non_comp_miss_cnt += 1
-        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose and sum(self.indications)>0:  
+        if VERBOSE_DETAILED_LOG_MR in self.verbose and sum(self.indications)>0:  
             for DS in self.DS_list:
                 printf (self.mr_output_file[DS.ID], f'in DistCacheSimulator.handle_non_comp_miss(): ')
                 DS.report_mr ()
         self.insert_key_to_DSs ()
-        if (MyConfig.VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
-            MyConfig.error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
+        if (VERBOSE_DEBUG in self.verbose and self.client_list[self.client_id].non_comp_miss_cnt > self.req_cnt+1):
+            error ('num non_comp_miss_cnt={}, req_cnt={}\n' .format (self.client_list[self.client_id].non_comp_miss_cnt, self.req_cnt))
 
     def insert_key_to_closest_DS(self, req):
         """
@@ -1403,7 +1411,7 @@ class DistCacheSimulator(object):
         """
         for i in range(self.k_loc):
             self.select_DS_to_insert(i).insert (key = self.cur_req.key, req_cnt = self.req_cnt)
-            if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
+            if VERBOSE_DETAILED_LOG_MR in self.verbose:
                 for ds in range (self.num_of_DSs):
                     printf (self.mr_output_file[ds], f'inserting missed req {self.req_cnt} to DS {self.select_DS_to_insert(i).ID}\n')            
         
@@ -1522,7 +1530,7 @@ class DistCacheSimulator(object):
         # Now we know that the alg' decided to access at least one DS
         # Add the costs and IDs of the selected DSs to the statistics
         self.client_list[self.client_id].total_access_cost += final_sol.ac
-        if (MyConfig.VERBOSE_DETAILED_LOG in self.verbose):
+        if (VERBOSE_DETAILED_LOG in self.verbose):
             self.client_list[self.client_id].add_DS_accessed(self.req_cnt, final_sol.DSs_IDs)
 
         if (self.calc_mr_by_hist):
@@ -1591,8 +1599,8 @@ class DistCacheSimulator(object):
             # insert the prefix at this prefix_len to the current leaf
             for pref_len in range (1, num_of_DSs_in_cur_leaf+1):
                 cur_mr *= df_of_DSs_in_cur_leaf.iloc[pref_len - 1]['mr']
-                if MyConfig.VERBOSE_DEBUG in self.verbose and cur_mr>1 or cur_mr<0:
-                    MyConfig.error (f'cur_mr={cur_mr}')                     
+                if VERBOSE_DEBUG in self.verbose and cur_mr>1 or cur_mr<0:
+                    error (f'cur_mr={cur_mr}')                     
                 cur_ac += df_of_DSs_in_cur_leaf.iloc[pref_len - 1]['ac']
                 leaf[leaf_num].append(candidate.candidate(df_of_DSs_in_cur_leaf.iloc[range(pref_len)]['DS ID'], cur_mr, cur_ac))
 
@@ -1635,7 +1643,7 @@ class DistCacheSimulator(object):
         # perform access
         self.sol = final_sol.DSs_IDs
         already_hit = False # will become True once accessing at least one DS for the current request results in a hit 
-        if MyConfig.VERBOSE_DETAILED_LOG_MR in self.verbose:
+        if VERBOSE_DETAILED_LOG_MR in self.verbose:
             for ds in range(self.num_of_DSs):
                 printf (self.mr_output_file[ds], f'req_cnt={self.req_cnt}, inds={self.indications}, sol={self.sol}\n')
         for DS_id in self.sol:

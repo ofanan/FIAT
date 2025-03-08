@@ -45,7 +45,7 @@ def run_hetro_costs_sim ():
     # for trace in ['Twitter17']:
     # for trace in ['Twitter45']:
         for DS_size in [1000*item for item in DS_sizes]:
-            max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
+            max_num_of_req = 500000 #$$$ MyConfig.calc_num_of_req (trace) # 500000   
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
             for mode in ['salsa_dep4']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
                 for missp in missps: 
@@ -54,7 +54,6 @@ def run_hetro_costs_sim ():
                         res_file_name += '_cntScale'
                     tic()
                     sm = sim.DistCacheSimulator(
-                        # bpe                     = 10, #$$$
                         delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
                         full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
                         res_file_name           = res_file_name,
@@ -74,6 +73,7 @@ def run_hetro_costs_sim ():
                         ) 
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
                     print (f'Finished an iteration of run_hetro_costs_sim. mode={mode},missp={missp},DS_size={DS_size} {genElapsedTimeStr (toc())}')
+                    exit () #$$$
         
     # run_times_log_file_name = 'run_times.log'
     # if Path(run_times_log_file_name).is_file() and MyConfig.VERBOSE_RES in verbose: # does this res file already exist?

@@ -8,8 +8,7 @@ This file contains several accessory functions, used throughout the project. In 
 - Calculate the inherent fpr of an optimally-configured Bloom filter, given its number of bits-per-element.
 """
 import os
-import numpy as np
-import pandas as pd
+import numpy as np, pandas as pd
 
 INF_INT = 999999999
 
@@ -24,7 +23,9 @@ VERBOSE_LOG_Q                   = 7 # Write a log file detailing the q (prob' of
 VERBOSE_DEBUG                   = 9
 VERBOSE_CNT_FN_BY_STALENESS     = 10 
 VERBOSE_CNT_MR0_BY_STALENESS    = 11
+VERBOSE_SHORT_LOG               = 12  # Write to a log file only major events.
 
+# The recommended number of requests for each trace and cache size. 
 num_of_req = {'Wiki'      : {4000 : 390000, 10000 : 700000, 16000 : 1100000, 64000 :  6000000},
               'Scarab'    : {4000 : 250000, 10000 : 500000, 16000 : 700000,  64000 :  4000000},
               'F1'        : {4000 : 250000, 10000 : 400000, 16000 : 500000,  64000 :  2500000},
@@ -41,19 +42,62 @@ trace_txt_file_name = {'Wiki'   : 'wiki/wiki1.1190448987.txt',
                        'Gradle' : 'gradle/gradle.build-cache.txt',
                        'Scarab' : 'scarab/scarab.recs.trace.20160808T073231Z.xz.txt'}
 
-trace_csv_file_name = {'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
-                       'Gradle'     : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
-                       'Scarab'     : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
-                       'F1'         : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
-                       'F2'         : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
-                       'WS1'        : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
-                       'P3'         : 'arc/P3.3912Kreq.csv',
-                       'Twitter17'  : 'snia/twitter/Twitter17.cluster17_14MReq_464Kuniqes.csv',
-                       'Twitter45'  : 'snia/twitter/Twitter45.cluster45.txt.csv',
-                       'IBM1'       : 'snia/IBM/IBM1.ObjectStoreTrace001Part0.txt.csv',
-                       'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
-                       }
+trace_csv_file_name = {
+   'Wiki'       : 'wiki/wiki1.1190448987_6000Kreq.csv',
+   'Wiki_short' : 'wiki/wiki_short.csv',
+   'Gradle'     : 'gradle/gradle.build-cache.xz_2091Kreq.csv',
+   'Scarab'     : 'scarab/scarab.recs.trace.20160808T073231Z.xz_8159Kreq.csv',
+   'F1'         : 'umass/storage/F1.spc.bz2_5643Kreq.csv',
+   'F2'         : 'umass/storage/F2.spc.bz2_13883Kreq.csv',
+   'WS1'        : 'umass/storage/WS1.spc.bz2_31967Kreq.csv',
+   'P3'         : 'arc/P3.3912Kreq.csv',
+   'Twitter17'  : 'snia/twitter/Twitter17.cluster17_14MReq_464Kuniqes.csv',
+   'Twitter45'  : 'snia/twitter/Twitter45.cluster45.txt.csv',
+   'IBM1'       : 'snia/IBM/IBM1.ObjectStoreTrace001Part0.txt.csv',
+   'IBM7'       : 'snia/IBM/IBM7.ObjectStoreTrace007Part0.txt.csv'
+}
 
+# Overall lengths of the traces.
+trace_len = {
+   'Wiki'       : 13800000,
+   'Gradle'     : 2091900,
+   'Scarab'     : 8159900,
+   'F1'         : 10000000,
+   'F2'         : 13883900,
+   'Twitter17'  : 16000000,
+   'Twitter45'  : 2100000,
+   'IBM1'       : 949900,
+   'IBM7'       : 4200000,
+}
+
+# Num of unique requests in each trace. 
+num_uniques_in_trace = {
+   'Wiki'       : 934000,
+   'Gradle'     : 155900,
+   'Scarab'     : 844900,
+   'F1'         : 1200000,
+   'F2'         : 832900,
+   'Twitter17'  : 474900,
+   'Twitter45'  : 1530900,
+   'IBM1'       : 459900,
+   'IBM7'       : 439900,
+}
+
+
+def np2bytes_like (
+        key : np.uint32
+        ):
+    """
+    Convert the key to a read-only bytes-like object, is required by newer hash versions:
+    """
+    if not isinstance(key, np.uint32):
+        key = np.uint32(key)  # Ensure key is a uint32
+
+    return key.tobytes()
+
+def print_list (list):
+    for item in list:
+        print (f'{item}')
 
 def check_if_input_file_exists (relative_path_to_input_file):
     """
@@ -62,8 +106,6 @@ def check_if_input_file_exists (relative_path_to_input_file):
     """
     if not (os.path.isfile (relative_path_to_input_file)):
         error (f'the input file {relative_path_to_input_file} does not exist')
-
-
 
 def calc_num_of_req (trace, DS_size=64000):
     """
@@ -88,7 +130,6 @@ def reduce_trace_mem_print(trace_df, k_loc=1, read_clients_from_trace=False, rea
     """
     Reduces the memory print of the trace by using the smallest type that still supports the values in the trace
     Note: this configuration can support up to 2^8 locations, and traces of length up to 2^32
-
     """
     new_trace_df        = trace_df
     new_trace_df['key'] = trace_df['key'].astype('uint32')   
@@ -292,7 +333,6 @@ def characterize_trace (trace,
     uniq_keys       = np.unique(keys)
     print ('trace={}, {:.0f}K req, {:.0f}K uniques' .format (trace, req_cnt/1000, len(uniq_keys)/1000))
 
-
 def get_trace_name (trace_file_name):
     """
     Given the file name of the trace (possibly including the path), return a short trace name.
@@ -308,12 +348,33 @@ def get_trace_name (trace_file_name):
     #    hist_array[i] = sum(count_df[(count_df >= 2**i) & (count_df < 2**(i+1))])
 # parse_list_of_keys (input_file_name='arc/P3.lis.txt', print_output_to_file=True, print_num_of_uniques=True)
 
-def main ():
-    num_of_req = INF_INT
-    for num_of_req in [300000]:
-        characterize_trace (trace = 'IBM1', 
-                            num_of_req                  = num_of_req
-                            )
+def getMachineStr ():
+    """
+    Returns a string that identifies the machine on which the program is running - e.g., on 'PC', or on 'HPC'. 
+    """
+    pwdStr = os.getcwd()
+    if (pwdStr.find ('itamarc')>-1): # the string 'HPC' appears in the path only in HPC runs
+        return 'HPC' # indicates that this sim runs on my PC
+    return 'PC' # indicates that this sim runs on an HPC       
+
+def indexOrNone(l : list, 
+                elem):
+    """
+    if elem is found in a list, returns the first index in which it's found.
+    else, return None
+    """
+    try:
+        idx = l.index(elem)
+        return idx
+    except ValueError:
+        return None
+    
+# def main ():
+#     num_of_req = INF_INT
+#     for num_of_req in [300000]:
+#         characterize_trace (trace = 'IBM1', 
+#                             num_of_req                  = num_of_req
+#                             )
     # parse_list_of_keys (input_file_name             = wiki_txt_file_name, 
     #                     num_of_req                  = num_of_req,
     #                     print_output_to_file        = True,

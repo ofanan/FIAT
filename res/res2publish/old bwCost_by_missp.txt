@@ -1,6 +1,0 @@
-// Using hist-based with hit-ratio for advertising
-
-input 		 FNAA30 	 FNAH30 	 FNAA100 	 FNAH100 	 FNAA300 	 FNAH300
-wiki		 78.1200 	 91.5600 	 52.9200 	 94.6400 	 39.2000 	 94.3600 	 
-scarab		 105.5600 	 60.7600 	 90.4400 	 46.7600 	 86.5200 	 46.2000 	 
-F2			 94.0800 	 115.0800 	 84.8400 	 52.6400 	 83.1600 	 52.9200 	 

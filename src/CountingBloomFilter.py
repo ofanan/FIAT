@@ -5,9 +5,7 @@ https://hur.st/bloomfilter/
 http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
 Bloom filter survey: https://www.eecs.harvard.edu/~michaelm/postscripts/im2005b.pdf
 """
-import numpy as np
-import mmh3
-import copy
+import mmh3, copy, numpy as np
 import SimpleBloomFilter
 
 class CountingBloomFilter(object):
@@ -42,7 +40,7 @@ class CountingBloomFilter(object):
         updates all the hashes corresponding to the new key: increases each by 1 (no more than allowed maximum)
         """
         for seed in range(self.num_of_hashes):
-            entry = mmh3.hash(key, seed) % self.size
+            entry = mmh3.hash(np2bytes_like(key), seed) % self.size
             if self.array[entry] < self.max_array_val:
                 self.array[entry] += 1
                 # self.insertions_since_last_update += 1
@@ -56,7 +54,7 @@ class CountingBloomFilter(object):
         updates all the hashes corresponding to the key: decreases each by 1 (no less than 0)
         """
         for seed in range(self.num_of_hashes):
-            entry = mmh3.hash(key, seed) % self.size
+            entry = mmh3.hash(np2bytes_like(key)(key, seed) % self.size
             if self.array[entry] > 0:
                 self.array[entry] -= 1
                 # if (self.array[entry] == 0):
@@ -69,7 +67,7 @@ class CountingBloomFilter(object):
             key in CountingBloomFilter
         """
         for seed in range(self.num_of_hashes):            
-            if self.array[mmh3.hash(key, seed) % self.size] == 0:
+            if self.array[mmh3.hash(np2bytes_like(key), seed) % self.size] == 0:
                 return False
         return True
 
@@ -93,7 +91,7 @@ class CountingBloomFilter(object):
         checks if all hash functions corresponding to key are strictly positive
         """
         for seed in range(self.num_of_hashes):
-            if self.array[mmh3.hash(key, seed) % self.size] == 0:
+            if self.array[mmh3.hash(np2bytes_like(key), seed) % self.size] == 0:
                 return False
         return True
         

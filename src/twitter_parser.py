@@ -6,9 +6,8 @@ Output: a csv file, where:
         - (optional): the rest of the cols. are the locations ("k_loc") to which a central controller would enter this req. upon a miss. 
 """
 
-import numpy as np, pandas as pd
+import sys, numpy as np, pandas as pd
 from numpy import infty
-import mmh3, sys, hashlib
 import MyConfig
 
 def parse_Twitter_trace (trace_file_name, 
@@ -20,10 +19,6 @@ def parse_Twitter_trace (trace_file_name,
     input_file_name             = 'snia/twitter/' + trace_file_name
     full_path_input_file_name   = traces_path + 'snia/twitter/' +  trace_file_name
      
-    # input_file = open (full_path_input_file_name,  "r")
-    # lines               = (line.rstrip() for line in input_file) # "lines" contains all lines in input file
-    # lines               = (line for line in lines if line)       # Discard blank lines
-        
     keys    = []
     req_cnt = 0
     

@@ -2,10 +2,7 @@
 A simple Bloom filter
 """
 
-
-import numpy as np
-import mmh3
-
+import mmh3, numpy as np
 
 class SimpleBloomFilter(object):
     
@@ -24,7 +21,7 @@ class SimpleBloomFilter(object):
         """
         for key in keys:
             for seed in range(self.num_of_hashes):
-                self.array[mmh3.hash(key, seed) % self.size] = True
+                self.array[mmh3.hash(np2bytes_like(key), seed) % self.size] = True
 
     def add(self, key):
         """
@@ -32,7 +29,7 @@ class SimpleBloomFilter(object):
         updates all the hashes corresponding to the new key: increases each by 1 (no more than allowed maximum)
         """
         for seed in range(self.num_of_hashes):
-            self.array[mmh3.hash(key, seed) % self.size] = True
+            self.array[mmh3.hash(np2bytes_like(key), seed) % self.size] = True
 
     def __contains__(self, key):
         """
@@ -40,8 +37,8 @@ class SimpleBloomFilter(object):
         enables using the syntax:
             key in SimpleBloomFilter
         """
-        for seed in range(self.num_of_hashes):
-            entry = mmh3.hash(key, seed) % self.size
+        for seed in range(self.num_of_hashes):            
+            entry = mmh3.hash(np2bytes_like(key), seed) % self.size
             if ( not (self.array[entry]) ):
                 return False
         return True
@@ -51,7 +48,7 @@ class SimpleBloomFilter(object):
         checks if all hash functions corresponding to key are strictly positive
         """
         for seed in range(self.num_of_hashes):
-            if ( not (self.array[mmh3.hash(key, seed) % self.size]) ):
+            if ( not (self.array[mmh3.hash(np2bytes_like(key), seed) % self.size]) ):
                 return False
         return True
         

@@ -1,5 +1,0 @@
-input 	 FNAA30		SALSA30		SALSA230		FNAA100		SALSA100		SALSA2100		FNAA300		SALSA300		SALSA2300		
-gradle	 2.31		N/A			N/A			 2.09		N/A			N/A			 1.54		N/A			N/A			 
-wiki	 1.88		N/A			N/A			 1.53		N/A			N/A			 1.18		N/A			N/A			 
-scarab	 1.28		N/A			N/A			 1.13		N/A			N/A			 1.06		N/A			N/A			 
-F2		 1.20		N/A			 1.22		 1.09		N/A			 1.08		 1.04		N/A			 1.03		 

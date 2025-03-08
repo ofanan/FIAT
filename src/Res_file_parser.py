@@ -1,7 +1,5 @@
-import numpy as np
-import matplotlib, seaborn
-import matplotlib.pyplot as plt
-import os
+import os, numpy as np
+import pylab, matplotlib, seaborn, matplotlib.pyplot as plt
 import MyConfig
 from printf import printf 
 from _ast import If
@@ -24,8 +22,23 @@ alg_idx                 = 9 # the cache selection and advertisement alg', e.g.: 
 mr0th_idx               = 10 # mr0 th for SALSA's advertisement decision
 mr1th_idx               = 12 # mr0 th for SALSA's advertisement decision
 uIntFact_idx            = 14 # mr0 th for SALSA's advertisement decision
+minFU_idx               = 16
+alpha0_idx              = 17
+alpha1_idx              = 19
+period_param_idx        = 21
 min_num_of_fields       = alg_idx + 1
 
+# Color-blind friendly pallette
+BLACK       = '#000000' 
+ORANGE      = '#E69F00'
+SKY_BLUE    = '#56B4E9'
+GREEN       = '#009E73'
+YELLOW      = '#F0E442'
+BLUE        = '#0072B2'
+VERMILION   = '#D55E00'
+PURPLE      = '#CC79A7'
+
+# convenient proportions for bar plots
 BAR_WIDTH               = 0.25
 BAR_WIDTH_BETWEEN_GRPS  = 0.25
 MARKER_SIZE             = 16
@@ -34,11 +47,22 @@ LINE_WIDTH              = 3
 LINE_WIDTH_SMALL        = 1 
 FONT_SIZE               = 20
 FONT_SIZE_SMALL         = 5
-LEGEND_FONT_SIZE        = 20
+LEGEND_FONT_SIZE        = FONT_SIZE
 LEGEND_FONT_SIZE_SMALL  = 5 
 ROTATION_ANGLE          = 90
 USE_FRAME               = False # When True, plot a "frame" (box) around the plot 
 WSAPCE_BETWEEN_SUBPLOTS = 0.28
+
+lineStyleOfMode = {
+    'fullKnow_dep'     : 'solid',
+    'fullKnow_dep4_0'  : 'solid',
+    'fullKnow_dep4_1'  : 'solid',
+    'fnaa'             : 'dashed',
+    'salsa_dep4'       : (0, (3,1,1,1)), #'dotted',
+    'salsa_dep4_0'     : (0, (3,1,1,1)), #'dotted',
+    'salsa_dep4_1'     : (0, (3,1,1,1)), #'dotted',
+}
+        
 
 class Res_file_parser (object):  
 
@@ -61,44 +85,65 @@ class Res_file_parser (object):
         # List of algorithms' names, used in the plots' legend, for the dist' case
         self.labelOfMode = {}
 
-        self.strOfMode = {'FNAA' : r'HeCS$_{\rm FNA}$',
-                          'SALSA' : 'SALSA',
-                          'SALSA1' : 'SALSA1',
-                          'SALSA2' : 'SALSA2',
-                          'SALSA085' : 'SALSA_.85',
-                          'SALSA285' : 'SALSA2_.85',
-                          # 'SALSA09' : 'SALSA_0.9',
-                          # 'SALSA29' : 'SALSA_2.9',
-                          'SALSA3'    : 'SALSA3'
+        self.strOfMode = {'FNAA'        : r'HeCS$_{\rm FNA}$',
+                          'fnaa'        : r'HeCS$_{\rm FNA}$',
+                          'SALSA'       : 'SALSA',
+                          'SALSA1'      : 'SALSA1',
+                          'salsa2'      : 'SALSA2',
+                          'SALSA2'      : 'SALSA2',
+                          'SALSA3'      : 'SALSA3',
+                          'FULLKNOW'    : 'FULLKNOW',
+                          'FULLKNOW_DEP': 'fullKnow',
+                          'FULLKNOW_DEP4': 'fullKnow_dep4',
+                          'FULLKNOW_DEP4_0': 'fullKnow',
+                          'FULLKNOW_DEP4_1': 'fullKnow_dep4_1',
+                          'FULLKNOW_DEP4_2': 'fullKnow_dep4_2',
+                          'FULLKNOW_DEP5': 'fullKnow_dep5',
+                          'SALSA_DEP1'  : 'SALSA1',
+                          'SALSA_DEP2'  : 'SALSA1.5',
+                          'SALSA_DEP3'  : 'SALSA2',
+                          'SALSA_DEP4'  : 'SALSA2',
+                          'SALSA_DEP4_0'  : 'SALSA2',
+                          'SALSA_DEP4_1'  : 'SALSA2',
+                          'SALSA_DEP4_2'  : 'SALSA2',
                            }
+        
+
+        
+# # Color-blind friendly pallette
+# ORANGE      = '#E69F00'
+# SKY_BLUE    = '#56B4E9'
+# GREEN       = '#009E73'
+# YELLOW      = '#F0E442'
+# BLUE        = '#0072B2'
+# VERMILION   = '#D55E00'
+# PURPLE      = '#CC79A7'
         
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'Opt '      : 'green',
-                            'FNAA'      : 'navy',
-                            'SALSA'     : 'cyan',
-                            'SALSA1'    : 'cyan',
-                            'SALSA2'    : 'teal',
-                            'SALSA285'  : 'magenta',
-                            'SALSA085'  : 'purple',
-                            # 'SALSA29'   : 'red',
-                            # 'SALSA09'   : 'purple',
-                            'SALSA29'   : 'red',   
-                            'SALSA3'    : 'brown',
-                            # 'others'    : , 'black','magenta','red', 'brown', yellow
-                            'fullKnow'  : 'blue',
-                            'salsa2'    : 'black',
-                            'fnaa'      : 'magenta'
+                            'FNAA'      : SKY_BLUE, #'#0072B2', #'#56B4E9', #'navy',
+                            'SALSA_DEP1'    : 'teal', #'teal', #magenta',
+                            'SALSA_DEP2'    : 'yellow', #'teal', #magenta',
+                            'SALSA_DEP3'    : 'teal', #'teal', #magenta',
+                            'SALSA2'        : PURPLE, #'teal', #magenta',
+                            'SALSA_DEP4'    : 'green', #'teal', #magenta',
+                            'SALSA_DEP4_0'    : GREEN, #'teal', #magenta',
+                            'SALSA_DEP4_1'    : GREEN, #'teal', #magenta',
+                            'SALSA_DEP4_2'    : 'yellow', #'teal', #magenta',
+                            'FULLKNOW'      : 'black',
+                            'FULLKNOW_DEP'  : 'black',
+                            'FULLKNOW_DEP4_0'  : 'black',
+                            'FULLKNOW_DEP4_1'  : 'black',
+                            'FULLKNOW_DEP4_2'  : 'black',
                             }
 
         # The markers used for each alg', in the dist' case
-        self.markerOfMode = {'Opt'      : 'o',
-                            'FNAA'      : 'v',
-                            'SALSA'     : '^',
-                            'SALSA3'    : 's',
-                            'Tetra'     : 'p',
-                            'Tetra dyn' : 'X',
-                            'CEDAR'     : '<',
-                            'Morris'    : '>'}
+        self.markerOfMode = {'Opt'          : 'o',
+                            'FNAA'          : 'v',
+                            'SALSA_DEP0'    : '^',
+                            'SALSA_DEP2'    : 'p',
+                            'SALSA_DEP3'    : 's',
+                            'SALSA3'        : 's'}
         self.list_of_dicts  = [] # list of dictionaries, that will hold all the data parsed from .res files.
         self.add_plot_opt   = '\t\t\\addplot [color = green, mark=+, line width = \\plotLineWidth] coordinates {\n\t\t'
         self.add_plot_str1  = '\t\t\\addplot [color = blue, mark=square, line width = \\plotLineWidth] coordinates {\n\t\t'
@@ -114,7 +159,7 @@ class Res_file_parser (object):
                                   'FNOA' : '\\pgmfno',
                                   'FNOA' : '\\pgmfno'}
         
-        self.set_plt_params ()
+        self.set_plt_params ('Small') #$$$
 
 
     def parse_mr_res_line (self, line):
@@ -139,9 +184,9 @@ class Res_file_parser (object):
         """
         Parse a single line of a .res file.
         """
+        unsplitted_line = line 
         splitted_line = line.split ("|")
          
-        settings      = splitted_line[0]
         if len (splitted_line)<2:
             MyConfig.error (f'parse_line encountered format error in file {self.relative_path_to_input_file}. splitted_line={splitted_line}')
         if len (splitted_line[1].split(" = "))<2:
@@ -150,33 +195,41 @@ class Res_file_parser (object):
         bwCost        = None # default value, to be checked later
         if (len(splitted_line)>2):
             bwCost    = float(splitted_line[2].split(" = ")[1])
-        splitted_line = settings.split (".")
-        mode          = splitted_line[alg_idx].split(" ")[0]
+        # splitted_line = settings.split (" ")[0]
+        settings_str = splitted_line[0]
+        splitted_settings_str = settings_str.split (".")
+        if len(splitted_settings_str)<alg_idx+1:
+            print (f'Parsing error. settings_str={settings_str}')
+            return False
+        mode_token = splitted_settings_str[alg_idx].split(" ")
+        if len(mode_token)<1:
+            MyConfig.error (f'Parsing error. settings_str={settings_str}. mode_token={mode_token}')
+        mode          = splitted_settings_str[alg_idx].split(" ")[0]
         self.dict = {
-            'trace'         : splitted_line        [trace_idx],
-            'DS_size'       : int (splitted_line   [DS_size_idx].split("C")[1].split("K")[0]),   
-            'num_of_req'    : int (splitted_line   [num_of_req_idx].split("Kreq")[0]),
-            'num_of_DSs'    : int (splitted_line   [num_of_DSs_idx].split("DSs")[0]), 
-            'Kloc'          : int (splitted_line   [kloc_idx]      .split("Kloc")[1]),
-            'missp'         : int (splitted_line   [missp_idx]     .split("M")[1]),
-            'designed_bw'   : int(splitted_line    [bw_idx]        .split('B')[1]), 
+            'trace'         : splitted_settings_str        [trace_idx],
+            'DS_size'       : int (splitted_settings_str   [DS_size_idx].split("C")[1].split("K")[0]),   
+            'num_of_req'    : int (splitted_settings_str   [num_of_req_idx].split("Kreq")[0]),
+            'num_of_DSs'    : int (splitted_settings_str   [num_of_DSs_idx].split("DSs")[0]), 
+            'Kloc'          : int (splitted_settings_str   [kloc_idx]      .split("Kloc")[1]),
+            'missp'         : int (splitted_settings_str   [missp_idx]     .split("M")[1]),
+            'designed_bw'   : int(splitted_settings_str    [bw_idx]        .split('B')[1]), 
             'mode'      : mode,
             'serviceCost'   : serviceCost
             }
         if mode=='Opt': # Opt doesn't have meaningful fields for bpe, uInterval or bw
-            return
+            return True
         
-        if len (splitted_line) < min_num_of_fields:
-            print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
+        if len (splitted_settings_str) < min_num_of_fields:
+            print (f'encountered a format error. settings_str={settings_str}')
             return False
 
-        self.dict['bpe'] = int (splitted_line [bpe_idx].split("bpe")[1])
+        self.dict['bpe'] = int (splitted_settings_str [bpe_idx].split("bpe")[1])
         if (bwCost != None):
             self.dict['bwCost'] = bwCost
             
-        uInterval_fld = splitted_line [uInterval_idx].split('U')
+        uInterval_fld = splitted_settings_str [uInterval_idx].split('U')
         if len(uInterval_fld)<2:
-                print ("encountered a format error. Splitted line is is {}" .format (splitted_line))
+                print ('encountered a format error. settings_str={settings_str}')
                 return False
         uInterval_str = uInterval_fld[1] 
         uInterval_val = uInterval_str.split('-')
@@ -184,17 +237,31 @@ class Res_file_parser (object):
         self.dict['uInterval']     = int(uInterval_val[0]) # for backward compatibility, keep also this field 
 
         if not(mode.startswith('SALSA')):
-            return 
+            return True
         
         # Now we know that the mode is one of the flavors of SALSA, and hence need to parse SALSA's specific fields    
         if len(uInterval_val)>1: # a single uInterval val is given
             self.dict['max_uInterval'] = int(uInterval_val[1]) # for backward compatibility, keep also this field
 
-        if len (splitted_line) <= mr0th_idx:
-            return # no further data in this .res entry
-        self.dict['mr0_th'] = float ('0.' + splitted_line [mr0th_idx+1])
-        self.dict['mr1_th'] = float ('0.' + splitted_line [mr1th_idx+1])
-        self.dict['uIntFact'] = float (splitted_line [uIntFact_idx].split("uIntFact")[1])
+        if len (splitted_settings_str) <= mr0th_idx:
+            return True# no further data in this .res entry
+        self.dict['mr0_th']         = float ('0.' + splitted_settings_str [mr0th_idx+1])
+        self.dict['mr1_th']         = float ('0.' + splitted_settings_str [mr1th_idx+1])
+
+        uIntFactToken = settings_str.split ('uIntFact')
+        if len(uIntFactToken)!=2:
+            print (f'Parsing error. uIntFactToken={uIntFactToken}\nsettings_str={settings_str}\nsplitted settings str={splitted_settings_str}')
+            return False
+        uIntFactToken = uIntFactToken[1].split('.minFU')
+        self.dict['uIntFact'] = float (uIntFactToken[0])
+        if len(splitted_settings_str)>period_param_idx:
+            per_param_token = splitted_settings_str [period_param_idx].split('per_param')
+            if len(per_param_token)==2:
+                self.dict['period_param']   = int (splitted_settings_str [period_param_idx].split('per_param')[1])
+            else:
+                print (f'Parsing error. settings_str={settings_str}\nsplitted settings str={splitted_settings_str}. period param token={per_param_token}')
+                return False
+        return True
          
     def print_tbl (self):
         """
@@ -292,7 +359,8 @@ class Res_file_parser (object):
                     point = self.gen_filtered_list(self.list_of_dicts, 
                             trace = trace, DS_size = 10, num_of_DSs = 3, Kloc = 1,missp = missp, alg_mode = 'Opt')
                     if (point==[]):
-                        MyConfig.error (f'no results for opt for trace={trace_to_print}, missp={missp}')
+                        print (f'no results for opt for trace={trace_to_print}, missp={missp}')
+                        continue
                     opt_serviceCost = point[0]['serviceCost']
                     uInterval = 1000
                     point = self.gen_filtered_list(self.list_of_dicts, 
@@ -493,7 +561,8 @@ class Res_file_parser (object):
                     continue
                
                 if file_type=='.res':
-                    self.parse_line(line)
+                    if not (self.parse_line(line)):
+                        MyConfig.error (f'problematic file is {input_file_name}')
                 elif file_type=='.mr.res':
                     self.parse_mr_res_line(line)
                 else:
@@ -552,8 +621,9 @@ class Res_file_parser (object):
                    missp_vals       = [],
                    plot_serviceCost = True, 
                    plot_bwCost      = True,
-                   mode             = 'SALSA2',
-                   uIntFactVals     = [2, 32]
+                   mode             = 'SALSA_DEP3',
+                   uIntFactVals     = [2, 32],
+                   normalize_by_Opt = True, # When true, normalize the service cost by that of Opt
                    ):
         """
         Generate and save a Python's bar-plot of the service cost and BW for varying uIntFact (update interval factor).   
@@ -568,10 +638,10 @@ class Res_file_parser (object):
                            item['num_of_DSs'] == 3] 
         all_opt_points   = [item for item in relevant_points if item['mode'] == 'Opt']
         all_salsa_points = [item for item in relevant_points if 
-                           item['mode']             == mode   and
-                           item['bpe']              == bpe    and
-                           item['mr0_th']           == mr0_th and
-                           item['mr1_th']           == mr1_th]
+                            item['mode']             == mode and
+                            item['bpe']              == bpe and
+                            item['mr0_th']           == mr0_th and
+                            item['mr1_th']           == mr1_th]
         
         for missp in missp_vals: 
             opt_points_w_this_missp   = [item for item in all_opt_points   if item['missp']==missp]  
@@ -587,15 +657,16 @@ class Res_file_parser (object):
                     trace = traces[traceIdx]
                     opt_points      = [item for item in opt_points_w_this_missp if 
                                        item['trace']      == trace and
-                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000]
+                    # print (f'num of req of {trace}={MyConfig.calc_num_of_req (trace, DS_size*1000)/1000}') #$$$
                     salsa_points    = [item for item in salsa_points_w_this_missp_n_uIntFact if 
-                                       item['trace']      == trace and
-                                       item['num_of_req'] == MyConfig.calc_num_of_req (trace, DS_size*1000)/1000]
+                                       item['trace']      == trace]
                     if salsa_points==[]: # no results for this settings
                         print (f'no points for {trace}.C{DS_size}K M{missp}, uIntFact={uIntFact}')  
                         continue
                     if (opt_points==[]):
-                        MyConfig.error ('no results for Opt {trace}.C{DS_size}K M{missp}')
+                        print (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                        continue
                     opt_serviceCost = opt_points[0]['serviceCost']
                     point = salsa_points[0]
                     mode_serviceCost[traceIdx] = point['serviceCost'] / opt_serviceCost 
@@ -638,13 +709,14 @@ class Res_file_parser (object):
                    uIntFact         = None,
                    bpe              = 14,
                    num_of_DSs       = 3,
-                   traces           = ['Wiki', 'Scarab', 'F1','F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45', ], 
-                   modes            = ['FNAA', 'SALSA2'],#  ['FNAA', 'SALSA1', 'SALSA2'],
+                   traces           = ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45'], 
+                   modes            = ['FNAA', 'SALSA_DEP4'],#  ['FNAA', 'SALSA1', 'SALSA2'],
                    DS_size          = 64,
                    missp_vals       = [],
                    plot_serviceCost = True, 
                    plot_bwCost      = True,
                    normalize_by_Opt = True, # When true, normalize the service cost by that of Opt 
+                   period_param     = None, 
                    ):
         """
         Generate and save a Python's bar-plot of the service cost and BW for varying modes, traces, and missp values.  
@@ -662,6 +734,7 @@ class Res_file_parser (object):
 
         for missp in missp_vals: 
             points_w_this_missp      = [item for item in non_opt_points if item['missp']==missp]
+
             opt_points_w_this_missp  = [item for item in all_opt_points if item['missp']==missp]
             trace_label_positions = self.bar_xlabel_positions (num_groups=len(traces), num_bars_per_group=len(modes)) 
             for mode_idx in range(len(modes)):
@@ -681,7 +754,8 @@ class Res_file_parser (object):
                                          item['num_of_req'] == MyConfig.calc_num_of_req (trace)/1000] 
                     if normalize_by_Opt:
                         if (opt_trace_points==[]): 
-                            MyConfig.error (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                            print (f'no results for Opt {trace}.C{DS_size}K M{missp}')
+                            continue
                         else:
                             opt_serviceCost = opt_trace_points[0]['serviceCost']
                     else:
@@ -697,6 +771,8 @@ class Res_file_parser (object):
                                              item['mr1_th'] == mr1_th]
                         if uIntFact!=None:
                             mode_trace_points = [item for item in mode_trace_points if item['uIntFact']==uIntFact]
+                        if period_param!=None:
+                            mode_trace_points = [item for item in mode_trace_points if item['period_param']==period_param]
                         if mode_trace_points==[]: # no results for this setting
                             continue     
                     point = mode_trace_points[0]
@@ -705,37 +781,35 @@ class Res_file_parser (object):
 
                 if plot_serviceCost:
                     if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
-                        plt.subplot (1, 2, 1)
+                        plt.subplot (1, 2, 1) # Use the first (left) sub-plot
                     plt.bar(x_positions, mode_serviceCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
                     plt.ylabel('Normalized Service Cost', fontsize = FONT_SIZE)
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.tick_params(bottom = False)
-                    plt.legend (frameon=False)
-                    plt.ylim (1)
+                    plt.legend (frameon=False, bbox_to_anchor=(-0.05, 1.0), loc='upper left')
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
                 if plot_bwCost:
-                    if plot_bwCost: # plot both serviceCost and bwCost, so use sub-plots
-                        plt.subplot (1, 2, 2)
+                    if plot_serviceCost: # plot both serviceCost and bwCost, so use sub-plots
+                        plt.subplot (1, 2, 2) # Use the 2nd (right) sub-plot
                     plt.bar(x_positions, mode_bwCost, color=self.colorOfMode[mode], width=BAR_WIDTH, label=self.strOfMode[mode], edgecolor='none') 
                     plt.ylabel('Bandwidth [bits/req.]', fontsize = FONT_SIZE)
                     x_positions = [x_positions[i] + BAR_WIDTH for i in range(len(x_positions))]
                     plt.xticks (trace_label_positions, traces, rotation=ROTATION_ANGLE)
                     plt.tick_params(bottom = False)
-                    plt.legend (frameon=False)
+                    plt.legend (frameon=False, bbox_to_anchor=(-0.05, 1.0), loc='upper left')
                     if not(USE_FRAME):
                         seaborn.despine(left=True, bottom=True, right=True)
                 if plot_serviceCost and plot_bwCost:
                     plt.subplots_adjust(wspace=WSAPCE_BETWEEN_SUBPLOTS)
-
-                    # plt.box(on=None)
+                    plt.box(on=None)
             if plot_serviceCost and not(plot_bwCost):
                 sub_plot_str = '_sCost'
             elif not (plot_serviceCost) and plot_bwCost:
                 sub_plot_str = '_bCost'
             else:
                 sub_plot_str = ''
-            plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}.pdf', bbox_inches='tight', dpi=100)
+            plt.savefig (f'../res/C{DS_size}K_M{missp}{sub_plot_str}_pparam{period_param}_{num_of_DSs}DSs.pdf', bbox_inches='tight', dpi=100)
             plt.clf ()
             
     def bar_xlabel_positions (self, num_groups, num_bars_per_group):
@@ -754,48 +828,97 @@ class Res_file_parser (object):
         return [(idx_in_group + num_bars_per_group*x + BAR_WIDTH_BETWEEN_GRPS*(x+1))*BAR_WIDTH for x in range(num_groups)]
 
     
-    def plot_mr (self, input_file_name, mr_type=0):
+    def plot_mr (self, 
+                 input_file_name, #a file containing the 'mr' values, in one line, comma-separated.
+                 modes              = ['fullKnow_dep4_0', 'fnaa', 'salsa_dep4_0'], # Modes to plot  
+                 mr_type            = 0, # 0 for mr0, 1 for mr1. 
+                 plotAlsoLegend     = False, # When True, plot also the legend (in addition to plotting the graphs)
+                 plotOnlyLegend     = False, # When True, plot only the legend, without the graphs
+                 xlim_min           = 40000, # Lowest x value to plot 
+                 xlim_max           = 150000, # Highest x value to plot 
+                 ):
         """
         generate and save a Python plot, showing the mr0, or mr1, as a func' of time (manifested by # of requests).
-        Inputs: 
-        input_file_name - a file containing the 'mr' values, in one line, comma-separated.
-        type - 0 for mr0, 1 for mr1.
         output: input_file_name.pdf = plot of the mr0, or mr1, as a func' of time.
         
         """
-        for dict in [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type]:
-            x_vec, mr_vec = dict['x_vec'], dict['y_vec']
-            measure_mr_mode = dict['measure_mr_mode']
-            plt.plot (dict['x_vec'], dict['y_vec'], markersize=MARKER_SIZE, linewidth=LINE_WIDTH, color = self.colorOfMode[measure_mr_mode], label=measure_mr_mode)
-            plt.xlabel ('Insertion Count')
+        self.set_plt_params ()
+        if plotOnlyLegend:
+            colors = [self.colorOfMode[modes[0].upper()], self.colorOfMode[modes[1].upper()], self.colorOfMode[modes[2].upper()]]
+            f = lambda m,c: plt.plot([],[],marker=m, color=c, ls="none")[0]
+            handles = [f("s", colors[i]) for i in range(3)]
+            labels = [self.strOfMode[modes[0].upper()], self.strOfMode[modes[1].upper()], self.strOfMode[modes[2].upper()]]
+            legend = plt.legend(handles, labels, loc=3, framealpha=1, frameon=True, ncol=3)
+            
+            fig  = legend.figure
+            fig.canvas.draw()
+            bbox  = legend.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            fig.savefig('../res/mr_lgnd.pdf', dpi="figure", bbox_inches=bbox)
+            return
+
+        dicts_of_this_mr_type = [dict for dict in self.list_of_dicts if dict['mr_type']==mr_type] 
+        for mode in modes:
+            dicts_of_this_mr_type_n_mode = [dict for dict in dicts_of_this_mr_type if dict['measure_mr_mode']==mode]
+            for dict in dicts_of_this_mr_type_n_mode: 
+                x_vec, mr_vec = dict['x_vec'], dict['y_vec']
+                plt.plot (
+                    dict['x_vec'], # x values of the coordinates to plot
+                    dict['y_vec'], # y values of the coordinates to plot
+                    linestyle   = lineStyleOfMode[mode], 
+                    linewidth   = LINE_WIDTH, 
+                    color       = self.colorOfMode[mode.upper()], 
+                    label       = self.strOfMode[mode.upper()]) 
+                plt.xlabel ('Request Number', fontsize = FONT_SIZE)
         if mr_type==0:
             plt.ylim (0.5, 1.02)
-            plt.ylabel (r'$\nu$')
+            plt.xlim (xlim_min, xlim_max)
+            plt.ylabel (r'$\nu$', fontsize = FONT_SIZE)
         else:
-            plt.ylim (0, 0.25)
-            plt.ylabel (r'$\pi$')
-        plt.legend()
+            plt.ylim (0, 0.08)
+            plt.xlim (xlim_min, xlim_max)
+            plt.ylabel (r'$\pi$', fontsize = FONT_SIZE)
+        if plotAlsoLegend:
+            plt.legend(frameon=False, loc='lower right')
+        # plt.legend(frameon=False, loc='lower right', ncol=3, bbox_to_anchor=(1.05, 1.0))
         # plt.xlim (0, x_diff*(len(mr)-1))
-        plt.savefig (f'../res/{input_file_name}.pdf', bbox_inches='tight', dpi=100)
+        plt.savefig (f'../res/{input_file_name}_mr{mr_type}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
+
+def gen_plot_bars_by_uIntFact ():
+    my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa_dep3_PC.res'])
+    for DS_size in [4, 16, 64]: #[16, 64]: 
+        my_Res_file_parser.plot_bars_by_uIntFact(plot_bwCost=True, missp_vals=[10], DS_size=DS_size, uIntFactVals=[2, 4, 8], normalize_by_Opt=False)
 
 def gen_plot_bars ():
     my_Res_file_parser = Res_file_parser ()
-    my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_HPC.res', 'fnaa_PC.res'])#, , 'salsa2.res', 'salsa2_minFU10.res'])
-    for DS_size in [4, 16, 64]: 
-        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[100], DS_size=DS_size, normalize_by_Opt=True)
-    # my_Res_file_parser.parse_files(['opt_PC.res', 'salsa2_PC.res'])
-    # my_Res_file_parser.plot_bars_by_uIntFact (plot_bwCost=False, missp_vals=[30, 300], DS_size=64)
+    my_Res_file_parser.parse_files(['opt_PC.res', 'fnaa_PC.res', 'salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    for DS_size in [4, 16, 64]: #, 16, 64 
+        my_Res_file_parser.plot_bars (plot_bwCost=True, missp_vals=[10, 30, 300], DS_size=DS_size, normalize_by_Opt=True, period_param=10) #, uIntFact=2.0
+        
+def gen_plot_homo_bars ():
+    my_Res_file_parser = Res_file_parser ()
+    my_Res_file_parser.parse_files(['homo_opt_PC.res', 'homo_fnaa_PC.res', 'homo_salsa_dep4_PC.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+    for num_of_DSs in [3, 6, 9]:
+        my_Res_file_parser.plot_bars (
+            plot_bwCost     = True, 
+            missp_vals      = [30], 
+            DS_size         = 16, 
+            num_of_DSs      = num_of_DSs,
+            period_param    = 10) 
         
 def gen_mr_plots ():
 
-    mr_type = 0                    
-    my_Res_file_parser = Res_file_parser ()
-    input_file_names=['Scarab_C16K_U2000_measure_mr_all', 'IBM1_C16K_U2000_measure_mr_all', 'IBM7_C16K_U2000_measure_mr_all',
-                      'Wiki_C16K_U2000_measure_mr_all',   'F1_C16K_U2000_measure_mr_all']
-    for input_file_name in input_file_names:
-        for ds in range (3): 
+    
+    input_file_names=['IBM7_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] 
+    # input_file_names=['Twitter45_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] 
+    #'Scarab_C16K_U3200_bpe12_measure_mr_all_plus_speculative'] #,  
+    # 'Wiki_C16K_U3200_bpe12_measure_mr_all_plus_speculative', 
+    for ds in range (2, 3): 
+        for input_file_name in input_file_names:
+            my_Res_file_parser = Res_file_parser ()
             input_file_name_w_extension = f'{input_file_name}_{ds}.mr.res'
+<<<<<<< HEAD
             my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
             my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
@@ -804,3 +927,18 @@ my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'fnaa_PC.res', 'sal
 for DS_size in [4, 16]:
     my_Res_file_parser.plot_bars (missp_vals=[30, 300], plot_serviceCost = False, normalize_by_Opt = False, DS_size=DS_size)
 # gen_mr_plots ()
+=======
+            for mr_type in range(2):
+                my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
+                my_Res_file_parser.plot_mr(
+                    input_file_name = input_file_name_w_extension,  
+                    mr_type         = mr_type,
+                    modes           = [f'fullKnow_dep4_{mr_type}', 'fnaa', f'salsa_dep4_{mr_type}'], # modes = [f'fullKnow_dep4_{mr_type}', 'fnaa'])
+                    xlim_min        = 80000, 
+                    xlim_max        = 120000  
+                )
+
+# gen_plot_bars_by_uIntFact ()
+gen_plot_homo_bars ()
+# gen_mr_plots ()
+>>>>>>> a79118e8dce55669064679e47d49f21ccb7f8041

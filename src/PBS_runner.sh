@@ -1,9 +1,11 @@
 #!/bin/bash
 
-#PBS -q WD
+### PBS -q [WD, RGB, RTX]
+#PBS -q RGB
 #PBS -k eod
 #PBS -e log.err
 #PBS -o log.out
+#PBS -l select=1:ncpus=36:mpiprocs=36
 
 ### #PBS -l walltime=240:00:00
 

@@ -1,42 +1,61 @@
 """
 Run a simulation, looping over all requested values of parameters 
 (miss penalty, cache sizes, number of caches etc.).
+The cache-selection and content-advertisement alg' is defined by the mode.
+The main modes are:
+- opt.
+- fnaa: the HecSFna alg', defined in [1].
+- salsa_dep4: SALSA2 alg', defined in [2].
+- Earlier, degenerated versions of SALSA2 (e.g., salsa2, salsa_dep2).
+[1] I. Cohen, Gil Einziger, and G. Scalosub, [False Negative Awareness in Indicator-based Caching Systems, IEEE Transactions on Networking, 2022, pp. 46-56.
+[2] I. Cohen, Bandwidth Efficient Cache Selection and Content Advertisement, pre-print, 2024.
 """
+import os, pickle, sys, time
+import numpy as np, pandas as pd
 from datetime import datetime
-import os, pickle, sys
+from pathlib  import Path
 
 import MyConfig
-import numpy as np
 from printf import printf
+import mod_pylru
 import DistCacheSimulator as sim
 from   tictoc import tic, toc
-import mod_pylru
+from MyConfig import error 
 
 def run_hetro_costs_sim ():
     """
-    Run experiments with 3 DSs, varying miss penalties, and heterogeneous DSs costs.
+    Run experiments with several DSs, varying miss penalties, and heterogeneous DSs costs.
     """
     min_feasible_uInterval = 10
-    DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    DS_sizes    = [4]
+    missps      = [300]
+    DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+    # start_time = time.time() 
+    print ('running hetro_costs_sim')
+    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
-    # for trace in ['IBM1', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
+    # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki']:        
     # for trace in ['Scarab']:       
-    for trace in ['F1']: 
+    # for trace in ['F1']: 
     # for trace in ['F2']: 
     # for trace in ['IBM1']: 
     # for trace in ['IBM7']: 
     # for trace in ['Twitter17']:
     # for trace in ['Twitter45']:
-        for DS_size in [4000]: #[, 16000, 64000]:
-            max_num_of_req = MyConfig.calc_num_of_req (trace) 
+        for DS_size in [1000*item for item in DS_sizes]:
+            max_num_of_req = MyConfig.calc_num_of_req (trace) # 500000 #$$$$  
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            for mode in ['salsa2']:
-                for missp in [300]: #[10, 30, 100, 300]:
+            for mode in ['salsa_dep4']: #'salsa_dep0', 'fnaa', 'salsa_dep2'
+                for missp in missps: 
                     tic()
                     sm = sim.DistCacheSimulator(
-                        res_file_name           = f'{mode}_HPC',
-                        EWMA_alpha_mr0          = 0.85, 
+                        # bpe                     = 10, #$$$
+                        delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
+                        full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
+                        res_file_name           = f'{mode}_{MyConfig.getMachineStr()}',
+                        EWMA_alpha_mr0          = 0.5, 
                         EWMA_alpha_mr1          = 0.25, 
                         trace_name              = trace,
                         mode                    = mode,
@@ -47,10 +66,18 @@ def run_hetro_costs_sim ():
                         min_uInterval           = DS_size/10,
                         re_init_after_each_ad   = False,
                         min_feasible_uInterval  = min_feasible_uInterval,
-                        uInterval_factor        = 999999 if mode.startswith('salsa') else 1,
-                        verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/1000)
+                        uInterval_factor        = 2 if mode.startswith('salsa') else 1,
+                        verbose                 = verbose
+                        ) 
+                    sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
                     toc()
+        
+    # run_times_log_file_name = 'run_times.log'
+    # if Path(run_times_log_file_name).is_file() and MyConfig.VERBOSE_RES in verbose: # does this res file already exist?
+    #     run_times_log_file = open (run_times_log_file_name,  'a')
+    # else:
+    #     run_times_log_file = open (run_times_log_file_name,  'w')
+    # printf (run_times_log_file, f'// finished running DS_size={DS_sizes}, missp={missps} after {time.time() - start_time}\n')
 
 
 def run_num_of_DSs_sim ():
@@ -58,35 +85,39 @@ def run_num_of_DSs_sim ():
     Run experiments with varying num of DSs and homogeneous DSs costs..
     """
     min_feasible_uInterval = 10
-    mode = 'opt'
-    for num_of_DSs in [3,5,7]:
-        DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=False)
-        for trace in ['Wiki']:        
-        # for trace in ['Scarab']:       
-        # for trace in ['F1']: 
-        # for trace in ['F2']: 
-        # for trace in ['IBM1']: 
-        # for trace in ['IBM7']: 
-        # for trace in ['Twitter17']:
-        # for trace in ['Twitter45']:
-            max_num_of_req = MyConfig.calc_num_of_req (trace)  
-            requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-            tic()
-            sm = sim.DistCacheSimulator(
-                res_file_name           = f'{mode}_HPC',
-                EWMA_alpha_mr0          = 0.85, 
-                EWMA_alpha_mr1          = 0.25, 
-                trace_name              = trace,
-                mode                    = mode,
-                req_df                  = requests,
-                client_DS_cost          = DS_cost,
-                missp                   = 100,
-                DS_size                 = 10000,
-                min_uInterval           = 1000,
-                uInterval_factor        = 32 if mode.startswith('salsa') else 1,
-                verbose                 = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES])
-            sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
-            toc()
+    DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
+    DS_size     = 16000
+    verbose     = [MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
+    print ('running num_of_DSs_sim')
+    for num_of_DSs in [9]:
+        DS_cost = calc_DS_cost (num_of_DSs=num_of_DSs, use_homo_DS_cost=True)
+        for trace in ['Wiki', 'Scarab']:     
+        # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+            for mode in ['salsa_dep4']:
+                max_num_of_req = MyConfig.calc_num_of_req (trace)  
+                requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
+                tic()
+                sm = sim.DistCacheSimulator(
+                    delta_mode_period_param = 10, # length of "sync periods" of the indicator's scaling alg.
+                    full_mode_period_param  = 10, # length of "sync periods" of the indicator's scaling alg.
+                    res_file_name           = f'homo_{mode}_{MyConfig.getMachineStr()}',
+                    EWMA_alpha_mr0          = 0.5, 
+                    EWMA_alpha_mr1          = 0.25, 
+                    trace_name              = trace,
+                    mode                    = mode,
+                    req_df                  = requests,
+                    client_DS_cost          = DS_cost,
+                    missp                   = 30,
+                    DS_size                 = DS_size,
+                    min_uInterval           = DS_size/10,
+                    re_init_after_each_ad   = False,
+                    min_feasible_uInterval  = 10,
+                    k_loc                   = int(num_of_DSs/3),
+                    uInterval_factor        = 2 if mode.startswith('salsa') else 1,
+                    verbose                 = verbose
+                ) 
+                sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
+                toc()
     
 
 
@@ -110,7 +141,7 @@ def calc_DS_hetro_costs (num_of_DSs, num_of_clients):
 
 def calc_DS_cost (num_of_DSs=3, use_homo_DS_cost = False):
     """
-    Returns a DS_cost matrix - either homo' or hetro', by the user's request  
+    Returns a DS_cost matrix - either homo' or hetro', by the caller's request
     """
     num_of_clients      = 1 # we currently consider only a single client, looking for data in several caches.
     if (use_homo_DS_cost):
@@ -147,8 +178,8 @@ def run_full_ind_oriented_sim ():
     requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
     tic()
     sm = sim.DistCacheSimulator(
-        res_file_name           = 'salsa2_PC',
-        EWMA_alpha_mr0          = 0.85, 
+        res_file_name           = f'salsa2__{MyConfig.getMachineStr()}',
+        EWMA_alpha_mr0          = 0.5, 
         EWMA_alpha_mr1          = 0.25, 
         trace_name              = trace,
         mode                    = 'salsa2',
@@ -159,7 +190,7 @@ def run_full_ind_oriented_sim ():
         min_uInterval           = 3000,
         uInterval_factor        = 2,
         bpe                     = 10,
-        verbose                 = [MyConfig.VERBOSE_DETAILED_LOG_MR]) #MyConfig.VERBOSE_DETAILED_LOG_MR
+        verbose                 = [MyConfig.VERBOSE_LOG_MR]) #MyConfig.VERBOSE_DETAILED_LOG_MR
     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
     toc()
 
@@ -170,35 +201,36 @@ def run_mr_sim ():
     """
     min_feasible_uInterval = 10
     DS_cost = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
-    for trace in ['Wiki', 'F1', 'Twitter45']: #  ], 'IBM7', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
+    for trace in ['Twitter45']: #, 'Scarab', 'Wiki', 'F1', 'Twitter45']: #  ], 'IBM7', 'Wiki', 'F1', 'Twitter45']:       # for trace in ['F1', 'IBM1', 'Scarab', 'Wiki', 'Twitter17']:       
         max_num_of_req = MyConfig.calc_num_of_req (trace)  
         requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  
-        for mode in ['measure_mr_fullKnow', 'measure_mr_by_fnaa', 'measure_mr_by_salsa']: # 'measure_mr_fullKnow', 'measure_mr_by_fnaa', 'measure_mr_by_salsa']:
+        for mode in ['measure_mr_by_fullKnow_dep4', 'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4']: #, 'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4']: #'measure_mr_by_fnaa', 'measure_mr_by_salsa_dep4', 'measure_mr_by_fullKnow_dep']: 
             for mr_type in range (2): 
                 tic()
                 sm = sim.DistCacheSimulator(
                     mr_type                 = mr_type,
-                    res_file_name           = f'{mode}_PC',
-                    EWMA_alpha_mr0          = 0.85, 
+                    res_file_name           = '',
+                    EWMA_alpha_mr0          = 0.5, 
                     EWMA_alpha_mr1          = 0.25, 
                     trace_name              = trace,
                     mode                    = mode,
                     req_df                  = requests,
                     client_DS_cost          = DS_cost,
-                    missp                   = 10,
+                    missp                   = 12,
                     DS_size                 = 16000,
-                    min_uInterval           = 2000,
-                    bpe                     = 9,
+                    min_uInterval           = 3200,
+                    bpe                     = 12,
                     uInterval_factor        = 32 if mode.startswith('salsa') else 1,
                     verbose                 = [])
                 sm.run_simulator(interval_between_mid_reports=max_num_of_req/10)
                 toc()
-    
+
+   
 if __name__ == '__main__':
     try:
         # run_num_of_DSs_sim ()
-        # run_full_ind_oriented_sim ()
         # run_mr_sim ()
+        # run_full_ind_oriented_sim ()
         run_hetro_costs_sim ()
     except KeyboardInterrupt:
         print('Keyboard interrupt.')

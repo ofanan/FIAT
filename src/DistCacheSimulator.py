@@ -532,13 +532,15 @@ class DistCacheSimulator(object):
             printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
             printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
         printf (res_file, '\n')
-        if VERBOSE_CNT_SCALING in verbose:
+        if VERBOSE_CNT_SCALING in self.verbose:
             num_of_indicator_rescaling = [DS.scaling_cntr for DS in self.DS_list]
-            # num_of_indicator_rescaling_per_DS = num_of_indicator_rescaling / self.num_of_DSs 
-            printf (res_file, f'\n//num_of_indicator_rescaling={num_of_indicator_rescaling_per_DS}')
-            num_of_indicator_rescaling_per_ad = sum(num_of_indicator_rescaling_per_DS) / (sum([DS.num_of_full_ads for DS in self.DS_list]) + sum([DS.num_of_sync_ads for DS in self.DS_list]))
+            printf (res_file, f'//num_of_full_ads={[DS.num_of_full_ads for DS in self.DS_list]}, num_of_sync_ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
+            overall_num_of_ads = sum([DS.num_of_full_ads for DS in self.DS_list]) + sum([DS.num_of_sync_ads for DS in self.DS_list])
+            num_of_indicator_rescaling_per_ad = sum(num_of_indicator_rescaling) / overall_num_of_ads
+            printf (res_file, f', num_of_indicator_rescaling={num_of_indicator_rescaling}')
             printf (res_file, f'\n//num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
             printf (res_file, f'\nsettings_str | num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
+            printf (res_file, f'\nsettings_str | req_cnt={self.req_cnt/sum(num_of_indicator_rescaling)}')
         
         
     def run_trace_measure_fp_fn (self):

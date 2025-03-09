@@ -33,7 +33,7 @@ def run_hetro_costs_sim ():
     verbose     = [VERBOSE_RES, VERBOSE_CNT_SCALING] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     # start_time = time.time() 
     print ('running hetro_costs_sim')
-    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    for trace in ['Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki']:        
@@ -73,7 +73,6 @@ def run_hetro_costs_sim ():
                         ) 
                     sm.run_simulator(interval_between_mid_reports=max_num_of_req/10) 
                     print (f'Finished an iteration of run_hetro_costs_sim. mode={mode},missp={missp},DS_size={DS_size} {genElapsedTimeStr (toc())}')
-                    exit () #$$$
         
     # run_times_log_file_name = 'run_times.log'
     # if Path(run_times_log_file_name).is_file() and MyConfig.VERBOSE_RES in verbose: # does this res file already exist?

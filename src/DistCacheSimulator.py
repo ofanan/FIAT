@@ -540,7 +540,7 @@ class DistCacheSimulator(object):
             printf (res_file, f', num_of_indicator_rescaling={num_of_indicator_rescaling}')
             printf (res_file, f'\n//num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
             printf (res_file, f'\nsettings_str | num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
-            printf (res_file, f'\nsettings_str | req_cnt={self.req_cnt/sum(num_of_indicator_rescaling)}')
+            printf (res_file, f'\nsettings_str | num_scaling_per_req(MTBS)={self.req_cnt/sum(num_of_indicator_rescaling)}')
         
         
     def run_trace_measure_fp_fn (self):

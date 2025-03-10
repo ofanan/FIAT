@@ -503,44 +503,45 @@ class DistCacheSimulator(object):
         else:
             bw = np.sum([DS.overall_ad_size for DS in self.DS_list]) / float (self.req_cnt)
         settings_str            = self.gen_settings_str (num_of_req=self.req_cnt)
-        printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
-
-        printf (res_file, '// tot_access_cost = {:.0f}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
-           (self.total_access_cost, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
-        if (self.mode=='opt'):
+        if VERBOSE_RES in self.verbose or VERBOSE_FULL_RES in self.verbose:
+            printf (res_file, '\n{} | service_cost = {:.2f} | bw = {:.2f} | hit_ratio = {:.2}, \n'  .format (settings_str, self.mean_service_cost, bw, self.hit_ratio))
+    
+            printf (res_file, '// tot_access_cost = {:.0f}, non_comp_miss_cnt = {}, comp_miss_cnt = {}\n' .format 
+               (self.total_access_cost, self.non_comp_miss_cnt, self.comp_miss_cnt) )                                 
+            if (self.mode=='opt'):
+                printf (res_file, '\n')
+                return
+            printf (res_file, '// ewma_window = {}\n' .format (self.ewma_window_size))
+            num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
+            if (self.mode == 'fnaa' and not(self.calc_mr_by_hist)):
+                printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_fpr_fnr_updates))
+                printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
+                                    .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
+    
+            printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}\n' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
+            printf (res_file, '// num of ads per DS={}. ' .format ([DS.num_of_advertisements for DS in self.DS_list]))
+            avg_num_of_ads = np.average([DS.num_of_advertisements for DS in self.DS_list])
+            if (avg_num_of_ads==0): # deter division by 0
+                printf (res_file, ' avg update interval = INF')
+            else:
+                printf (res_file, ' avg update interval = {:.1f} req' .format (float(self.req_cnt) / avg_num_of_ads))
+            if self.hit_ratio_based_uInterval:
+                printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
+            if (self.hit_ratio < 0 or self.hit_ratio > 1):
+                error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
+            if self.mode.startswith('salsa2'):
+                printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
+                printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
             printf (res_file, '\n')
-            return
-        printf (res_file, '// ewma_window = {}\n' .format (self.ewma_window_size))
-        num_of_fpr_fnr_updates = sum (DS.num_of_fpr_fnr_updates for DS in self.DS_list) / self.num_of_DSs
-        if (self.mode == 'fnaa' and not(self.calc_mr_by_hist)):
-            printf (res_file, '// num of insertions between fpr_fnr estimations = {}\n' .format (self.num_of_insertions_between_fpr_fnr_updates))
-            printf (res_file, '// avg num of fpr_fnr updates = {:.0f}, fpr_fnr_updates bw = {:.4f}\n' 
-                                .format (num_of_fpr_fnr_updates, num_of_fpr_fnr_updates/self.req_cnt))
-
-        printf (res_file, '// spec accs cost = {:.0f}, num of spec hits = {:.0f}\n' .format (self.speculate_accs_cost, self.speculate_hit_cnt))             
-        printf (res_file, '// num of ads per DS={}. ' .format ([DS.num_of_advertisements for DS in self.DS_list]))
-        avg_num_of_ads = np.average([DS.num_of_advertisements for DS in self.DS_list])
-        if (avg_num_of_ads==0): # deter division by 0
-            printf (res_file, ' avg update interval = INF')
-        else:
-            printf (res_file, ' avg update interval = {:.1f} req' .format (float(self.req_cnt) / avg_num_of_ads))
-        if self.hit_ratio_based_uInterval:
-            printf (res_file, '\n// non_comp_miss_th={}, non_comp_accs_th={}\n' .format (self.non_comp_miss_th, self.non_comp_accs_th))
-        if (self.hit_ratio < 0 or self.hit_ratio > 1):
-            error ('error at simulator.gather_statistics: got hit_ratio={}. Please check the output file for details' .format (self.hit_ratio))
-        if self.mode.startswith('salsa2'):
-            printf (res_file, f'\n// num of full ind ad={[DS.num_of_full_ads for DS in self.DS_list]}, num of periods in delta mode={[DS.num_of_periods_in_delta_ads for DS in self.DS_list]}')
-            printf (res_file, f'\n//num of sync ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
-        printf (res_file, '\n')
         if VERBOSE_CNT_SCALING in self.verbose:
             num_of_indicator_rescaling = [DS.scaling_cntr for DS in self.DS_list]
             printf (res_file, f'//num_of_full_ads={[DS.num_of_full_ads for DS in self.DS_list]}, num_of_sync_ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
             overall_num_of_ads = sum([DS.num_of_full_ads for DS in self.DS_list]) + sum([DS.num_of_sync_ads for DS in self.DS_list])
             num_of_indicator_rescaling_per_ad = sum(num_of_indicator_rescaling) / overall_num_of_ads
-            printf (res_file, f', num_of_indicator_rescaling={num_of_indicator_rescaling}')
+            printf (res_file, f', //num_of_indicator_rescaling={num_of_indicator_rescaling}')
             printf (res_file, f'\n//num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
-            printf (res_file, f'\nsettings_str | num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
-            printf (res_file, f'\nsettings_str | num_scaling_per_req(MTBS)={self.req_cnt/sum(num_of_indicator_rescaling)}')
+            printf (res_file, f'\n{settings_str} | num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
+            printf (res_file, f'\n{settings_str} | num_scaling_per_req(MTBS)={self.req_cnt/sum(num_of_indicator_rescaling)}\n')
         
         
     def run_trace_measure_fp_fn (self):

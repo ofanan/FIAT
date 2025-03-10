@@ -227,6 +227,8 @@ class DistCacheSimulator(object):
                 self.res_file = self.init_res_file (res_file_name)
         if (VERBOSE_FULL_RES in self.verbose):
             self.full_res_file = self.init_res_file ('{}_full' .format (res_file_name))
+        if VERBOSE_CNT_SCALING in self.verbose:
+            self.res_file = self.init_res_file (res_file_name)
         
         self.mr_type            = mr_type
         self.trace_name         = trace_name
@@ -535,13 +537,13 @@ class DistCacheSimulator(object):
             printf (res_file, '\n')
         if VERBOSE_CNT_SCALING in self.verbose:
             num_of_indicator_rescaling = [DS.scaling_cntr for DS in self.DS_list]
-            printf (res_file, f'//num_of_full_ads={[DS.num_of_full_ads for DS in self.DS_list]}, num_of_sync_ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
             overall_num_of_ads = sum([DS.num_of_full_ads for DS in self.DS_list]) + sum([DS.num_of_sync_ads for DS in self.DS_list])
             num_of_indicator_rescaling_per_ad = sum(num_of_indicator_rescaling) / overall_num_of_ads
+            printf (res_file, f'\n{settings_str} | num_scaling_per_req(MTBS)={self.req_cnt/sum(num_of_indicator_rescaling)}\n')
+            printf (res_file, f'//num_of_full_ads={[DS.num_of_full_ads for DS in self.DS_list]}, num_of_sync_ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
             printf (res_file, f', //num_of_indicator_rescaling={num_of_indicator_rescaling}')
             printf (res_file, f'\n//num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
-            printf (res_file, f'\n{settings_str} | num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
-            printf (res_file, f'\n{settings_str} | num_scaling_per_req(MTBS)={self.req_cnt/sum(num_of_indicator_rescaling)}\n')
+            printf (res_file, '\n')
         
         
     def run_trace_measure_fp_fn (self):

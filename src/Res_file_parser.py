@@ -890,8 +890,15 @@ class Res_file_parser (object):
         """
         Generate a .tex table that summarizes the number of indicator scaling for different settings. 
         """
+        output_file = open (f'../res/scaling_table.txt', 'w')
         traces = [point['trace'] for point in self.list_of_dicts]
+        printf (output_file, 'trace ')
+        for DS_size in [4, 16, 64]:
+            for missp in [10, 30, 300]:
+                printf (output_file, f'{missp} ')
+        printf (output_file, '\n')
         for trace in traces:
+            printf (output_file, f'{trace} ')
             points_w_this_trace = [point for point in self.list_of_dicts if point['trace']==trace]
             for DS_size in [4, 16, 64]:
                 points_w_this_trace_DS_size = [point for point in points_w_this_trace if point['DS_size']==DS_size]
@@ -901,7 +908,9 @@ class Res_file_parser (object):
                         warning (f'In Res_file_parser.gen_table_num_of_scaling(). found 2 points with trace={trace}, DS_size={DS_size}, missp={missp}')
                     if len(points_w_this_trace_DS_size_missp)==1:
                         point = points_w_this_trace_DS_size_missp[0]
-                        print ('{:.0f}K' .format(round(point['serviceCost']/1000)))    
+                        printf (output_file, '{:.0f}K' .format(round(point['serviceCost']/1000)))
+                    printf (output_file, ' &')    
+            printf (output_file, '\n')    
         return
     
 

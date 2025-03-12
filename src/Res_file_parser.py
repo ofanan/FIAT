@@ -1,6 +1,8 @@
 import os, numpy as np
-import pylab, matplotlib, seaborn, matplotlib.pyplot as plt
+import pylab, matplotlib, matplotlib.pyplot as plt
+# import seaborn
 import MyConfig
+from MyConfig import *
 from printf import printf 
 from _ast import If
 from pandas.core.algorithms import mode
@@ -149,8 +151,8 @@ class Res_file_parser (object):
         self.add_plot_str1  = '\t\t\\addplot [color = blue, mark=square, line width = \\plotLineWidth] coordinates {\n\t\t'
         self.add_plot_fno1  = '\t\t\\addplot [color = purple, mark=o, line width = \\plotLineWidth] coordinates {\n\t\t'
         self.add_plot_fna1  = '\t\t\\addplot [color = red, mark=triangle*, line width = \\plotLineWidth] coordinates {\n\t\t'
-        self.add_plot_fno2  = '\t\t\\addplot [color = black, mark = square,      mark options = {mark size = 2, fill = black}, line width = \plotLineWidth] coordinates {\n\t\t'
-        self.add_plot_fna2  = '\t\t\\addplot [color = blue,  mark = *, mark options = {mark size = 2, fill = blue},  line width = \plotLineWidth] coordinates {\n\t\t'
+        self.add_plot_fno2  = '\t\t\\addplot [color = black, mark = square,      mark options = {mark size = 2, fill = black}, line width = \\plotLineWidth] coordinates {\n\t\t'
+        self.add_plot_fna2  = '\t\t\\addplot [color = blue,  mark = *, mark options = {mark size = 2, fill = blue},  line width = \\plotLineWidth] coordinates {\n\t\t'
         self.end_add_plot_str = '\n\t\t};'
         self.add_legend_str = '\n\t\t\\addlegendentry {'
         self.add_plot_str_dict = {'Opt' : self.add_plot_opt, 'FNAA' : self.add_plot_fna2, 'FNOA' : self.add_plot_fno2}
@@ -883,6 +885,25 @@ class Res_file_parser (object):
         # plt.xlim (0, x_diff*(len(mr)-1))
         plt.savefig (f'../res/{input_file_name}_mr{mr_type}.pdf', bbox_inches='tight', dpi=100)
         plt.clf ()
+        
+    def gen_table_num_of_scaling (self):
+        """
+        Generate a .tex table that summarizes the number of indicator scaling for different settings. 
+        """
+        traces = [point['trace'] for point in self.list_of_dicts]
+        for trace in traces:
+            points_w_this_trace = [point for point in self.list_of_dicts if point['trace']==trace]
+            for DS_size in [4, 16, 64]:
+                points_w_this_trace_DS_size = [point for point in points_w_this_trace if point['DS_size']==DS_size]
+                for missp in [10, 30, 300]:
+                    points_w_this_trace_DS_size_missp = [point for point in points_w_this_trace_DS_size if point['missp']==missp]
+                    if len(points_w_this_trace_DS_size_missp)>1:
+                        warning (f'In Res_file_parser.gen_table_num_of_scaling(). found 2 points with trace={trace}, DS_size={DS_size}, missp={missp}')
+                    if len(points_w_this_trace_DS_size_missp)==1:
+                        point = points_w_this_trace_DS_size_missp[0]
+                        print ('{:.0f}K' .format(round(point['serviceCost']/1000)))    
+        return
+    
 
 def gen_plot_bars_by_uIntFact ():
     my_Res_file_parser = Res_file_parser ()
@@ -921,10 +942,10 @@ def gen_mr_plots ():
             my_Res_file_parser.parse_files(input_file_names=[input_file_name_w_extension], file_type='.mr.res')
             my_Res_file_parser.plot_mr    (input_file_name=  input_file_name_w_extension,  mr_type=mr_type)
 
-my_Res_file_parser = Res_file_parser ()
-my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'fnaa_PC.res', 'salsa2_HPC.res'], file_type='.res')
-for DS_size in [4, 16]:
-    my_Res_file_parser.plot_bars (missp_vals=[30, 300], plot_serviceCost = False, normalize_by_Opt = False, DS_size=DS_size)
+# my_Res_file_parser = Res_file_parser ()
+# my_Res_file_parser.parse_files(['opt_PC.res', 'opt_HPC.res', 'fnaa_PC.res', 'salsa2_HPC.res'], file_type='.res')
+# for DS_size in [4, 16]:
+#     my_Res_file_parser.plot_bars (missp_vals=[30, 300], plot_serviceCost = False, normalize_by_Opt = False, DS_size=DS_size)
 
 # gen_mr_plots ()
 # for mr_type in range(2):
@@ -937,3 +958,6 @@ for DS_size in [4, 16]:
 #         xlim_max        = 120000  
 #     )
 
+my_Res_file_parser = Res_file_parser ()
+my_Res_file_parser.parse_files(['salsa_dep4_PC_cntScale.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+my_Res_file_parser.gen_table_num_of_scaling ()

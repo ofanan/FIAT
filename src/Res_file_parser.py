@@ -898,7 +898,7 @@ class Res_file_parser (object):
                 printf (output_file, f'{missp} ')
         printf (output_file, '\n')
         for trace in traces:
-            printf (output_file, f'{trace} ')
+            printf (output_file, f'{trace} & ')
             points_w_this_trace = [point for point in self.list_of_dicts if point['trace']==trace]
             for DS_size in [4, 16, 64]:
                 points_w_this_trace_DS_size = [point for point in points_w_this_trace if point['DS_size']==DS_size]

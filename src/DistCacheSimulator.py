@@ -540,7 +540,7 @@ class DistCacheSimulator(object):
             overall_num_of_ads = sum([DS.num_of_full_ads for DS in self.DS_list]) + sum([DS.num_of_sync_ads for DS in self.DS_list])
             num_of_indicator_rescaling_per_ad = sum(num_of_indicator_rescaling) / overall_num_of_ads
             printf (res_file, f'\n{settings_str} | num_scaling_per_req(MTBS)={self.req_cnt/sum(num_of_indicator_rescaling)}\n')
-            printf (res_file, f'//num_of_full_ads={[DS.num_of_full_ads for DS in self.DS_list]}, num_of_sync_ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
+            printf (res_file, f'//num_of_full_ads = {[DS.num_of_full_ads for DS in self.DS_list]}, num_of_sync_ads={[DS.num_of_sync_ads for DS in self.DS_list]}')
             printf (res_file, f', //num_of_indicator_rescaling={num_of_indicator_rescaling}')
             printf (res_file, f'\n//num_of_indicator_rescaling_per_ad={num_of_indicator_rescaling_per_ad}')
             printf (res_file, '\n')

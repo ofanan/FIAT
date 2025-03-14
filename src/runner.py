@@ -28,12 +28,12 @@ def run_hetro_costs_sim ():
     """
     min_feasible_uInterval = 10
     DS_sizes    = [4]
-    missps      = [10]
+    missps      = [30]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [VERBOSE_CNT_SCALING] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     # start_time = time.time() 
     print ('running hetro_costs_sim')
-    # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['Wiki', 'Scarab']:       
@@ -41,7 +41,7 @@ def run_hetro_costs_sim ():
     # for trace in ['F2']: 
     # for trace in ['IBM1']: 
     # for trace in ['IBM7']: 
-    for trace in ['Twitter17', 'Twitter45']:
+    # for trace in ['Twitter17', 'Twitter45']: 
         for DS_size in [1000*item for item in DS_sizes]:
             max_num_of_req = MyConfig.calc_num_of_req (trace) #    
             requests = MyConfig.gen_requests (MyConfig.trace_csv_file_name[trace], max_num_of_req=max_num_of_req)  

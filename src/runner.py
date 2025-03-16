@@ -28,15 +28,15 @@ def run_hetro_costs_sim ():
     """
     min_feasible_uInterval = 10
     DS_sizes    = [16]
-    missps      = [10]
+    missps      = [300]
     DS_cost     = calc_DS_cost (num_of_DSs=3, use_homo_DS_cost=False)
     verbose     = [VERBOSE_CNT_SCALING] # MyConfig.VERBOSE_RES, MyConfig.VERBOSE_FULL_RES, MyConfig.VERBOSE_LOG_MR
     # start_time = time.time() 
     print ('running hetro_costs_sim')
     # for trace in ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
-    for trace in ['IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
+    # for trace in ['IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
     # for trace in ['F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']:     
-    # for trace in ['Wiki', 'Scarab']:       
+    for trace in ['Scarab']:       
     # for trace in ['F1']: 
     # for trace in ['F2']: 
     # for trace in ['IBM1']: 

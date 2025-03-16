@@ -192,7 +192,7 @@ class Res_file_parser (object):
         if len (splitted_line)<2:
             MyConfig.error (f'parse_line encountered format error in file {self.relative_path_to_input_file}. splitted_line={splitted_line}')
         if len (splitted_line[1].split(" = "))<2:
-            MyConfig.error ('format error. splitted_line={}' .format (splitted_line))
+            MyConfig.error (f'parse_line encountered format error in file {self.relative_path_to_input_file}. splitted_line={splitted_line}')
         serviceCost   = float(splitted_line[1].split(" = ")[1])
         bwCost        = None # default value, to be checked later
         if (len(splitted_line)>2):
@@ -891,30 +891,33 @@ class Res_file_parser (object):
         Generate a .tex table that summarizes the number of indicator scaling for different settings. 
         """
         output_file = open (f'../res/scaling_table.txt', 'w')
-        traces = [point['trace'] for point in self.list_of_dicts]
-        # printf (output_file, 'trace ')
-        # for DS_size in [4, 16, 64]:
-        #     for missp in [10, 30, 300]:
-        #         printf (output_file, f'{missp} ')
-        # printf (output_file, '\n')
+        traces = ['Wiki', 'Scarab', 'F1', 'F2', 'IBM1', 'IBM7', 'Twitter17', 'Twitter45']
         DS_sizes = [4, 16, 64]
         missps   = [10, 30, 300]
         for trace in traces:
-            printf (output_file, f'{trace} & ')
+            printf (output_file, f'\t\t{trace}\t')
+            # Add indentation according to the string's len, so that the data will have uniform indentation 
+            if len(trace)<4:
+                printf (output_file, f'\t')
+            if len(trace)<8:
+                printf (output_file, f'\t')
+            printf (output_file, f'& ')
             points_w_this_trace = [point for point in self.list_of_dicts if point['trace']==trace]
             for DS_size in DS_sizes:
                 points_w_this_trace_DS_size = [point for point in points_w_this_trace if point['DS_size']==DS_size]
                 for missp in missps:
                     points_w_this_trace_DS_size_missp = [point for point in points_w_this_trace_DS_size if point['missp']==missp]
                     if len(points_w_this_trace_DS_size_missp)>1:
-                        warning (f'In Res_file_parser.gen_table_num_of_scaling(). found 2 points with trace={trace}, DS_size={DS_size}, missp={missp}')
+                        warning (f'In Res_file_parser.gen_table_num_of_scaling(). found {len(points_w_this_trace_DS_size_missp)} points with trace={trace}, DS_size={DS_size}, missp={missp}. Taking the first of them.')
+                        point = points_w_this_trace_DS_size_missp[0]
+                        printf (output_file, '{:.0f}K\t' .format(round(point['serviceCost']/1000)))
                     if len(points_w_this_trace_DS_size_missp)==1:
                         point = points_w_this_trace_DS_size_missp[0]
-                        printf (output_file, '{:.0f}K' .format(round(point['serviceCost']/1000)))
+                        printf (output_file, '{:.0f}K\t' .format(round(point['serviceCost']/1000)))
                     if DS_size==DS_sizes[-1] and missp==missps[-1]: # last datum in a row
                         printf (output_file, '\\\\ \\hline')
                     else:
-                        printf (output_file, ' & ')    
+                        printf (output_file, '\t& ')    
             printf (output_file, '\n')    
         return
     
@@ -974,4 +977,6 @@ def gen_mr_plots ():
 
 my_Res_file_parser = Res_file_parser ()
 my_Res_file_parser.parse_files(['salsa_dep4_PC_cntScale.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+my_Res_file_parser.parse_files(['salsa_dep4_PCC_cntScale.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
+my_Res_file_parser.parse_files(['salsa_dep4_HPC_cntScale.res'])#,'salsa2.res', 'salsa2_minFU10.res'])
 my_Res_file_parser.gen_table_num_of_scaling ()

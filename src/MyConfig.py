@@ -10,6 +10,20 @@ This file contains several accessory functions, used throughout the project. In 
 import os
 import numpy as np, pandas as pd
 
+# Colors for print-out messages
+STDOUT_FAIL     = '\033[91m'
+STDOUT_ENDC     = '\033[0m'
+# Other bcolors:
+#     HEADER = '\033[95m'
+#     OKBLUE = '\033[94m'
+#     OKCYAN = '\033[96m'
+#     OKGREEN = '\033[92m'
+#     WARNING = '\033[93m'
+#     FAIL = '\033[91m'
+#     ENDC = '\033[0m'
+#     BOLD = '\033[1m'
+#     UNDERLINE = '\033[4m'
+
 INF_INT = 999999999
 
 # levels of verbose
@@ -246,10 +260,18 @@ def get_optimal_num_of_hashes (bpe):
     """
     return int (bpe * np.log (2))
 
-def error (str):
-    print ('error: {}' .format (str))
-    exit ()
+def warning (str2print):
+    """
+    Print an error msg and exit.
+    """
+    print (f'{STDOUT_FAIL}Warning: {str2print}{STDOUT_ENDC}')
 
+def error (str2print):
+    """
+    Print an error msg and exit.
+    """
+    print (f'{STDOUT_FAIL}Error: {str2print}{STDOUT_ENDC}')
+    exit  ()
 
 def calc_designed_fpr (DS_size, BF_size, num_of_hashes):
     """
